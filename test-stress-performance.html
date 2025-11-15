@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tests de Stress et Performance</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        .test-table th, .test-table td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: left;
+        }
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+        .prose {
+            max-width: none;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button.danger { background: #dc3545; }
+        button.warning { background: #ffc107; color: #212529; }
+        .test-results {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .stat-box {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #007bff;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Tests de Stress et Performance</h1>
+        <p>Tests intensifs pour évaluer les limites et performances du système</p>
+        
+        <div class="warning">
+            ⚠️ <strong>ATTENTION:</strong> Ces tests peuvent être intensifs et ralentir temporairement votre navigateur.
+            Fermez les autres onglets pour de meilleures performances.
+        </div>
+        
+        <div class="container">
+            <h2>🎯 Tests de Performance</h2>
+            <button onclick="testMassiveTable()">📊 Table Massive (1000 lignes)</button>
+            <button onclick="testRapidCycles()">🔄 Cycles Rapides (100x)</button>
+            <button onclick="testConcurrentTables()">🔀 Tables Concurrentes</button>
+            <button onclick="testMemoryUsage()">💾 Usage Mémoire</button>
+            <button class="warning" onclick="testExtremeStress()">⚡ Test Extrême</button>
+            <button class="danger" onclick="clearAllData()">🗑️ Nettoyer Tout</button>
+        </div>
+
+        <div class="container">
+            <h2>📊 Statistiques en Temps Réel</h2>
+            <div class="stats">
+                <div class="stat-box">
+                    <strong>Tables Créées</strong><br>
+                    <span id="stat-tables">0</span>
+                </div>
+                <div class="stat-box">
+                    <strong>Opérations/sec</strong><br>
+                    <span id="stat-ops">0</span>
+                </div>
+                <div class="stat-box">
+                    <strong>Temps Moyen</strong><br>
+                    <span id="stat-time">0ms</span>
+                </div>
+                <div class="stat-box">
+                    <strong>Mémoire localStorage</strong><br>
+                    <span id="stat-storage">0KB</span>
+                </div>
+            </div>
+            <div class="progress">
+                <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test Dynamique</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="stress-table" class="test-table min-w-full">
+                    <thead id="stress-thead">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stress-tbody">
+                        <!-- Sera rempli dynamiquement -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Résultats et Logs</h2>
+            <div id="test-results" class="test-results">
+Tests de stress et performance prêts.
+Cliquez sur un bouton pour commencer les tests.
+
+⚠️ Les tests intensifs peuvent prendre du temps et consommer des ressources.
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        let testResults = [];
+        let stats = {
+            tablesCreated: 0,
+            operationsPerSecond: 0,
+            averageTime: 0,
+            storageUsed: 0
+        };
+
+        function log(message) {
+            console.log(message);
+            testResults.push(`${new Date().toLocaleTimeString()} - ${message}`);
+            updateResultsDisplay();
+        }
+
+        function updateResultsDisplay() {
+            document.getElementById('test-results').textContent = testResults.join('\n');
+        }
+
+        function updateStats() {
+            document.getElementById('stat-tables').textContent = stats.tablesCreated;
+            document.getElementById('stat-ops').textContent = stats.operationsPerSecond.toFixed(1);
+            document.getElementById('stat-time').textContent = stats.averageTime.toFixed(1) + 'ms';
+            document.getElementById('stat-storage').textContent = (stats.storageUsed / 1024).toFixed(1) + 'KB';
+        }
+
+        function updateProgress(percent) {
+            document.getElementById('progress-bar').style.width = percent + '%';
+        }
+
+        function calculateStorageUsage() {
+            let total = 0;
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith('claraverse_table_')) {
+                    total += localStorage.getItem(key).length;
+                }
+            });
+            return total;
+        }
+
+        function generateRandomData(rows) {
+            const names = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Henry'];
+            const domains = ['example.com', 'test.org', 'demo.net', 'sample.fr'];
+            const statuses = ['Actif', 'Inactif', 'Suspendu', 'En attente'];
+            
+            const data = [];
+            for (let i = 0; i < rows; i++) {
+                data.push({
+                    id: i + 1,
+                    name: names[Math.floor(Math.random() * names.length)] + ' ' + (i + 1),
+                    email: `user${i + 1}@${domains[Math.floor(Math.random() * domains.length)]}`,
+                    date: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+                    status: statuses[Math.floor(Math.random() * statuses.length)]
+                });
+            }
+            return data;
+        }
+
+        function populateTable(tableId, data) {
+            const tbody = document.getElementById(tableId);
+            tbody.innerHTML = '';
+            
+            data.forEach(row => {
+                const tr = tbody.insertRow();
+                tr.insertCell(0).textContent = row.id;
+                tr.insertCell(1).textContent = row.name;
+                tr.insertCell(2).textContent = row.email;
+                tr.insertCell(3).textContent = row.date;
+                tr.insertCell(4).textContent = row.status;
+            });
+        }
+
+        async function testMassiveTable() {
+            log('⚡ === TEST: TABLE MASSIVE (1000 LIGNES) ===');
+            
+            try {
+                const table = document.getElementById('stress-table');
+                table.removeAttribute('data-robust-table-id');
+                
+                log('📊 Génération de 1000 lignes de données...');
+                const data = generateRandomData(1000);
+                
+                const startPopulate = performance.now();
+                populateTable('stress-tbody', data);
+                const endPopulate = performance.now();
+                
+                log(`📋 Table peuplée en ${(endPopulate - startPopulate).toFixed(2)}ms`);
+                
+                // Test de sauvegarde
+                log('💾 Sauvegarde de la table massive...');
+                const startSave = performance.now();
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                const endSave = performance.now();
+                const saveTime = endSave - startSave;
+                
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'} en ${saveTime.toFixed(2)}ms`);
+                
+                if (saveResult) {
+                    // Modifier toutes les cellules
+                    const cells = table.querySelectorAll('td');
+                    log(`📝 Modification de ${cells.length} cellules...`);
+                    
+                    const startModify = performance.now();
+                    cells.forEach((cell, index) => {
+                        cell.textContent = `MODIF_${index}`;
+                    });
+                    const endModify = performance.now();
+                    
+                    log(`📝 Modification terminée en ${(endModify - startModify).toFixed(2)}ms`);
+                    
+                    // Test de restauration
+                    log('🔄 Restauration de la table massive...');
+                    const startRestore = performance.now();
+                    const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                    const endRestore = performance.now();
+                    const restoreTime = endRestore - startRestore;
+                    
+                    log(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'} en ${restoreTime.toFixed(2)}ms`);
+                    
+                    // Vérifier quelques cellules
+                    const firstCell = table.querySelector('td');
+                    const isCorrect = firstCell && firstCell.textContent === '1';
+                    
+                    if (isCorrect) {
+                        log('✅ Table massive correctement restaurée');
+                        log(`📊 Performance: Sauvegarde ${saveTime.toFixed(2)}ms, Restauration ${restoreTime.toFixed(2)}ms`);
+                    } else {
+                        log('❌ Problème de restauration de la table massive');
+                    }
+                    
+                    stats.tablesCreated++;
+                    stats.averageTime = (saveTime + restoreTime) / 2;
+                    stats.storageUsed = calculateStorageUsage();
+                    updateStats();
+                }
+                
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testRapidCycles() {
+            log('⚡ === TEST: CYCLES RAPIDES (100x) ===');
+            
+            try {
+                const table = document.getElementById('stress-table');
+                table.removeAttribute('data-robust-table-id');
+                
+                // Créer une petite table pour les tests rapides
+                const data = generateRandomData(10);
+                populateTable('stress-tbody', data);
+                
+                const cycles = 100;
+                let successCount = 0;
+                let totalSaveTime = 0;
+                let totalRestoreTime = 0;
+                
+                log(`🔄 Début de ${cycles} cycles rapides...`);
+                
+                const overallStart = performance.now();
+                
+                for (let i = 0; i < cycles; i++) {
+                    updateProgress((i / cycles) * 100);
+                    
+                    // Modifier le contenu
+                    const firstCell = table.querySelector('td');
+                    const testContent = `CYCLE_${i}_${Date.now()}`;
+                    firstCell.textContent = testContent;
+                    
+                    // Sauvegarder
+                    const saveStart = performance.now();
+                    const saveResult = window.claraverseStorageAPI.saveTable(table);
+                    const saveEnd = performance.now();
+                    totalSaveTime += (saveEnd - saveStart);
+                    
+                    if (saveResult) {
+                        // Modifier temporairement
+                        firstCell.textContent = 'TEMP';
+                        
+                        // Restaurer
+                        const restoreStart = performance.now();
+                        const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                        const restoreEnd = performance.now();
+                        totalRestoreTime += (restoreEnd - restoreStart);
+                        
+                        if (restoreResult && firstCell.textContent === testContent) {
+                            successCount++;
+                        }
+                    }
+                    
+                    // Petite pause pour éviter de bloquer l'UI
+                    if (i % 10 === 0) {
+                        await new Promise(resolve => setTimeout(resolve, 1));
+                        log(`🔄 Cycle ${i + 1}/${cycles} (${successCount} succès)`);
+                    }
+                }
+                
+                const overallEnd = performance.now();
+                const totalTime = overallEnd - overallStart;
+                
+                updateProgress(100);
+                
+                log(`✅ ${successCount}/${cycles} cycles réussis`);
+                log(`📊 Temps total: ${totalTime.toFixed(2)}ms`);
+                log(`📊 Temps moyen par cycle: ${(totalTime / cycles).toFixed(2)}ms`);
+                log(`📊 Sauvegarde moyenne: ${(totalSaveTime / cycles).toFixed(2)}ms`);
+                log(`📊 Restauration moyenne: ${(totalRestoreTime / cycles).toFixed(2)}ms`);
+                log(`📊 Opérations par seconde: ${(cycles * 2 / (totalTime / 1000)).toFixed(1)}`);
+                
+                stats.operationsPerSecond = cycles * 2 / (totalTime / 1000);
+                stats.averageTime = totalTime / cycles;
+                stats.storageUsed = calculateStorageUsage();
+                updateStats();
+                
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testConcurrentTables() {
+            log('⚡ === TEST: TABLES CONCURRENTES ===');
+            
+            try {
+                const tableCount = 10;
+                const tables = [];
+                
+                log(`🔀 Création de ${tableCount} tables concurrentes...`);
+                
+                // Créer plusieurs tables dynamiquement
+                const container = document.querySelector('.prose');
+                for (let i = 0; i < tableCount; i++) {
+                    const table = document.createElement('table');
+                    table.id = `concurrent-table-${i}`;
+                    table.className = 'test-table min-w-full';
+                    table.style.marginBottom = '10px';
+                    
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th>Table ${i}</th>
+                                <th>Valeur</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Données ${i}</td>
+                                <td>Valeur ${i}</td>
+                            </tr>
+                        </tbody>
+                    `;
+                    
+                    container.appendChild(table);
+                    tables.push(table);
+                }
+                
+                log(`📋 ${tableCount} tables créées`);
+                
+                // Test de sauvegarde concurrente
+                log('💾 Sauvegarde concurrente...');
+                const saveStart = performance.now();
+                
+                const savePromises = tables.map(async (table, index) => {
+                    const cell = table.querySelector('td');
+                    cell.textContent = `CONCURRENT_SAVE_${index}_${Date.now()}`;
+                    return window.claraverseStorageAPI.saveTable(table);
+                });
+                
+                const saveResults = await Promise.all(savePromises);
+                const saveEnd = performance.now();
+                
+                const successfulSaves = saveResults.filter(result => result).length;
+                log(`💾 ${successfulSaves}/${tableCount} sauvegardes réussies en ${(saveEnd - saveStart).toFixed(2)}ms`);
+                
+                // Test de restauration concurrente
+                log('🔄 Restauration concurrente...');
+                
+                // Modifier toutes les tables
+                tables.forEach((table, index) => {
+                    const cell = table.querySelector('td');
+                    cell.textContent = `TEMP_${index}`;
+                });
+                
+                const restoreStart = performance.now();
+                const restorePromises = tables.map(table => 
+                    window.claraverseStorageAPI.restoreTable(table)
+                );
+                
+                const restoreResults = await Promise.all(restorePromises);
+                const restoreEnd = performance.now();
+                
+                const successfulRestores = restoreResults.filter(result => result).length;
+                log(`🔄 ${successfulRestores}/${tableCount} restaurations réussies en ${(restoreEnd - restoreStart).toFixed(2)}ms`);
+                
+                // Vérifier les résultats
+                let correctTables = 0;
+                tables.forEach((table, index) => {
+                    const cell = table.querySelector('td');
+                    if (cell.textContent.startsWith(`CONCURRENT_SAVE_${index}`)) {
+                        correctTables++;
+                    }
+                });
+                
+                log(`✅ ${correctTables}/${tableCount} tables correctement restaurées`);
+                
+                // Nettoyer
+                tables.forEach(table => {
+                    container.removeChild(table);
+                });
+                
+                stats.tablesCreated += tableCount;
+                stats.storageUsed = calculateStorageUsage();
+                updateStats();
+                
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testMemoryUsage() {
+            log('⚡ === TEST: USAGE MÉMOIRE ===');
+            
+            try {
+                const initialStorage = calculateStorageUsage();
+                log(`💾 Stockage initial: ${(initialStorage / 1024).toFixed(1)}KB`);
+                
+                const table = document.getElementById('stress-table');
+                table.removeAttribute('data-robust-table-id');
+                
+                const testSizes = [10, 50, 100, 500, 1000];
+                const results = [];
+                
+                for (const size of testSizes) {
+                    log(`📊 Test avec ${size} lignes...`);
+                    
+                    const data = generateRandomData(size);
+                    populateTable('stress-tbody', data);
+                    
+                    const beforeSave = calculateStorageUsage();
+                    const saveStart = performance.now();
+                    const saveResult = window.claraverseStorageAPI.saveTable(table);
+                    const saveEnd = performance.now();
+                    const afterSave = calculateStorageUsage();
+                    
+                    if (saveResult) {
+                        const storageIncrease = afterSave - beforeSave;
+                        const saveTime = saveEnd - saveStart;
+                        
+                        results.push({
+                            size,
+                            storageIncrease,
+                            saveTime,
+                            storagePerRow: storageIncrease / size
+                        });
+                        
+                        log(`  💾 +${(storageIncrease / 1024).toFixed(1)}KB en ${saveTime.toFixed(2)}ms`);
+                        log(`  📊 ${(storageIncrease / size).toFixed(1)} bytes/ligne`);
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                // Analyse des résultats
+                log('📊 === ANALYSE MÉMOIRE ===');
+                results.forEach(result => {
+                    log(`${result.size} lignes: ${(result.storageIncrease/1024).toFixed(1)}KB, ${result.saveTime.toFixed(2)}ms, ${result.storagePerRow.toFixed(1)}B/ligne`);
+                });
+                
+                const finalStorage = calculateStorageUsage();
+                log(`💾 Stockage final: ${(finalStorage / 1024).toFixed(1)}KB (+${((finalStorage - initialStorage) / 1024).toFixed(1)}KB)`);
+                
+                stats.storageUsed = finalStorage;
+                updateStats();
+                
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testExtremeStress() {
+            log('⚡ === TEST EXTRÊME (ATTENTION!) ===');
+            
+            if (!confirm('Ce test est très intensif et peut ralentir votre navigateur. Continuer?')) {
+                log('❌ Test extrême annulé par l\'utilisateur');
+                return;
+            }
+            
+            try {
+                log('🚨 DÉBUT DU TEST EXTRÊME - Préparez-vous!');
+                
+                const table = document.getElementById('stress-table');
+                table.removeAttribute('data-robust-table-id');
+                
+                // Phase 1: Table énorme
+                log('📊 Phase 1: Création d\'une table de 2000 lignes...');
+                const hugeData = generateRandomData(2000);
+                populateTable('stress-tbody', hugeData);
+                
+                const phase1Start = performance.now();
+                const hugeSave = window.claraverseStorageAPI.saveTable(table);
+                const phase1End = performance.now();
+                
+                log(`💾 Table énorme: ${hugeSave ? 'SUCCÈS' : 'ÉCHEC'} en ${(phase1End - phase1Start).toFixed(2)}ms`);
+                
+                // Phase 2: Cycles intensifs
+                log('🔄 Phase 2: 200 cycles intensifs...');
+                const intenseCycles = 200;
+                let intensiveSuccess = 0;
+                
+                const phase2Start = performance.now();
+                
+                for (let i = 0; i < intenseCycles; i++) {
+                    if (i % 20 === 0) {
+                        updateProgress((i / intenseCycles) * 100);
+                        log(`🔄 Cycle intensif ${i}/${intenseCycles}`);
+                        await new Promise(resolve => setTimeout(resolve, 1));
+                    }
+                    
+                    const firstCell = table.querySelector('td');
+                    firstCell.textContent = `EXTREME_${i}`;
+                    
+                    const saveResult = window.claraverseStorageAPI.saveTable(table);
+                    if (saveResult) {
+                        firstCell.textContent = 'TEMP';
+                        const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                        if (restoreResult && firstCell.textContent === `EXTREME_${i}`) {
+                            intensiveSuccess++;
+                        }
+                    }
+                }
+                
+                const phase2End = performance.now();
+                updateProgress(100);
+                
+                log(`🔄 Cycles intensifs: ${intensiveSuccess}/${intenseCycles} succès en ${(phase2End - phase2Start).toFixed(2)}ms`);
+                
+                // Phase 3: Stress mémoire
+                log('💾 Phase 3: Test de stress mémoire...');
+                const memoryStressStart = performance.now();
+                
+                for (let size = 100; size <= 1000; size += 100) {
+                    const data = generateRandomData(size);
+                    populateTable('stress-tbody', data);
+                    window.claraverseStorageAPI.saveTable(table);
+                    
+                    if (size % 300 === 0) {
+                        log(`💾 Stress mémoire: ${size} lignes traitées`);
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                    }
+                }
+                
+                const memoryStressEnd = performance.now();
+                log(`💾 Stress mémoire terminé en ${(memoryStressEnd - memoryStressStart).toFixed(2)}ms`);
+                
+                // Résultats finaux
+                const totalTime = memoryStressEnd - phase1Start;
+                const finalStorage = calculateStorageUsage();
+                
+                log('🏁 === TEST EXTRÊME TERMINÉ ===');
+                log(`⏱️ Temps total: ${(totalTime / 1000).toFixed(2)} secondes`);
+                log(`💾 Stockage utilisé: ${(finalStorage / 1024).toFixed(1)}KB`);
+                log(`📊 Performance globale: ${intensiveSuccess > intenseCycles * 0.9 ? 'EXCELLENTE' : intensiveSuccess > intenseCycles * 0.7 ? 'BONNE' : 'PROBLÉMATIQUE'}`);
+                
+                stats.storageUsed = finalStorage;
+                stats.operationsPerSecond = (intenseCycles * 2) / (totalTime / 1000);
+                updateStats();
+                
+            } catch (error) {
+                log(`❌ ERREUR EXTRÊME: ${error.message}`);
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('Supprimer toutes les données de test? Cette action est irréversible.')) {
+                const keys = Object.keys(localStorage);
+                const claraverseKeys = keys.filter(key => key.startsWith('claraverse_table_'));
+                
+                claraverseKeys.forEach(key => localStorage.removeItem(key));
+                
+                log(`🗑️ ${claraverseKeys.length} entrées supprimées du localStorage`);
+                
+                stats.storageUsed = 0;
+                updateStats();
+                
+                // Nettoyer la table
+                document.getElementById('stress-tbody').innerHTML = '';
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('⚡ Tests de stress et performance chargés');
+            log('⚠️ Ces tests sont intensifs - fermez les autres onglets pour de meilleures performances');
+            
+            stats.storageUsed = calculateStorageUsage();
+            updateStats();
+        });
+    </script>
+</body>
+</html>

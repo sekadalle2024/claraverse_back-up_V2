@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification des Corrections</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .test-table th, .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+        .prose {
+            max-width: none;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Vérification des Corrections</h1>
+        <p>Test pour vérifier que les corrections du système de sauvegarde/restauration fonctionnent</p>
+        
+        <div class="container">
+            <h2>🎯 Tests Automatiques</h2>
+            <button onclick="runBasicTest()">Test de Base</button>
+            <button onclick="runFullTest()">Test Complet</button>
+            <button onclick="runStressTest()">Test de Stress</button>
+            <button onclick="clearLog()">Effacer Log</button>
+            
+            <div id="status" class="status" style="display: none;">
+                Statut apparaîtra ici...
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="test-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Produit</th>
+                            <th>Prix</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Ordinateur</td>
+                            <td>999€</td>
+                            <td>5</td>
+                        </tr>
+                        <tr>
+                            <td>Souris</td>
+                            <td>25€</td>
+                            <td>50</td>
+                        </tr>
+                        <tr>
+                            <td>Clavier</td>
+                            <td>75€</td>
+                            <td>20</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Log des Tests</h2>
+            <div id="test-log" class="log">
+                Cliquez sur un bouton pour commencer les tests...
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage corrigé -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        let logDiv = document.getElementById('test-log');
+        let statusDiv = document.getElementById('status');
+
+        function logMessage(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            let className = '';
+            let icon = '';
+            
+            switch(type) {
+                case 'error':
+                    className = 'error';
+                    icon = '❌';
+                    break;
+                case 'warn':
+                    className = 'warning';
+                    icon = '⚠️';
+                    break;
+                case 'success':
+                    className = 'success';
+                    icon = '✅';
+                    break;
+                default:
+                    icon = 'ℹ️';
+            }
+            
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${icon} ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStatus(message, type = 'info') {
+            statusDiv.style.display = 'block';
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+        }
+
+        async function runBasicTest() {
+            logMessage('🧪 Démarrage du test de base...', 'log');
+            updateStatus('Test de base en cours...', 'warning');
+            
+            try {
+                // Attendre que le système soit initialisé
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                if (typeof window.claraverseStorageAPI === 'undefined') {
+                    logMessage('❌ API claraverseStorageAPI non disponible', 'error');
+                    updateStatus('Échec: API non disponible', 'error');
+                    return;
+                }
+
+                // Utiliser le test intégré
+                const results = window.claraverseStorageAPI.testBasicFunctionality();
+                
+                if (results.overall) {
+                    logMessage('✅ Test de base réussi!', 'success');
+                    updateStatus('Test de base: SUCCÈS', 'success');
+                } else {
+                    logMessage('⚠️ Test de base partiellement échoué', 'warn');
+                    updateStatus('Test de base: PROBLÈMES DÉTECTÉS', 'warning');
+                }
+
+                // Afficher les détails
+                results.tests.forEach(test => {
+                    const type = test.passed ? 'success' : 'error';
+                    logMessage(`${test.name}: ${test.details}`, type);
+                });
+
+            } catch (error) {
+                logMessage(`❌ Erreur test de base: ${error.message}`, 'error');
+                updateStatus('Test de base: ERREUR', 'error');
+            }
+        }
+
+        async function runFullTest() {
+            logMessage('🧪 Démarrage du test complet...', 'log');
+            updateStatus('Test complet en cours...', 'warning');
+            
+            try {
+                const table = document.getElementById('test-table');
+                if (!table) {
+                    logMessage('❌ Table de test non trouvée', 'error');
+                    updateStatus('Échec: Table non trouvée', 'error');
+                    return;
+                }
+
+                let allPassed = true;
+
+                // Test 1: Sauvegarde
+                logMessage('1️⃣ Test sauvegarde...', 'log');
+                const originalContent = table.innerHTML;
+                
+                // Modifier le contenu
+                const firstCell = table.querySelector('td');
+                if (firstCell) {
+                    firstCell.textContent = 'TEST_MODIFIÉ_' + Date.now();
+                }
+
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                if (saveResult) {
+                    logMessage('✅ Sauvegarde réussie', 'success');
+                } else {
+                    logMessage('❌ Échec sauvegarde', 'error');
+                    allPassed = false;
+                }
+
+                // Test 2: Modification du contenu
+                logMessage('2️⃣ Modification du contenu...', 'log');
+                if (firstCell) {
+                    firstCell.textContent = 'CONTENU_TEMPORAIRE';
+                }
+
+                // Test 3: Restauration
+                logMessage('3️⃣ Test restauration...', 'log');
+                const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                if (restoreResult) {
+                    logMessage('✅ Restauration réussie', 'success');
+                    
+                    // Vérifier le contenu
+                    const restoredContent = firstCell ? firstCell.textContent : '';
+                    logMessage(`🔍 Contenu attendu: contient "TEST_MODIFIÉ_"`, 'log');
+                    logMessage(`🔍 Contenu obtenu: "${restoredContent}"`, 'log');
+                    
+                    if (restoredContent.includes('TEST_MODIFIÉ_')) {
+                        logMessage('✅ Contenu correctement restauré', 'success');
+                    } else {
+                        logMessage('⚠️ Contenu pas restauré correctement', 'warn');
+                        allPassed = false;
+                    }
+                } else {
+                    logMessage('❌ Échec restauration', 'error');
+                    allPassed = false;
+                }
+
+                // Test 4: Diagnostics
+                logMessage('4️⃣ Test diagnostics...', 'log');
+                try {
+                    const diagnostics = window.claraverseStorageAPI.runDiagnostics();
+                    logMessage('✅ Diagnostics exécutés', 'success');
+                } catch (error) {
+                    logMessage(`⚠️ Erreur diagnostics: ${error.message}`, 'warn');
+                }
+
+                // Résultat final
+                if (allPassed) {
+                    logMessage('🎉 Test complet réussi!', 'success');
+                    updateStatus('Test complet: SUCCÈS', 'success');
+                } else {
+                    logMessage('⚠️ Test complet avec problèmes', 'warn');
+                    updateStatus('Test complet: PROBLÈMES', 'warning');
+                }
+
+            } catch (error) {
+                logMessage(`❌ Erreur test complet: ${error.message}`, 'error');
+                updateStatus('Test complet: ERREUR', 'error');
+            }
+        }
+
+        async function runStressTest() {
+            logMessage('🧪 Démarrage du test de stress...', 'log');
+            updateStatus('Test de stress en cours...', 'warning');
+            
+            try {
+                const table = document.getElementById('test-table');
+                if (!table) {
+                    logMessage('❌ Table de test non trouvée', 'error');
+                    return;
+                }
+
+                const iterations = 10;
+                let successCount = 0;
+                let errorCount = 0;
+
+                logMessage(`🔄 Exécution de ${iterations} cycles sauvegarde/restauration...`, 'log');
+
+                for (let i = 0; i < iterations; i++) {
+                    try {
+                        // Modifier le contenu
+                        const firstCell = table.querySelector('td');
+                        if (firstCell) {
+                            firstCell.textContent = `STRESS_TEST_${i}_${Date.now()}`;
+                        }
+
+                        // Sauvegarder
+                        const saveResult = window.claraverseStorageAPI.saveTable(table);
+                        if (!saveResult) {
+                            throw new Error(`Échec sauvegarde itération ${i}`);
+                        }
+
+                        // Modifier à nouveau
+                        if (firstCell) {
+                            firstCell.textContent = 'TEMP_CONTENT';
+                        }
+
+                        // Restaurer
+                        const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                        if (!restoreResult) {
+                            throw new Error(`Échec restauration itération ${i}`);
+                        }
+
+                        // Vérifier le contenu
+                        const content = firstCell ? firstCell.textContent : '';
+                        const expectedContent = `STRESS_TEST_${i}`;
+                        
+                        if (!content.includes(expectedContent)) {
+                            throw new Error(`Contenu incorrect itération ${i}: attendu "${expectedContent}", obtenu "${content}"`);
+                        }
+
+                        successCount++;
+                        if (i % 3 === 0) {
+                            logMessage(`✅ Itération ${i + 1}/${iterations} réussie`, 'success');
+                        }
+
+                    } catch (error) {
+                        errorCount++;
+                        logMessage(`❌ Erreur itération ${i + 1}: ${error.message}`, 'error');
+                    }
+
+                    // Petite pause pour éviter de surcharger
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                // Résultats finaux
+                const successRate = Math.round((successCount / iterations) * 100);
+                logMessage(`📊 Test de stress terminé: ${successCount}/${iterations} réussis (${successRate}%)`, 'log');
+
+                if (successRate >= 90) {
+                    logMessage('🎉 Test de stress réussi!', 'success');
+                    updateStatus(`Test de stress: SUCCÈS (${successRate}%)`, 'success');
+                } else if (successRate >= 70) {
+                    logMessage('⚠️ Test de stress avec problèmes mineurs', 'warn');
+                    updateStatus(`Test de stress: ACCEPTABLE (${successRate}%)`, 'warning');
+                } else {
+                    logMessage('❌ Test de stress échoué', 'error');
+                    updateStatus(`Test de stress: ÉCHEC (${successRate}%)`, 'error');
+                }
+
+            } catch (error) {
+                logMessage(`❌ Erreur test de stress: ${error.message}`, 'error');
+                updateStatus('Test de stress: ERREUR', 'error');
+            }
+        }
+
+        function clearLog() {
+            logDiv.innerHTML = 'Log effacé...\n';
+            statusDiv.style.display = 'none';
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            logMessage('🚀 Interface de vérification chargée', 'log');
+            
+            // Vérifier la disponibilité de l'API après un délai
+            setTimeout(() => {
+                if (typeof window.claraverseStorageAPI !== 'undefined') {
+                    logMessage('✅ API claraverseStorageAPI disponible', 'success');
+                    updateStatus('Système prêt pour les tests', 'success');
+                } else {
+                    logMessage('❌ API claraverseStorageAPI non disponible', 'error');
+                    updateStatus('Erreur: API non disponible', 'error');
+                }
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

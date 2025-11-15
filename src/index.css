@@ -1,12 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
-@import 'prismjs/themes/prism.css';
-@import 'prismjs/themes/prism-dark.css';
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap");
+@import "prismjs/themes/prism.css";
+@import "prismjs/themes/prism-dark.css";
 
 /* Import global scrollbar hiding first to ensure it takes precedence */
-@import './styles/scrollbar-global.css';
+@import "./styles/scrollbar-global.css";
 
 /* Clara specific styles */
-@import './styles/claraSidebar.css';
+@import "./styles/claraSidebar.css";
 
 @tailwind base;
 @tailwind components;
@@ -35,7 +35,7 @@
     --sakura-400: #ff669d;
     --sakura-500: #ff1a75;
     --sakura-600: #e6006b;
-    font-family: 'Quicksand', sans-serif;
+    font-family: "Quicksand", sans-serif;
   }
 
   .dark {
@@ -80,7 +80,7 @@
 }
 
 /* Complete cleanup of code blocks in markdown for both light and dark mode */
-.prose pre, 
+.prose pre,
 .prose code,
 .dark .prose pre,
 .dark .prose code {
@@ -101,7 +101,7 @@
 /* Make code blocks consistent in both modes */
 .prose pre,
 .dark .prose pre {
-  background-color: #1E1E1E !important;
+  background-color: #1e1e1e !important;
   color: #e5e7eb !important;
   border-radius: 4px !important;
   padding: 0.75rem 1rem !important;
@@ -218,7 +218,8 @@
 }
 
 @keyframes autoModeGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(147, 51, 234, 0.3);
   }
   50% {
@@ -276,7 +277,8 @@
 }
 
 @keyframes pulse-soft {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -346,7 +348,7 @@ textarea {
 }
 
 /* Lists in dark mode */
-.dark .prose ul, 
+.dark .prose ul,
 .dark .prose ol {
   color: #e5e7eb;
 }
@@ -404,20 +406,32 @@ textarea {
   @apply text-gray-800 dark:text-gray-200;
 }
 
-.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
   @apply text-gray-900 dark:text-gray-100 font-bold;
   @apply border-b border-gray-200 dark:border-gray-700 pb-2 mb-4;
 }
 
-.prose h1 { @apply text-2xl; }
-.prose h2 { @apply text-xl; }
-.prose h3 { @apply text-lg; }
+.prose h1 {
+  @apply text-2xl;
+}
+.prose h2 {
+  @apply text-xl;
+}
+.prose h3 {
+  @apply text-lg;
+}
 
 .prose p {
   @apply mb-4 leading-relaxed;
 }
 
-.prose ul, .prose ol {
+.prose ul,
+.prose ol {
   @apply mb-4;
 }
 
@@ -461,7 +475,8 @@ textarea {
   @apply border-collapse border border-gray-300 dark:border-gray-600;
 }
 
-.prose th, .prose td {
+.prose th,
+.prose td {
   @apply border border-gray-300 dark:border-gray-600 px-4 py-2;
 }
 
@@ -487,7 +502,8 @@ textarea {
 
 /* Voice chat specific animations */
 @keyframes voicePulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.8;
   }
@@ -509,16 +525,22 @@ textarea {
 }
 
 @keyframes sakuraGlow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(236, 72, 153, 0.3), 0 0 40px rgba(236, 72, 153, 0.1);
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px rgba(236, 72, 153, 0.3),
+      0 0 40px rgba(236, 72, 153, 0.1);
   }
   50% {
-    box-shadow: 0 0 30px rgba(236, 72, 153, 0.5), 0 0 60px rgba(236, 72, 153, 0.2);
+    box-shadow:
+      0 0 30px rgba(236, 72, 153, 0.5),
+      0 0 60px rgba(236, 72, 153, 0.2);
   }
 }
 
 @keyframes floatingParticle {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
     opacity: 0.7;
   }
@@ -552,13 +574,18 @@ textarea {
 }
 
 .voice-button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -568,7 +595,8 @@ textarea {
 
 /* Breathing animation for idle states */
 @keyframes breathe {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -582,7 +610,8 @@ textarea {
 
 /* Status indicator animations */
 @keyframes statusPing {
-  75%, 100% {
+  75%,
+  100% {
     transform: scale(2);
     opacity: 0;
   }
@@ -594,7 +623,8 @@ textarea {
 
 /* Gradient text animation */
 @keyframes gradientShift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -613,7 +643,8 @@ textarea {
 
 /* Gradient text animation */
 @keyframes gradientShift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -672,13 +703,21 @@ textarea {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(236, 72, 153, 0.3));
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.3),
+    rgba(236, 72, 153, 0.3)
+  );
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.5), rgba(236, 72, 153, 0.5));
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.5),
+    rgba(236, 72, 153, 0.5)
+  );
 }
 
 .dark .custom-scrollbar {
@@ -686,12 +725,20 @@ textarea {
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, rgba(107, 114, 128, 0.4), rgba(75, 85, 99, 0.4));
+  background: linear-gradient(
+    135deg,
+    rgba(107, 114, 128, 0.4),
+    rgba(75, 85, 99, 0.4)
+  );
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, rgba(107, 114, 128, 0.6), rgba(75, 85, 99, 0.6));
+  background: linear-gradient(
+    135deg,
+    rgba(107, 114, 128, 0.6),
+    rgba(75, 85, 99, 0.6)
+  );
 }
 
 /* Enhanced Message Animations */
@@ -712,7 +759,8 @@ textarea {
 
 /* Enhanced Button Hover Effects */
 @keyframes buttonGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
   }
   50% {
@@ -755,7 +803,8 @@ textarea {
 
 /* Enhanced Checkpoint Badge Animation */
 @keyframes checkpointPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
   }
@@ -810,7 +859,7 @@ textarea {
 }
 
 .tooltip-enhanced::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 100%;
   left: 50%;
@@ -831,7 +880,8 @@ textarea {
 
 /* Enhanced Auto Mode Status Animation */
 @keyframes autoModeGlow {
-  0%, 100% {
+  0%,
+  100% {
     background: linear-gradient(135deg, #8b5cf6, #3b82f6);
     box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
   }
@@ -844,3 +894,315 @@ textarea {
 .animate-auto-mode-glow {
   animation: autoModeGlow 3s ease-in-out infinite;
 }
+
+/* ========================================
+   STYLES POUR TABLES CLARAVERSE
+   Adaptés depuis Open WebUI
+   Version complète finale - Tous problèmes corrigés
+   ======================================== */
+
+/* --- Tables dans le contenu prose --- */
+.prose table.min-w-full {
+  box-shadow:
+    0 10px 16px 0 rgba(0, 0, 0, 0.2),
+    0 6px 20px 0 rgba(0, 0, 0, 0.19) !important;
+  margin-left: 15px !important;
+  margin-right: 15px !important;
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+  table-layout: auto !important;
+}
+
+/* --- En-têtes de tables (th) - ROUGE BORDEAUX #6b1102 --- */
+.prose table.min-w-full th {
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  text-align: left !important;
+  background-color: #6b1102 !important;
+  color: white !important;
+  font-weight: 600 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+  white-space: nowrap !important;
+}
+
+/* Dernier th sans bordure droite */
+.prose table.min-w-full th:last-child {
+  border-right: none !important;
+}
+
+/* Mode sombre pour les en-têtes - ROUGE BORDEAUX */
+.dark .prose table.min-w-full th {
+  background-color: #6b1102 !important;
+  color: white !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* --- En-tête sticky pour scroll vertical --- */
+.prose table.min-w-full thead {
+  position: sticky !important;
+  top: 0px !important;
+  left: 0px !important;
+  z-index: 10 !important;
+}
+
+/* --- Conteneur parent de la table - SCROLL HORIZONTAL ACTIVÉ --- */
+.prose > div:has(> table.min-w-full),
+.prose div:has(> table.min-w-full) {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+  padding-top: 0px !important;
+  padding-bottom: 5px !important;
+  position: relative !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* --- SCROLLBAR HORIZONTALE LARGE ET VISIBLE (18px) --- */
+.prose > div:has(> table.min-w-full)::-webkit-scrollbar,
+.prose div:has(> table.min-w-full)::-webkit-scrollbar {
+  height: 18px !important;
+  width: 18px !important;
+  display: block !important;
+  -webkit-appearance: none !important;
+}
+
+.prose > div:has(> table.min-w-full)::-webkit-scrollbar-track,
+.prose div:has(> table.min-w-full)::-webkit-scrollbar-track {
+  background: rgba(107, 17, 2, 0.1) !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.prose > div:has(> table.min-w-full)::-webkit-scrollbar-thumb,
+.prose div:has(> table.min-w-full)::-webkit-scrollbar-thumb {
+  background: rgba(107, 17, 2, 0.6) !important;
+  border-radius: 10px !important;
+  border: 3px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.prose > div:has(> table.min-w-full)::-webkit-scrollbar-thumb:hover,
+.prose div:has(> table.min-w-full)::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 17, 2, 0.9) !important;
+  border: 3px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Firefox - scrollbar visible et large */
+.prose > div:has(> table.min-w-full),
+.prose div:has(> table.min-w-full) {
+  scrollbar-width: auto !important;
+  scrollbar-color: rgba(107, 17, 2, 0.6) rgba(107, 17, 2, 0.1) !important;
+}
+
+/* Mode sombre pour la scrollbar */
+.dark .prose > div:has(> table.min-w-full)::-webkit-scrollbar-track,
+.dark .prose div:has(> table.min-w-full)::-webkit-scrollbar-track {
+  background: rgba(107, 17, 2, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .prose > div:has(> table.min-w-full)::-webkit-scrollbar-thumb,
+.dark .prose div:has(> table.min-w-full)::-webkit-scrollbar-thumb {
+  background: rgba(107, 17, 2, 0.7) !important;
+  border: 3px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .prose > div:has(> table.min-w-full)::-webkit-scrollbar-thumb:hover,
+.dark .prose div:has(> table.min-w-full)::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 17, 2, 0.95) !important;
+}
+
+/* --- Cellules de données (td) --- */
+.prose table.min-w-full td {
+  padding: 10px 16px !important;
+  border-right: 1px solid rgba(209, 213, 219, 0.3) !important;
+  white-space: nowrap !important;
+}
+
+.prose table.min-w-full td:last-child {
+  border-right: none !important;
+}
+
+.dark .prose table.min-w-full td {
+  border-right: 1px solid rgba(75, 85, 99, 0.3) !important;
+}
+
+/* --- Lignes du tbody avec effet hover --- */
+.prose table.min-w-full tbody tr {
+  transition: background-color 0.2s ease !important;
+}
+
+.prose table.min-w-full tbody tr:hover {
+  background-color: rgba(107, 17, 2, 0.05) !important;
+}
+
+.dark .prose table.min-w-full tbody tr:hover {
+  background-color: rgba(107, 17, 2, 0.15) !important;
+}
+
+/* --- Bordures de table - ROUGE BORDEAUX --- */
+.prose table.min-w-full {
+  border: 2px solid #6b1102 !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
+.dark .prose table.min-w-full {
+  border: 2px solid #6b1102 !important;
+}
+
+/* --- Amélioration de la lisibilité en mode sombre --- */
+.dark .prose table.min-w-full tbody tr {
+  border-bottom: 1px solid rgba(75, 85, 99, 0.3) !important;
+}
+
+.dark .prose table.min-w-full tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+/* --- Animation au chargement --- */
+.prose table.min-w-full {
+  animation: tableSlideIn 0.3s ease-out !important;
+}
+
+@keyframes tableSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   GESTION DE L'ESPACEMENT ENTRE TABLES
+   ======================================== */
+
+/* Tables successives dans des divs */
+.prose > div:has(> table.min-w-full) + div:has(> table.min-w-full) {
+  margin-top: 0px !important;
+  padding-top: 0px !important;
+}
+
+.prose table.min-w-full + div:has(> table.min-w-full) {
+  margin-top: 0px !important;
+  padding-top: 0px !important;
+}
+
+/* Conteneurs de tables - espacement minimal */
+.prose > div:has(> table.min-w-full) {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+  padding-top: 0px !important;
+  padding-bottom: 5px !important;
+}
+
+/* Divs successifs contenant des tables */
+.prose div:has(> table.min-w-full) ~ div:has(> table.min-w-full) {
+  margin-top: 0px !important;
+}
+
+/* Éléments avant et après les tables */
+.prose > * + div:has(> table.min-w-full) {
+  margin-top: 10px !important;
+}
+
+.prose div:has(> table.min-w-full) + * {
+  margin-top: 10px !important;
+}
+
+/* ========================================
+   GESTION DES <HR> ENTRE LES TABLES
+   ======================================== */
+
+/* HR après une table - espacement minimal */
+.prose div:has(> table.min-w-full) + hr,
+.prose table.min-w-full + hr {
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
+  border-color: rgba(107, 17, 2, 0.3) !important;
+  border-width: 1px !important;
+  height: 1px !important;
+  opacity: 0.5 !important;
+}
+
+/* HR avant une table */
+.prose hr + div:has(> table.min-w-full) {
+  margin-top: 5px !important;
+}
+
+/* HR entre deux tables */
+.prose div:has(> table.min-w-full) + hr + div:has(> table.min-w-full) {
+  margin-top: 5px !important;
+}
+
+/* Tous les HR dans prose proches des tables */
+.prose hr {
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
+}
+
+/* Mode sombre pour les HR */
+.dark .prose div:has(> table.min-w-full) + hr,
+.dark .prose table.min-w-full + hr {
+  border-color: rgba(107, 17, 2, 0.5) !important;
+}
+
+/* ========================================
+   OPTION : MASQUER LES HR ENTRE TABLES
+   Décommentez si vous voulez supprimer les lignes
+   ======================================== */
+/*
+.prose div:has(> table.min-w-full) + hr {
+  display: none !important;
+}
+.prose hr + div:has(> table.min-w-full) {
+  margin-top: 0px !important;
+}
+*/
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+  .prose table.min-w-full {
+    margin-left: 5px !important;
+    margin-right: 5px !important;
+    font-size: 0.875rem !important;
+  }
+
+  .prose table.min-w-full th,
+  .prose table.min-w-full td {
+    padding: 8px 12px !important;
+  }
+}
+
+/* ========================================
+   OVERRIDE DU MASQUAGE GLOBAL DES SCROLLBARS
+   Force l'affichage des scrollbars pour les tables
+   ======================================== */
+
+.prose > div:has(> table.min-w-full),
+.prose div:has(> table.min-w-full) {
+  scrollbar-width: auto !important;
+  -ms-overflow-style: auto !important;
+}
+
+.prose > div:has(> table.min-w-full)::-webkit-scrollbar,
+.prose div:has(> table.min-w-full)::-webkit-scrollbar {
+  display: block !important;
+}
+
+/* ========================================
+   FIN DES STYLES TABLES CLARAVERSE
+   ======================================== */

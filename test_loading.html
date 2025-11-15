@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chargement - ClaraVerse</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+        }
+        .success { border-color: #28a745; background: #d4edda; }
+        .error { border-color: #dc3545; background: #f8d7da; }
+        .warning { border-color: #ffc107; background: #fff3cd; }
+        .console {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            height: 200px;
+            overflow-y: scroll;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test de Chargement ClaraVerse</h1>
+
+    <div class="test-box" id="status-box">
+        <h3>📊 État des Scripts</h3>
+        <div id="script-status">⏳ Vérification en cours...</div>
+    </div>
+
+    <div class="test-box">
+        <h3>💻 Console de Debug</h3>
+        <div class="console" id="debug-console">Initialisation...\n</div>
+    </div>
+
+    <div class="test-box">
+        <h3>🎯 Table de Test</h3>
+        <table</h3> style="width:100%;border-collapse:collapse;border:1px solid #ccc;" data-table-id="test_table">
+            <tr>
+                <th style="border:1px solid #ccc;padding:8px;background:#f5f5f5;">Test</th>
+                <th style="border:1px solid #ccc;padding:8px;background:#f5f5f5;">Valeur</th>
+            </tr>
+            <tr>
+                <td contenteditable="true" style="border:1px solid #ccc;padding:8px;">Cellule 1</td>
+                <td contenteditable="true" style="border:1px solid #ccc;padding:8px;">Cellule 2</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Chargement des scripts sans modules -->
+    <script src="./dev.js"></script>
+    <script src="./conso.js"></script>
+
+    <script>
+        let debugConsole;
+        let statusDiv;
+        let checkInterval;
+
+        function log(message) {
+            if (debugConsole) {
+                const timestamp = new Date().toLocaleTimeString();
+                debugConsole.textContent += `${timestamp} - ${message}\n`;
+                debugConsole.scrollTop = debugConsole.scrollHeight;
+            }
+            console.log(`[ClaraVerse Test] ${message}`);
+        }
+
+        function updateStatus() {
+            if (!statusDiv) return;
+
+            let html = '';
+            let allGood = true;
+
+            // Test 1: Dev.js
+            if (typeof window.cp !== 'undefined') {
+                html += '<p style="color:#28a745;">✅ <strong>dev.js</strong> - Chargé et API disponible</p>';
+                log('✅ dev.js détecté');
+            } else {
+                html += '<p style="color:#dc3545;">❌ <strong>dev.js</strong> - Non chargé</p>';
+                log('❌ dev.js manquant');
+                allGood = false;
+            }
+
+            // Test 2: Conso.js
+            if (typeof window.claraverseProcessor !== 'undefined') {
+                html += '<p style="color:#28a745;">✅ <strong>conso.js</strong> - Chargé et API disponible</p>';
+                log('✅ conso.js détecté');
+            } else {
+                html += '<p style="color:#dc3545;">❌ <strong>conso.js</strong> - Non chargé</p>';
+                log('❌ conso.js manquant');
+                allGood = false;
+            }
+
+            // Test 3: API Sync
+            if (typeof window.claraverseSyncAPI !== 'undefined') {
+                html += '<p style="color:#28a745;">✅ <strong>API Sync</strong> - Disponible</p>';
+                log('✅ API Sync détectée');
+            } else {
+                html += '<p style="color:#ffc107;">⚠️ <strong>API Sync</strong> - Non disponible</p>';
+                log('⚠️ API Sync manquante');
+            }
+
+            // Test 4: LocalStorage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                html += '<p style="color:#28a745;">✅ <strong>LocalStorage</strong> - Fonctionnel</p>';
+            } catch (e) {
+                html += '<p style="color:#dc3545;">❌ <strong>LocalStorage</strong> - Bloqué</p>';
+                log('❌ LocalStorage bloqué: ' + e.message);
+                allGood = false;
+            }
+
+            // Statut global
+            const statusBox = document.getElementById('status-box');
+            if (allGood) {
+                statusBox.className = 'test-box success';
+                html += '<p><strong style="color:#28a745;">🎉 Tous les systèmes sont opérationnels!</strong></p>';
+                log('🎉 Système complet fonctionnel');
+            } else {
+                statusBox.className = 'test-box error';
+                html += '<p><strong style="color:#dc3545;">⚠️ Problèmes détectés - voir détails ci-dessus</strong></p>';
+            }
+
+            statusDiv.innerHTML = html;
+        }
+
+        function testFunctions() {
+            log('🧪 Test des fonctions...');
+
+            // Test dev.js
+            if (window.cp) {
+                try {
+                    const status = window.cp.status();
+                    log(`📊 dev.js status: ${JSON.stringify(status)}`);
+
+                    const scanResult = window.cp.scan();
+                    log(`🔍 dev.js scan: ${scanResult} tables`);
+                } catch (e) {
+                    log(`❌ Erreur dev.js: ${e.message}`);
+                }
+            }
+
+            // Test conso.js
+            if (window.claraverseProcessor) {
+                try {
+                    window.claraverseProcessor.processAllTables();
+                    log('✅ conso.js processAllTables() OK');
+                } catch (e) {
+                    log(`❌ Erreur conso.js: ${e.message}`);
+                }
+            }
+
+            // Test sync
+            if (window.claraverseSyncAPI) {
+                try {
+                    window.claraverseSyncAPI.saveAllTables();
+                    log('✅ API Sync saveAllTables() OK');
+                } catch (e) {
+                    log(`❌ Erreur API Sync: ${e.message}`);
+                }
+            }
+        }
+
+        function init() {
+            debugConsole = document.getElementById('debug-console');
+            statusDiv = document.getElementById('script-status');
+
+            log('🚀 Test de chargement initialisé');
+
+            // Vérification initiale
+            setTimeout(() => {
+                updateStatus();
+                testFunctions();
+            }, 1000);
+
+            // Vérification continue
+            checkInterval = setInterval(updateStatus, 3000);
+
+            // Test après 5 secondes
+            setTimeout(() => {
+                log('🔄 Test final après 5 secondes');
+                testFunctions();
+
+                // Arrêter les vérifications continues après 30 secondes
+                setTimeout(() => {
+                    if (checkInterval) {
+                        clearInterval(checkInterval);
+                        log('⏹️ Monitoring automatique arrêté');
+                    }
+                }, 25000);
+            }, 5000);
+        }
+
+        // Capturer les erreurs JavaScript
+        window.addEventListener('error', (event) => {
+            log(`❌ Erreur JS: ${event.message} (${event.filename}:${event.lineno})`);
+        });
+
+        // Capturer les erreurs de chargement des ressources
+        window.addEventListener('load', () => {
+            log('📄 Page entièrement chargée');
+        });
+
+        // Listeners pour les événements de synchronisation
+        document.addEventListener('claraverse:table:updated', (event) => {
+            log(`🔔 Événement sync: table updated (${event.detail.source})`);
+        });
+
+        document.addEventListener('claraverse:consolidation:complete', (event) => {
+            log(`🎯 Événement sync: consolidation complete`);
+        });
+
+        document.addEventListener('claraverse:table:created', (event) => {
+            log(`🆕 Événement sync: table created`);
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Backup si DOMContentLoaded ne se déclenche pas
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>

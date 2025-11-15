@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Container Content Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-container { border: 2px solid #ccc; margin: 20px 0; padding: 15px; }
+        .prose { background: #f5f5f5; padding: 10px; }
+        table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .log { background: #000; color: #0f0; padding: 10px; font-family: monospace; height: 200px; overflow-y: auto; }
+        button { margin: 5px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Test Container Content Analysis</h1>
+    
+    <div class="test-container">
+        <h2>Conteneur de Test 1</h2>
+        <div class="prose prose-base dark:prose-invert max-w-none" id="container1">
+            <h3>Données Utilisateurs</h3>
+            <table class="min-w-full">
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Statut</th>
+                </tr>
+                <tr>
+                    <td>Jean Dupont</td>
+                    <td>jean@example.com</td>
+                    <td>Actif</td>
+                </tr>
+                <tr>
+                    <td>Marie Martin</td>
+                    <td>marie@example.com</td>
+                    <td>Inactif</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Conteneur de Test 2</h2>
+        <div class="prose" id="container2">
+            <h3>Statistiques Ventes</h3>
+            <table>
+                <tr>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                    <th>Prix</th>
+                </tr>
+                <tr>
+                    <td>Ordinateur</td>
+                    <td>5</td>
+                    <td>1200€</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="testContainerAnalysis()">Analyser Conteneurs</button>
+        <button onclick="modifyContainer1()">Modifier Conteneur 1</button>
+        <button onclick="addTableToContainer2()">Ajouter Table au Conteneur 2</button>
+        <button onclick="showContainerStats()">Afficher Statistiques</button>
+        <button onclick="clearLog()">Effacer Log</button>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <script src="menu_storage.js"></script>
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function testContainerAnalysis() {
+            log('=== Test Analyse de Conteneurs ===');
+            
+            if (!window.claraverseStorageAPI) {
+                log('❌ API Storage non disponible');
+                return;
+            }
+
+            const api = window.claraverseStorageAPI;
+            
+            // Obtenir tous les conteneurs
+            const containers = api.getAllContainers();
+            log(`📦 ${containers.length} conteneur(s) détecté(s)`);
+            
+            containers.forEach((container, index) => {
+                log(`Conteneur ${index + 1}: ID=${container.id}`);
+                log(`  - Tables: ${container.tableCount}`);
+                log(`  - Hash: ${container.contentHash}`);
+                log(`  - Créé: ${new Date(container.createdAt).toLocaleTimeString()}`);
+            });
+
+            // Analyser les changements
+            containers.forEach(container => {
+                const changes = api.analyzeContainer(container.id);
+                if (changes) {
+                    log(`🔍 Analyse conteneur ${container.id}:`);
+                    log(`  - Hash changé: ${changes.hashChanged}`);
+                    log(`  - Nombre tables changé: ${changes.tableCountChanged}`);
+                }
+            });
+        }
+
+        function modifyContainer1() {
+            log('🔧 Modification du conteneur 1...');
+            const container = document.getElementById('container1');
+            const table = container.querySelector('table');
+            
+            // Ajouter une nouvelle ligne
+            const newRow = table.insertRow();
+            newRow.innerHTML = `
+                <td>Nouveau Utilisateur ${Date.now()}</td>
+                <td>nouveau@example.com</td>
+                <td>Actif</td>
+            `;
+            
+            log('✅ Ligne ajoutée au conteneur 1');
+            
+            // Analyser les changements après un délai
+            setTimeout(() => {
+                if (window.claraverseStorageAPI) {
+                    const containers = window.claraverseStorageAPI.getAllContainers();
+                    containers.forEach(container => {
+                        const changes = window.claraverseStorageAPI.analyzeContainer(container.id);
+                        if (changes && (changes.hashChanged || changes.tableCountChanged)) {
+                            log(`🔄 Changement détecté dans ${container.id}`);
+                        }
+                    });
+                }
+            }, 1000);
+        }
+
+        function addTableToContainer2() {
+            log('🔧 Ajout d\'une table au conteneur 2...');
+            const container = document.getElementById('container2');
+            
+            const newTable = document.createElement('table');
+            newTable.innerHTML = `
+                <tr>
+                    <th>Nouveau Tableau</th>
+                    <th>Valeur</th>
+                </tr>
+                <tr>
+                    <td>Test</td>
+                    <td>${Math.random().toFixed(2)}</td>
+                </tr>
+            `;
+            
+            container.appendChild(newTable);
+            log('✅ Nouvelle table ajoutée au conteneur 2');
+            
+            // Analyser les changements après un délai
+            setTimeout(() => {
+                if (window.claraverseStorageAPI) {
+                    const containers = window.claraverseStorageAPI.getAllContainers();
+                    containers.forEach(container => {
+                        const changes = window.claraverseStorageAPI.analyzeContainer(container.id);
+                        if (changes && (changes.hashChanged || changes.tableCountChanged)) {
+                            log(`🔄 Changement détecté dans ${container.id}`);
+                        }
+                    });
+                }
+            }, 1000);
+        }
+
+        function showContainerStats() {
+            log('=== Statistiques des Conteneurs ===');
+            
+            if (!window.claraverseStorageAPI) {
+                log('❌ API Storage non disponible');
+                return;
+            }
+
+            const stats = window.claraverseStorageAPI.getContainerStats();
+            log(`📊 Nombre de conteneurs: ${stats.containerCount}`);
+            log(`📊 Total tables: ${stats.totalTables}`);
+            log(`📊 Moyenne tables/conteneur: ${stats.averageTablesPerContainer}`);
+            log(`📊 Conteneurs avec changements: ${stats.containersWithChanges}`);
+            log(`📊 Surveillance active: ${stats.monitoringActive ? 'Oui' : 'Non'}`);
+        }
+
+        // Écouter les événements de changement de conteneur
+        document.addEventListener('claraverse:container:changed', (event) => {
+            const changes = event.detail;
+            log(`🔔 Événement changement conteneur: ${changes.containerId}`);
+            log(`  - Hash: ${changes.previousHash} → ${changes.currentHash}`);
+            log(`  - Tables: ${changes.previousTableCount} → ${changes.currentTableCount}`);
+        });
+
+        // Initialisation
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('🚀 Page chargée, API Storage initialisée');
+                log('💡 Utilisez les boutons pour tester l\'analyse de conteneurs');
+                testContainerAnalysis();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

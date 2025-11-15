@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Debug Sauvegarde/Restauration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .test-table th, .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+        .prose {
+            max-width: none;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Debug Sauvegarde/Restauration</h1>
+        <p>Test pour identifier les problèmes avec la sauvegarde et restauration des tables</p>
+        
+        <div class="container">
+            <h2>🎯 Contrôles de Test</h2>
+            <button onclick="testBasicSave()">Test Sauvegarde Basique</button>
+            <button onclick="testBasicRestore()">Test Restauration Basique</button>
+            <button onclick="testFullCycle()">Test Cycle Complet</button>
+            <button onclick="testDiagnostics()">Test Diagnostics</button>
+            <button onclick="clearLog()">Effacer Log</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="test-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Âge</th>
+                            <th>Ville</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Alice</td>
+                            <td>25</td>
+                            <td>Paris</td>
+                        </tr>
+                        <tr>
+                            <td>Bob</td>
+                            <td>30</td>
+                            <td>Lyon</td>
+                        </tr>
+                        <tr>
+                            <td>Charlie</td>
+                            <td>35</td>
+                            <td>Marseille</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Log de Debug</h2>
+            <div id="debug-log" class="log">
+                Cliquez sur un bouton pour commencer les tests...
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>💾 État du localStorage</h2>
+            <div id="storage-state" class="log">
+                État du localStorage apparaîtra ici...
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        let logDiv = document.getElementById('debug-log');
+        let storageDiv = document.getElementById('storage-state');
+
+        // Rediriger console vers l'interface
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+
+        function logToInterface(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            let className = '';
+            let icon = '';
+            
+            switch(type) {
+                case 'error':
+                    className = 'error';
+                    icon = '❌';
+                    break;
+                case 'warn':
+                    className = 'warning';
+                    icon = '⚠️';
+                    break;
+                case 'success':
+                    className = 'success';
+                    icon = '✅';
+                    break;
+                default:
+                    icon = 'ℹ️';
+            }
+            
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${icon} ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            const message = args.join(' ');
+            logToInterface(message);
+            originalConsoleLog.apply(console, args);
+        };
+
+        console.error = function(...args) {
+            const message = args.join(' ');
+            logToInterface(message, 'error');
+            originalConsoleError.apply(console, args);
+        };
+
+        console.warn = function(...args) {
+            const message = args.join(' ');
+            logToInterface(message, 'warn');
+            originalConsoleWarn.apply(console, args);
+        };
+
+        function updateStorageState() {
+            let storageInfo = 'État du localStorage:\n\n';
+            let tableCount = 0;
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('claraverse_table_')) {
+                    tableCount++;
+                    const value = localStorage.getItem(key);
+                    try {
+                        const data = JSON.parse(value);
+                        storageInfo += `🔑 ${key.substring(0, 50)}...\n`;
+                        storageInfo += `   📊 Version: ${data.metadata?.version || data.version || '1.0'}\n`;
+                        storageInfo += `   🔐 Session: ${data.sessionId || 'N/A'}\n`;
+                        storageInfo += `   📦 Conteneur: ${data.containerId || 'N/A'}\n`;
+                        storageInfo += `   📏 Taille: ${value.length} chars\n\n`;
+                    } catch (error) {
+                        storageInfo += `🔑 ${key.substring(0, 50)}... (CORROMPU)\n\n`;
+                    }
+                }
+            }
+            
+            storageInfo += `\n📈 Total: ${tableCount} table(s) sauvegardée(s)`;
+            storageDiv.textContent = storageInfo;
+        }
+
+        function testBasicSave() {
+            logToInterface('🧪 Test Sauvegarde Basique', 'log');
+            
+            try {
+                const table = document.getElementById('test-table');
+                if (!table) {
+                    logToInterface('❌ Table de test non trouvée', 'error');
+                    return;
+                }
+
+                logToInterface('📋 Table trouvée, tentative de sauvegarde...', 'log');
+                
+                // Vérifier si l'API est disponible
+                if (typeof window.claraverseStorageAPI === 'undefined') {
+                    logToInterface('❌ API claraverseStorageAPI non disponible', 'error');
+                    return;
+                }
+
+                // Test avec l'API moderne
+                const result = window.claraverseStorageAPI.saveTable(table);
+                
+                if (result) {
+                    logToInterface('✅ Sauvegarde réussie avec API moderne', 'success');
+                } else {
+                    logToInterface('❌ Échec sauvegarde avec API moderne', 'error');
+                    
+                    // Test avec l'ancienne API
+                    if (typeof window.saveTableHTMLNow === 'function') {
+                        const legacyResult = window.saveTableHTMLNow(table);
+                        if (legacyResult) {
+                            logToInterface('✅ Sauvegarde réussie avec API legacy', 'success');
+                        } else {
+                            logToInterface('❌ Échec sauvegarde avec API legacy', 'error');
+                        }
+                    } else {
+                        logToInterface('❌ API legacy non disponible', 'error');
+                    }
+                }
+                
+                updateStorageState();
+                
+            } catch (error) {
+                logToInterface(`❌ Erreur test sauvegarde: ${error.message}`, 'error');
+                console.error('Erreur détaillée:', error);
+            }
+        }
+
+        function testBasicRestore() {
+            logToInterface('🧪 Test Restauration Basique', 'log');
+            
+            try {
+                const table = document.getElementById('test-table');
+                if (!table) {
+                    logToInterface('❌ Table de test non trouvée', 'error');
+                    return;
+                }
+
+                logToInterface('📋 Table trouvée, tentative de restauration...', 'log');
+                
+                // Vérifier si l'API est disponible
+                if (typeof window.claraverseStorageAPI === 'undefined') {
+                    logToInterface('❌ API claraverseStorageAPI non disponible', 'error');
+                    return;
+                }
+
+                // Test avec l'API moderne
+                const result = window.claraverseStorageAPI.restoreTable(table);
+                
+                if (result) {
+                    logToInterface('✅ Restauration réussie avec API moderne', 'success');
+                } else {
+                    logToInterface('⚠️ Aucune donnée à restaurer ou échec restauration', 'warn');
+                    
+                    // Test avec l'ancienne API
+                    if (typeof window.restoreTableHTML === 'function') {
+                        const legacyResult = window.restoreTableHTML(table);
+                        if (legacyResult) {
+                            logToInterface('✅ Restauration réussie avec API legacy', 'success');
+                        } else {
+                            logToInterface('⚠️ Aucune donnée legacy à restaurer', 'warn');
+                        }
+                    } else {
+                        logToInterface('❌ API legacy non disponible', 'error');
+                    }
+                }
+                
+            } catch (error) {
+                logToInterface(`❌ Erreur test restauration: ${error.message}`, 'error');
+                console.error('Erreur détaillée:', error);
+            }
+        }
+
+        function testFullCycle() {
+            logToInterface('🧪 Test Cycle Complet (Sauvegarde + Restauration)', 'log');
+            
+            try {
+                const table = document.getElementById('test-table');
+                if (!table) {
+                    logToInterface('❌ Table de test non trouvée', 'error');
+                    return;
+                }
+
+                // Modifier le contenu de la table pour tester
+                const originalContent = table.innerHTML;
+                const firstCell = table.querySelector('td');
+                if (firstCell) {
+                    firstCell.textContent = 'TEST_MODIFIÉ_' + Date.now();
+                    logToInterface('📝 Contenu de table modifié pour le test', 'log');
+                }
+
+                // Étape 1: Sauvegarde
+                logToInterface('1️⃣ Étape 1: Sauvegarde...', 'log');
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                
+                if (!saveResult) {
+                    logToInterface('❌ Échec sauvegarde, arrêt du test', 'error');
+                    return;
+                }
+                logToInterface('✅ Sauvegarde réussie', 'success');
+
+                // Étape 2: Modifier le contenu
+                logToInterface('2️⃣ Étape 2: Modification du contenu...', 'log');
+                if (firstCell) {
+                    firstCell.textContent = 'CONTENU_TEMPORAIRE';
+                }
+
+                // Étape 3: Restauration
+                logToInterface('3️⃣ Étape 3: Restauration...', 'log');
+                const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                
+                if (restoreResult) {
+                    logToInterface('✅ Restauration réussie', 'success');
+                    
+                    // Vérifier si le contenu a été restauré
+                    const restoredContent = firstCell ? firstCell.textContent : '';
+                    if (restoredContent.includes('TEST_MODIFIÉ_')) {
+                        logToInterface('✅ Contenu correctement restauré', 'success');
+                    } else {
+                        logToInterface('⚠️ Contenu peut-être pas restauré correctement', 'warn');
+                    }
+                } else {
+                    logToInterface('❌ Échec restauration', 'error');
+                }
+                
+                updateStorageState();
+                
+            } catch (error) {
+                logToInterface(`❌ Erreur test cycle complet: ${error.message}`, 'error');
+                console.error('Erreur détaillée:', error);
+            }
+        }
+
+        function testDiagnostics() {
+            logToInterface('🧪 Test Diagnostics', 'log');
+            
+            try {
+                // Test diagnostics de base
+                if (typeof window.claraverseStorageAPI.runDiagnostics === 'function') {
+                    logToInterface('🔍 Exécution diagnostics de base...', 'log');
+                    const diagnostics = window.claraverseStorageAPI.runDiagnostics();
+                    logToInterface(`📊 Diagnostics: ${JSON.stringify(diagnostics, null, 2)}`, 'log');
+                } else {
+                    logToInterface('❌ Fonction runDiagnostics non disponible', 'error');
+                }
+
+                // Test validation d'intégrité
+                if (typeof window.claraverseStorageAPI.validateStorageIntegrity === 'function') {
+                    logToInterface('🔍 Validation intégrité du stockage...', 'log');
+                    const integrity = window.claraverseStorageAPI.validateStorageIntegrity();
+                    logToInterface(`📊 Intégrité: Score ${integrity.overall.score}/100`, 'log');
+                } else {
+                    logToInterface('❌ Fonction validateStorageIntegrity non disponible', 'error');
+                }
+
+                // Test debug identification
+                if (typeof window.claraverseStorageAPI.debugTableIdentification === 'function') {
+                    logToInterface('🔍 Debug identification de table...', 'log');
+                    const table = document.getElementById('test-table');
+                    const debug = window.claraverseStorageAPI.debugTableIdentification(table);
+                    logToInterface(`📊 Debug: ${debug.allTables.length} table(s) analysée(s)`, 'log');
+                } else {
+                    logToInterface('❌ Fonction debugTableIdentification non disponible', 'error');
+                }
+                
+            } catch (error) {
+                logToInterface(`❌ Erreur test diagnostics: ${error.message}`, 'error');
+                console.error('Erreur détaillée:', error);
+            }
+        }
+
+        function clearLog() {
+            logDiv.innerHTML = 'Log effacé...\n';
+            storageDiv.textContent = 'État du localStorage apparaîtra ici...';
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            logToInterface('🚀 Interface de test chargée', 'log');
+            
+            // Vérifier la disponibilité des APIs
+            setTimeout(() => {
+                if (typeof window.claraverseStorageAPI !== 'undefined') {
+                    logToInterface('✅ API claraverseStorageAPI disponible', 'success');
+                } else {
+                    logToInterface('❌ API claraverseStorageAPI non disponible', 'error');
+                }
+                
+                if (typeof window.saveTableHTMLNow !== 'undefined') {
+                    logToInterface('✅ API legacy saveTableHTMLNow disponible', 'success');
+                } else {
+                    logToInterface('❌ API legacy saveTableHTMLNow non disponible', 'error');
+                }
+                
+                updateStorageState();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

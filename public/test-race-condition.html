@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Race Condition - Flowise vs Restauration</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        h2 {
+            color: #666;
+            font-size: 18px;
+            margin-top: 0;
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        button.danger {
+            background: #ef4444;
+        }
+
+        button.danger:hover {
+            background: #dc2626;
+        }
+
+        button.success {
+            background: #10b981;
+        }
+
+        button.success:hover {
+            background: #059669;
+        }
+
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 20px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #f9fafb;
+            border-left: 3px solid #3b82f6;
+            border-radius: 4px;
+        }
+
+        .timeline-item.restore {
+            border-left-color: #10b981;
+        }
+
+        .timeline-item.flowise {
+            border-left-color: #f59e0b;
+        }
+
+        .timeline-item.race {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .timeline-time {
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel">
+        <h1>🔬 Test Race Condition - Flowise vs Restauration</h1>
+        <p>Ce test permet de diagnostiquer et résoudre les problèmes de timing entre Flowise et la restauration des
+            tables.</p>
+    </div>
+
+    <div class="panel">
+        <h2>🎮 Contrôles</h2>
+        <button onclick="startTest()">▶️ Démarrer le test</button>
+        <button onclick="simulateFlowiseRegeneration()">🔄 Simuler régénération Flowise</button>
+        <button onclick="forceRestore()">📥 Forcer restauration</button>
+        <button onclick="clearLogs()" class="danger">🗑️ Effacer logs</button>
+        <button onclick="checkCurrentState()" class="success">📊 État actuel</button>
+    </div>
+
+    <div class="panel">
+        <h2>📊 Statistiques</h2>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-restorations">0</div>
+                <div class="stat-label">Restaurations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-regenerations">0</div>
+                <div class="stat-label">Régénérations Flowise</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-races">0</div>
+                <div class="stat-label">Race Conditions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-success">0%</div>
+                <div class="stat-label">Taux de succès</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>📅 Timeline des événements</h2>
+        <div id="timeline" class="timeline"></div>
+    </div>
+
+    <div class="panel">
+        <h2>📝 Logs détaillés</h2>
+        <div id="logs" class="log">En attente du démarrage du test...</div>
+    </div>
+
+    <script>
+        let events = [];
+        let stats = {
+            restorations: 0,
+            regenerations: 0,
+            races: 0,
+            successful: 0
+        };
+        let startTime = Date.now();
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            const icons = { info: 'ℹ️', success: '✅', warning: '⚠️', error: '❌', restore: '📥', flowise: '🔄' };
+            const icon = icons[type] || '•';
+
+            const logDiv = document.getElementById('logs');
+            logDiv.textContent += `[${timestamp}] ${icon} ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function addTimelineEvent(type, message) {
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+            events.push({ type, message, time: elapsed });
+
+            const timeline = document.getElementById('timeline');
+            const item = document.createElement('div');
+            item.className = `timeline-item ${type}`;
+            item.innerHTML = `
+                <div class="timeline-time">+${elapsed}s</div>
+                <div>${message}</div>
+            `;
+            timeline.appendChild(item);
+            timeline.scrollTop = timeline.scrollHeight;
+        }
+
+        function updateStats() {
+            document.getElementById('stat-restorations').textContent = stats.restorations;
+            document.getElementById('stat-regenerations').textContent = stats.regenerations;
+            document.getElementById('stat-races').textContent = stats.races;
+
+            const successRate = stats.restorations > 0
+                ? Math.round((stats.successful / stats.restorations) * 100)
+                : 0;
+            document.getElementById('stat-success').textContent = successRate + '%';
+        }
+
+        async function startTest() {
+            log('🚀 Démarrage du test de race condition', 'info');
+            startTime = Date.now();
+            events = [];
+            stats = { restorations: 0, regenerations: 0, races: 0, successful: 0 };
+            document.getElementById('timeline').innerHTML = '';
+
+            // Simuler un scénario réaliste
+            log('Scénario: Rechargement de page avec tables sauvegardées', 'info');
+
+            // 1. Flowise génère les tables initiales (2-4s après le chargement)
+            setTimeout(() => {
+                simulateFlowiseRegeneration();
+            }, 2000);
+
+            // 2. Première tentative de restauration (5s)
+            setTimeout(() => {
+                forceRestore();
+            }, 5000);
+
+            // 3. Flowise régénère (parfois il le fait tard)
+            setTimeout(() => {
+                log('⚠️ Flowise régénère tardivement (race condition possible)', 'warning');
+                simulateFlowiseRegeneration();
+            }, 7000);
+
+            // 4. Restauration intelligente (attend la stabilité)
+            setTimeout(() => {
+                log('🧠 Smart Restore détecte la stabilité', 'success');
+                forceRestore();
+            }, 10000);
+
+            log('✅ Test programmé - Durée: 12 secondes', 'success');
+        }
+
+        function simulateFlowiseRegeneration() {
+            stats.regenerations++;
+            updateStats();
+
+            log('🔄 Flowise régénère une table', 'flowise');
+            addTimelineEvent('flowise', '🔄 Flowise ajoute/modifie une table');
+
+            // Vérifier si c'est une race condition
+            const lastRestore = events.filter(e => e.type === 'restore').pop();
+            if (lastRestore) {
+                const timeSinceRestore = Date.now() - startTime - (lastRestore.time * 1000);
+                if (timeSinceRestore < 3000) {
+                    stats.races++;
+                    updateStats();
+                    log('❌ RACE CONDITION: Flowise régénère moins de 3s après une restauration', 'error');
+                    addTimelineEvent('race', '❌ Race condition détectée!');
+                }
+            }
+        }
+
+        async function forceRestore() {
+            stats.restorations++;
+
+            log('📥 Tentative de restauration', 'restore');
+            addTimelineEvent('restore', '📥 Restauration des tables modifiées');
+
+            // Simuler la restauration
+            try {
+                // Vérifier si Flowise est stable
+                const lastFlowise = events.filter(e => e.type === 'flowise').pop();
+                const isStable = !lastFlowise || (Date.now() - startTime - (lastFlowise.time * 1000)) > 3000;
+
+                if (isStable) {
+                    stats.successful++;
+                    log('✅ Restauration réussie (Flowise stable)', 'success');
+                } else {
+                    log('⚠️ Restauration risquée (Flowise actif)', 'warning');
+                }
+
+                updateStats();
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').textContent = 'Logs effacés.\n';
+            document.getElementById('timeline').innerHTML = '';
+            events = [];
+        }
+
+        async function checkCurrentState() {
+            log('📊 Vérification de l\'état actuel...', 'info');
+
+            try {
+                // Ouvrir IndexedDB
+                const db = await new Promise((resolve, reject) => {
+                    const request = indexedDB.open('FlowiseTableDB', 1);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+
+                // Compter les tables sauvegardées
+                const tables = await new Promise((resolve, reject) => {
+                    const transaction = db.transaction(['tables'], 'readonly');
+                    const store = transaction.objectStore('tables');
+                    const request = store.getAll();
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => reject(request.error);
+                });
+
+                log(`📦 ${tables.length} table(s) sauvegardée(s) dans IndexedDB`, 'success');
+
+                tables.forEach((table, i) => {
+                    const headers = table.headers?.join(', ').substring(0, 50) || 'N/A';
+                    const rows = table.html?.match(/<tr>/g)?.length || 0;
+                    log(`  Table ${i + 1}: ${headers}... (${rows} lignes)`, 'info');
+                });
+
+                // Compter les tables dans le DOM
+                const domTables = document.querySelectorAll('table');
+                const restoredTables = document.querySelectorAll('[data-restored-content="true"] table');
+
+                log(`📋 ${domTables.length} table(s) dans le DOM`, 'info');
+                log(`✅ ${restoredTables.length} table(s) restaurée(s)`, 'success');
+
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialisation
+        log('✅ Interface de test chargée', 'success');
+        log('💡 Cliquez sur "Démarrer le test" pour lancer un scénario complet', 'info');
+    </script>
+</body>
+
+</html>

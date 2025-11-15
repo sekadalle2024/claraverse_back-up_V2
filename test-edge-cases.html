@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tests des Cas Limites</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .test-table th, .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+        .prose {
+            max-width: none;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .test-results {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Tests des Cas Limites</h1>
+        <p>Tests spécialisés pour valider le comportement dans des situations extrêmes</p>
+        
+        <div class="warning">
+            ⚠️ Ces tests peuvent générer des erreurs intentionnelles pour valider la robustesse du système.
+        </div>
+        
+        <div class="container">
+            <h2>🎯 Tests Disponibles</h2>
+            <button onclick="runAllEdgeCases()">🚀 Tous les Cas Limites</button>
+            <button onclick="testEmptyTable()">📋 Table Vide</button>
+            <button onclick="testMissingTable()">❓ Table Inexistante</button>
+            <button onclick="testCorruptedData()">💥 Données Corrompues</button>
+            <button onclick="testLargeContent()">📊 Contenu Volumineux</button>
+            <button onclick="testSpecialChars()">🔤 Caractères Extrêmes</button>
+            <button onclick="testStorageLimit()">💾 Limite de Stockage</button>
+            <button onclick="clearResults()">🧹 Effacer</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Tables de Test</h2>
+            
+            <h3>Table Vide</h3>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="empty-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Colonne</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Vide intentionnellement -->
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Table pour Tests Extrêmes</h3>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="extreme-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Valeur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Normal</td>
+                            <td>Valeur</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Résultats</h2>
+            <div id="test-results" class="test-results">
+Aucun test exécuté.
+Cliquez sur un bouton de test pour commencer.
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        let testResults = [];
+
+        function log(message) {
+            console.log(message);
+            testResults.push(`${new Date().toLocaleTimeString()} - ${message}`);
+            updateResultsDisplay();
+        }
+
+        function updateResultsDisplay() {
+            document.getElementById('test-results').textContent = testResults.join('\n');
+        }
+
+        function clearResults() {
+            testResults = [];
+            updateResultsDisplay();
+        }
+
+        async function testEmptyTable() {
+            log('🧪 === TEST: TABLE VIDE ===');
+            
+            try {
+                const table = document.getElementById('empty-table');
+                table.removeAttribute('data-robust-table-id');
+                
+                log('📋 Test avec table sans contenu dans tbody');
+
+                // Tenter de sauvegarder une table vide
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde table vide: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                if (saveResult) {
+                    // Ajouter du contenu temporaire
+                    const tbody = table.querySelector('tbody');
+                    const row = tbody.insertRow();
+                    const cell = row.insertCell();
+                    cell.textContent = 'CONTENU_TEMPORAIRE';
+                    log('📝 Contenu temporaire ajouté');
+
+                    // Tenter de restaurer
+                    const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                    log(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                    // Vérifier si la table est redevenue vide
+                    const finalRows = tbody.querySelectorAll('tr').length;
+                    if (finalRows === 0) {
+                        log('✅ Table correctement restaurée à l\'état vide');
+                    } else {
+                        log(`❌ Table non vide après restauration: ${finalRows} lignes`);
+                    }
+                } else {
+                    log('ℹ️ Sauvegarde refusée pour table vide (comportement attendu)');
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testMissingTable() {
+            log('🧪 === TEST: TABLE INEXISTANTE ===');
+            
+            try {
+                // Créer un élément qui n'est pas une table
+                const fakeTable = document.createElement('div');
+                fakeTable.innerHTML = '<p>Pas une table</p>';
+                
+                log('❓ Test avec élément non-table');
+
+                // Tenter de sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(fakeTable);
+                log(`💾 Sauvegarde élément non-table: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                // Tenter de restaurer
+                const restoreResult = window.claraverseStorageAPI.restoreTable(fakeTable);
+                log(`🔄 Restauration élément non-table: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                // Test avec null
+                try {
+                    const nullSave = window.claraverseStorageAPI.saveTable(null);
+                    log(`💾 Sauvegarde null: ${nullSave ? 'SUCCÈS' : 'ÉCHEC'}`);
+                } catch (nullError) {
+                    log(`💾 Sauvegarde null: ERREUR (${nullError.message})`);
+                }
+
+                // Test avec undefined
+                try {
+                    const undefinedSave = window.claraverseStorageAPI.saveTable(undefined);
+                    log(`💾 Sauvegarde undefined: ${undefinedSave ? 'SUCCÈS' : 'ÉCHEC'}`);
+                } catch (undefinedError) {
+                    log(`💾 Sauvegarde undefined: ERREUR (${undefinedError.message})`);
+                }
+
+                log('✅ Tests d\'éléments invalides terminés');
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testCorruptedData() {
+            log('🧪 === TEST: DONNÉES CORROMPUES ===');
+            
+            try {
+                const table = document.getElementById('extreme-table');
+                table.removeAttribute('data-robust-table-id');
+                
+                // Sauvegarder normalement d'abord
+                const cell = table.querySelector('td');
+                cell.textContent = 'DONNÉES_ORIGINALES';
+                
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde initiale: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                if (saveResult) {
+                    const tableId = table.getAttribute('data-robust-table-id');
+                    log(`🔑 ID de table: ${tableId ? tableId.substring(0, 30) + '...' : 'AUCUN'}`);
+
+                    if (tableId) {
+                        // Corrompre les données dans localStorage
+                        const originalData = localStorage.getItem(tableId);
+                        log(`📊 Données originales trouvées: ${originalData ? 'OUI' : 'NON'}`);
+
+                        // Test 1: JSON invalide
+                        localStorage.setItem(tableId, '{invalid json}');
+                        log('💥 Données corrompues avec JSON invalide');
+
+                        cell.textContent = 'TEMPORAIRE_1';
+                        const restore1 = window.claraverseStorageAPI.restoreTable(table);
+                        log(`🔄 Restauration JSON invalide: ${restore1 ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                        // Test 2: JSON valide mais structure invalide
+                        localStorage.setItem(tableId, '{"wrong": "structure"}');
+                        log('💥 Données corrompues avec structure invalide');
+
+                        cell.textContent = 'TEMPORAIRE_2';
+                        const restore2 = window.claraverseStorageAPI.restoreTable(table);
+                        log(`🔄 Restauration structure invalide: ${restore2 ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                        // Test 3: Données vides
+                        localStorage.setItem(tableId, '');
+                        log('💥 Données vides');
+
+                        cell.textContent = 'TEMPORAIRE_3';
+                        const restore3 = window.claraverseStorageAPI.restoreTable(table);
+                        log(`🔄 Restauration données vides: ${restore3 ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                        // Restaurer les données originales
+                        if (originalData) {
+                            localStorage.setItem(tableId, originalData);
+                            log('🔧 Données originales restaurées');
+                        }
+                    }
+                }
+
+                log('✅ Tests de corruption terminés');
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testLargeContent() {
+            log('🧪 === TEST: CONTENU VOLUMINEUX ===');
+            
+            try {
+                const table = document.getElementById('extreme-table');
+                table.removeAttribute('data-robust-table-id');
+                
+                // Créer un contenu très volumineux
+                const largeText = 'A'.repeat(10000); // 10KB de texte
+                const veryLargeText = 'B'.repeat(100000); // 100KB de texte
+                
+                const cells = table.querySelectorAll('td');
+                
+                // Test avec contenu large
+                cells[0].textContent = largeText;
+                cells[1].textContent = 'Normal';
+                
+                log(`📊 Contenu large créé: ${largeText.length} caractères`);
+
+                const startSave = performance.now();
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                const endSave = performance.now();
+                
+                log(`💾 Sauvegarde contenu large: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'} en ${(endSave - startSave).toFixed(2)}ms`);
+
+                if (saveResult) {
+                    // Modifier temporairement
+                    cells[0].textContent = 'TEMP';
+                    cells[1].textContent = 'TEMP';
+
+                    const startRestore = performance.now();
+                    const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                    const endRestore = performance.now();
+                    
+                    log(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'} en ${(endRestore - startRestore).toFixed(2)}ms`);
+
+                    // Vérifier
+                    const restoredText = cells[0].textContent;
+                    if (restoredText === largeText) {
+                        log('✅ Contenu large correctement restauré');
+                    } else {
+                        log(`❌ Contenu large altéré: ${restoredText.length} caractères au lieu de ${largeText.length}`);
+                    }
+                }
+
+                // Test avec contenu très volumineux
+                log('📊 Test avec contenu très volumineux...');
+                cells[0].textContent = veryLargeText;
+                
+                const startSave2 = performance.now();
+                const saveResult2 = window.claraverseStorageAPI.saveTable(table);
+                const endSave2 = performance.now();
+                
+                log(`💾 Sauvegarde très large: ${saveResult2 ? 'SUCCÈS' : 'ÉCHEC'} en ${(endSave2 - startSave2).toFixed(2)}ms`);
+
+                // Nettoyer
+                cells[0].textContent = 'Normal';
+                cells[1].textContent = 'Valeur';
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testSpecialChars() {
+            log('🧪 === TEST: CARACTÈRES EXTRÊMES ===');
+            
+            try {
+                const table = document.getElementById('extreme-table');
+                table.removeAttribute('data-robust-table-id');
+                
+                const cells = table.querySelectorAll('td');
+                
+                // Caractères spéciaux extrêmes
+                const extremeChars = [
+                    'HTML: <script>alert("test")</script>',
+                    'JSON: {"key": "value", "array": [1,2,3]}',
+                    'Unicode: 🎯🚀✅❌🔥💯🎉🔧📊💾',
+                    'Accents: àáâãäåæçèéêëìíîïñòóôõöøùúûüý',
+                    'Symboles: ©®™€£¥§¶†‡•…‰‹›""''–—',
+                    'Math: ∑∏∆∇∂∫∞≠≤≥±×÷√∝∈∉∪∩⊂⊃',
+                    'Contrôle: \n\t\r\\',
+                    'Quotes: "double" \'single\' `backtick`'
+                ];
+
+                for (let i = 0; i < extremeChars.length; i++) {
+                    const testChar = extremeChars[i];
+                    log(`🔤 Test ${i + 1}/${extremeChars.length}: ${testChar.substring(0, 30)}...`);
+                    
+                    cells[0].textContent = testChar;
+                    cells[1].textContent = `Test ${i + 1}`;
+
+                    const saveResult = window.claraverseStorageAPI.saveTable(table);
+                    
+                    if (saveResult) {
+                        cells[0].textContent = 'TEMP';
+                        cells[1].textContent = 'TEMP';
+                        
+                        const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                        
+                        if (restoreResult && cells[0].textContent === testChar) {
+                            log(`✅ Caractères ${i + 1} OK`);
+                        } else {
+                            log(`❌ Caractères ${i + 1} ÉCHOUÉ`);
+                        }
+                    } else {
+                        log(`❌ Sauvegarde ${i + 1} ÉCHOUÉE`);
+                    }
+                    
+                    // Petite pause pour éviter la surcharge
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+
+                // Nettoyer
+                cells[0].textContent = 'Normal';
+                cells[1].textContent = 'Valeur';
+
+                log('✅ Tests de caractères extrêmes terminés');
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testStorageLimit() {
+            log('🧪 === TEST: LIMITE DE STOCKAGE ===');
+            
+            try {
+                // Estimer l'espace localStorage disponible
+                let testKey = 'test_storage_limit';
+                let testData = '';
+                let maxSize = 0;
+
+                log('📊 Estimation de la limite localStorage...');
+
+                try {
+                    // Test rapide pour estimer la limite
+                    for (let size = 1000; size < 10000000; size *= 2) {
+                        testData = 'x'.repeat(size);
+                        localStorage.setItem(testKey, testData);
+                        maxSize = size;
+                        localStorage.removeItem(testKey);
+                    }
+                } catch (e) {
+                    log(`📊 Limite estimée: ~${maxSize} caractères`);
+                }
+
+                // Test avec le système de tables
+                const table = document.getElementById('extreme-table');
+                table.removeAttribute('data-robust-table-id');
+                
+                const cell = table.querySelector('td');
+                
+                // Créer un contenu proche de la limite
+                const largeContent = 'X'.repeat(Math.min(maxSize / 10, 500000));
+                cell.textContent = largeContent;
+                
+                log(`💾 Test sauvegarde avec ${largeContent.length} caractères...`);
+
+                const startTime = performance.now();
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                const endTime = performance.now();
+                
+                if (saveResult) {
+                    log(`✅ Sauvegarde volumineuse réussie en ${(endTime - startTime).toFixed(2)}ms`);
+                    
+                    // Test de restauration
+                    cell.textContent = 'TEMP';
+                    const restoreStart = performance.now();
+                    const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                    const restoreEnd = performance.now();
+                    
+                    if (restoreResult) {
+                        log(`✅ Restauration volumineuse réussie en ${(restoreEnd - restoreStart).toFixed(2)}ms`);
+                    } else {
+                        log(`❌ Restauration volumineuse échouée`);
+                    }
+                } else {
+                    log(`❌ Sauvegarde volumineuse échouée`);
+                }
+
+                // Nettoyer
+                cell.textContent = 'Normal';
+                localStorage.removeItem(testKey);
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        async function runAllEdgeCases() {
+            log('🚀 === DÉBUT DES TESTS DE CAS LIMITES ===');
+            
+            const startTime = performance.now();
+            
+            await testEmptyTable();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testMissingTable();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testCorruptedData();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testLargeContent();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testSpecialChars();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testStorageLimit();
+            
+            const endTime = performance.now();
+            const totalTime = endTime - startTime;
+            
+            log(`🏁 === TESTS DE CAS LIMITES TERMINÉS en ${totalTime.toFixed(2)}ms ===`);
+            
+            // Compter les résultats
+            const successCount = testResults.filter(result => result.includes('✅')).length;
+            const failCount = testResults.filter(result => result.includes('❌')).length;
+            
+            log(`📊 RÉSUMÉ: ${successCount} succès, ${failCount} échecs/erreurs`);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🔬 Tests des cas limites chargés');
+            log('⚠️ Ces tests peuvent générer des erreurs intentionnelles');
+        });
+    </script>
+</body>
+</html>

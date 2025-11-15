@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Fix Persistance Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .log {
+            margin: 10px 0;
+            padding: 5px;
+            border-left: 3px solid #ccc;
+        }
+
+        .log.info {
+            border-color: #2196F3;
+        }
+
+        .log.success {
+            border-color: #4CAF50;
+            background: #f1f8f4;
+        }
+
+        .log.warning {
+            border-color: #FF9800;
+            background: #fff8e1;
+        }
+
+        .log.error {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔧 Test Fix Persistance Menu</h1>
+    <p>Ce test simule le comportement de menu.js avec sauvegardes multiples</p>
+
+    <div>
+        <button onclick="testSingleSave()">Test 1: Sauvegarde Simple</button>
+        <button onclick="testMultipleSaves()">Test 2: Sauvegardes Multiples (debounce)</button>
+        <button onclick="testForceUpdate()">Test 3: Force Update</button>
+        <button onclick="clearLogs()">Effacer Logs</button>
+    </div>
+
+    <div id="logs"></div>
+
+    <script type="module">
+        const logsDiv = document.getElementById('logs');
+
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logsDiv.appendChild(div);
+            console.log(msg);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        window.clearLogs = () => {
+            logsDiv.innerHTML = '';
+        };
+
+        // Import services
+        let flowiseTableService;
+        let menuIntegration;
+
+        (async () => {
+            try {
+                const module1 = await import('/src/services/flowiseTableService.ts');
+                flowiseTableService = module1.flowiseTableService;
+
+                const module2 = await import('/src/services/menuIntegration.ts');
+                menuIntegration = module2.menuIntegrationService;
+
+                log('✅ Services chargés', 'success');
+            } catch (error) {
+                log(`❌ Erreur chargement: ${error.message}`, 'error');
+            }
+        })();
+
+        // Test 1: Sauvegarde simple
+        window.testSingleSave = async () => {
+            log('🧪 Test 1: Sauvegarde simple', 'info');
+
+            try {
+                const sessionId = 'test_single_' + Date.now();
+                const table = document.createElement('table');
+                table.innerHTML = '<tr><th>Test</th></tr><tr><td>Data</td></tr>';
+
+                const id = await flowiseTableService.saveGeneratedTable(
+                    sessionId, table, 'TestTable', 'n8n'
+                );
+
+                if (id) {
+                    log(`✅ Table sauvegardée: ${id}`, 'success');
+                } else {
+                    log('⚠️ Sauvegarde skippée', 'warning');
+                }
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+            }
+        };
+
+        // Test 2: Sauvegardes multiples (simule menu.js)
+        window.testMultipleSaves = async () => {
+            log('🧪 Test 2: Sauvegardes multiples avec debounce', 'info');
+
+            try {
+                const sessionId = 'test_multiple_' + Date.now();
+                const table = document.createElement('table');
+                table.innerHTML = '<tr><th>Test</th></tr><tr><td>Data 1</td></tr><tr><td>Data 2</td></tr>';
+
+                // Simuler 4 appels rapides comme menu.js
+                log('📤 Envoi de 4 sauvegardes rapides...', 'info');
+
+                const promises = [];
+                for (let i = 0; i < 4; i++) {
+                    // Utiliser l'événement comme menu.js
+                    const event = new CustomEvent('flowise:table:save:request', {
+                        detail: {
+                            table: table,
+                            sessionId: sessionId,
+                            keyword: 'TestMultiple',
+                            source: 'menu'
+                        }
+                    });
+                    document.dispatchEvent(event);
+                    log(`  Sauvegarde ${i + 1} déclenchée`, 'info');
+                }
+
+                // Attendre le debounce
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Vérifier combien de tables ont été sauvegardées
+                const restored = await flowiseTableService.restoreSessionTables(sessionId);
+                log(`✅ Résultat: ${restored.length} table(s) sauvegardée(s) (attendu: 1)`,
+                    restored.length === 1 ? 'success' : 'error');
+
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+            }
+        };
+
+        // Test 3: Force Update
+        window.testForceUpdate = async () => {
+            log('🧪 Test 3: Force Update', 'info');
+
+            try {
+                const sessionId = 'test_force_' + Date.now();
+                const table = document.createElement('table');
+                table.innerHTML = '<tr><th>Test</th></tr><tr><td>Original</td></tr>';
+
+                // Sauvegarde 1
+                const id1 = await flowiseTableService.saveGeneratedTable(
+                    sessionId, table, 'TestForce', 'n8n'
+                );
+                log(`✅ Sauvegarde 1: ${id1}`, 'success');
+
+                // Modifier légèrement (même fingerprint potentiel)
+                table.querySelector('td').textContent = 'Modified';
+
+                // Sauvegarde 2 sans forceUpdate (devrait skip)
+                const id2 = await flowiseTableService.saveGeneratedTable(
+                    sessionId, table, 'TestForce', 'n8n', undefined, false
+                );
+                log(`${id2 ? '✅' : '⚠️'} Sauvegarde 2 (sans force): ${id2 || 'SKIPPED'}`,
+                    id2 ? 'success' : 'warning');
+
+                // Sauvegarde 3 avec forceUpdate (devrait fonctionner)
+                const id3 = await flowiseTableService.saveGeneratedTable(
+                    sessionId, table, 'TestForce', 'n8n', undefined, true
+                );
+                log(`✅ Sauvegarde 3 (avec force): ${id3}`, 'success');
+
+                // Vérifier
+                const restored = await flowiseTableService.restoreSessionTables(sessionId);
+                log(`📊 Total tables: ${restored.length}`, 'info');
+
+                if (id3 && restored.length >= 1) {
+                    log('✅ Force Update fonctionne!', 'success');
+                } else {
+                    log('❌ Force Update ne fonctionne pas', 'error');
+                }
+
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+            }
+        };
+    </script>
+</body>
+
+</html>

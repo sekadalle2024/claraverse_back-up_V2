@@ -20,5 +20,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src", "etape_mission_Synthese.js", "flowise_dynamic_script_ Table dynamique V12 integrale ok.js", "dev.js"]
 }

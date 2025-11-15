@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Simple - Sauvegarde Table Data</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .status {
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    .status.loading {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary { background: #007bff; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-warning { background: #ffc107; color: #333; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-info { background: #17a2b8; color: white; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background: #007bff;
+      color: white;
+      font-weight: 600;
+    }
+
+    td[contenteditable="true"] {
+      background: #f8f9fa;
+      cursor: text;
+    }
+
+    td[contenteditable="true"]:hover {
+      background: #e9ecef;
+    }
+
+    td[contenteditable="true"]:focus {
+      outline: 2px solid #007bff;
+      background: #fff9e6;
+    }
+
+    .console {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+
+    .console-entry {
+      margin-bottom: 5px;
+      padding: 3px 0;
+    }
+
+    .console-entry.info { color: #4fc3f7; }
+    .console-entry.success { color: #81c784; }
+    .console-entry.error { color: #e57373; }
+    .console-entry.warning { color: #ffd54f; }
+
+    .instructions {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 3px;
+    }
+
+    .instructions h3 {
+      color: #1976d2;
+      margin-bottom: 10px;
+    }
+
+    .instructions ol {
+      margin-left: 20px;
+    }
+
+    .instructions li {
+      margin-bottom: 5px;
+    }
+
+    .highlight {
+      background: #ffeb3b;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .table-wrapper {
+      margin-bottom: 30px;
+    }
+
+    .table-info {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Test Simple - Sauvegarde Table Data</h1>
+    <p class="subtitle">Test minimal pour vérifier que la sauvegarde fonctionne</p>
+
+    <!-- Status -->
+    <div id="status" class="status loading">
+      ⏳ Chargement du Table Data Manager...
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+      <h3>📋 Instructions de Test</h3>
+      <ol>
+        <li>Vérifier que le status devient <span class="highlight">✅ Prêt</span></li>
+        <li><strong>Modifier une cellule</strong> dans le tableau ci-dessous</li>
+        <li>Cliquer en dehors de la cellule (perdre le focus)</li>
+        <li>Cliquer sur <strong>"Vérifier Sauvegarde"</strong></li>
+        <li>Si OK : vous verrez <span class="highlight">✅ La cellule a été sauvegardée</span></li>
+      </ol>
+    </div>
+
+    <!-- Boutons de Test -->
+    <div class="buttons">
+      <button class="btn-primary" onclick="testSave()">🧪 Vérifier Sauvegarde</button>
+      <button class="btn-success" onclick="saveAll()">💾 Sauvegarder Tout</button>
+      <button class="btn-info" onclick="showState()">📊 Voir État</button>
+      <button class="btn-warning" onclick="runAutoTest()">🤖 Test Auto</button>
+      <button class="btn-danger" onclick="clearConsole()">🗑️ Effacer Console</button>
+    </div>
+
+    <!-- Table de Test -->
+    <div class="table-wrapper">
+      <div class="table-info">
+        <strong>📊 Table de Test</strong> - Modifiez les cellules ci-dessous
+      </div>
+      <table class="min-w-full" id="testTable">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Valeur</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td contenteditable="true">Article 1</td>
+            <td contenteditable="true">100.00</td>
+            <td contenteditable="true">En stock</td>
+          </tr>
+          <tr>
+            <td contenteditable="true">Article 2</td>
+            <td contenteditable="true">250.50</td>
+            <td contenteditable="true">En commande</td>
+          </tr>
+          <tr>
+            <td contenteditable="true">Article 3</td>
+            <td contenteditable="true">75.00</td>
+            <td contenteditable="true">Disponible</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Console -->
+    <div class="console" id="console">
+      <div class="console-entry info">📋 Console de logs - Prêt</div>
+    </div>
+  </div>
+
+  <!-- Charger Table Data Manager -->
+  <script src="table_data.js"></script>
+
+  <!-- Script de Test -->
+  <script>
+    const consoleDiv = document.getElementById('console');
+    const statusDiv = document.getElementById('status');
+
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `console-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      consoleDiv.appendChild(entry);
+      consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    }
+
+    function updateStatus(message, type = 'loading') {
+      statusDiv.className = `status ${type}`;
+      statusDiv.textContent = message;
+    }
+
+    function clearConsole() {
+      consoleDiv.innerHTML = '<div class="console-entry info">📋 Console effacée</div>';
+    }
+
+    // Attendre que le manager soit prêt
+    function waitForManager(callback) {
+      if (window.ClaraverseTableDataManager && window.ClaraverseTableData) {
+        callback();
+      } else {
+        setTimeout(() => waitForManager(callback), 100);
+      }
+    }
+
+    waitForManager(() => {
+      updateStatus('✅ Table Data Manager - Prêt', 'success');
+      log('✅ Table Data Manager chargé', 'success');
+      log('✅ API disponible', 'success');
+
+      // Vérifier les tables
+      const tables = window.ClaraverseTableData.getAllTables();
+      log(`📊 ${tables.length} table(s) détectée(s)`, 'info');
+
+      // Vérifier les cellules
+      const editableCells = document.querySelectorAll('td[contenteditable="true"]');
+      log(`✏️ ${editableCells.length} cellule(s) éditable(s)`, 'info');
+
+      // Ajouter des listeners pour logger les modifications
+      editableCells.forEach(cell => {
+        cell.addEventListener('focus', () => {
+          log(`✏️ Édition cellule [${cell.dataset.rowIndex}, ${cell.dataset.cellIndex}]`, 'info');
+        });
+
+        cell.addEventListener('blur', () => {
+          log(`💾 Sauvegarde cellule [${cell.dataset.rowIndex}, ${cell.dataset.cellIndex}]: "${cell.textContent.trim()}"`, 'success');
+        });
+      });
+
+      log('🎯 Prêt pour les tests !', 'success');
+    });
+
+    // Test de sauvegarde
+    function testSave() {
+      log('🧪 Test de sauvegarde...', 'info');
+
+      const cellsWithState = document.querySelectorAll('td[data-cell-state]');
+
+      if (cellsWithState.length === 0) {
+        log('❌ Aucune cellule n\'a d\'état sauvegardé', 'error');
+        log('⚠️ Modifiez une cellule et perdez le focus d\'abord', 'warning');
+        updateStatus('❌ Aucune cellule sauvegardée', 'error');
+        return;
+      }
+
+      log(`✅ ${cellsWithState.length} cellule(s) avec état sauvegardé`, 'success');
+
+      // Vérifier le premier
+      const firstCell = cellsWithState[0];
+      try {
+        const state = JSON.parse(firstCell.getAttribute('data-cell-state'));
+        log(`📊 État de la cellule:`, 'info');
+        log(`   - Valeur: "${state.value}"`, 'info');
+        log(`   - Timestamp: ${new Date(state.timestamp).toLocaleString()}`, 'info');
+
+        if (state.value === firstCell.textContent.trim()) {
+          log('✅ La cellule a été sauvegardée correctement', 'success');
+          updateStatus('✅ Sauvegarde fonctionne !', 'success');
+        } else {
+          log('⚠️ Désynchronisation détectée', 'warning');
+          updateStatus('⚠️ Désynchronisation', 'warning');
+        }
+      } catch (e) {
+        log(`❌ Erreur parsing: ${e.message}`, 'error');
+        updateStatus('❌ Erreur', 'error');
+      }
+    }
+
+    // Sauvegarder tout
+    function saveAll() {
+      log('💾 Sauvegarde de toutes les tables...', 'info');
+
+      if (!window.ClaraverseTableData) {
+        log('❌ API non disponible', 'error');
+        return;
+      }
+
+      const tables = document.querySelectorAll('table');
+      let count = 0;
+
+      tables.forEach(table => {
+        if (window.ClaraverseTableData.saveTable(table)) {
+          count++;
+        }
+      });
+
+      log(`✅ ${count} table(s) sauvegardée(s)`, 'success');
+      updateStatus('✅ Sauvegarde effectuée', 'success');
+    }
+
+    // Voir l'état
+    function showState() {
+      log('📊 État des cellules:', 'info');
+
+      const cells = document.querySelectorAll('td[data-cell-state]');
+
+      if (cells.length === 0) {
+        log('ℹ️ Aucune cellule sauvegardée', 'info');
+        return;
+      }
+
+      cells.forEach((cell, index) => {
+        try {
+          const state = JSON.parse(cell.getAttribute('data-cell-state'));
+          log(`  [${cell.dataset.rowIndex}, ${cell.dataset.cellIndex}]: "${state.value}"`, 'info');
+        } catch (e) {
+          log(`  Erreur cellule ${index}`, 'error');
+        }
+      });
+
+      log(`📊 Total: ${cells.length} cellule(s)`, 'info');
+    }
+
+    // Test automatique
+    function runAutoTest() {
+      log('🤖 Démarrage du test automatique...', 'info');
+
+      const testCell = document.querySelector('td[contenteditable="true"]');
+
+      if (!testCell) {
+        log('❌ Aucune cellule éditable trouvée', 'error');
+        return;
+      }
+
+      const originalValue = testCell.textContent.trim();
+      const testValue = 'TEST_' + Date.now();
+
+      log(`📝 Valeur originale: "${originalValue}"`, 'info');
+      log(`📝 Nouvelle valeur: "${testValue}"`, 'info');
+
+      // Modifier
+      testCell.textContent = testValue;
+      testCell.focus();
+
+      setTimeout(() => {
+        testCell.blur();
+
+        setTimeout(() => {
+          // Vérifier
+          const state = testCell.getAttribute('data-cell-state');
+
+          if (state) {
+            try {
+              const parsed = JSON.parse(state);
+              if (parsed.value === testValue) {
+                log('✅ TEST RÉUSSI : Valeur sauvegardée correctement', 'success');
+                updateStatus('✅ Test automatique réussi', 'success');
+              } else {
+                log('❌ TEST ÉCHOUÉ : Valeur incorrecte', 'error');
+                log(`   Attendu: "${testValue}"`, 'error');
+                log(`   Reçu: "${parsed.value}"`, 'error');
+                updateStatus('❌ Test automatique échoué', 'error');
+              }
+            } catch (e) {
+              log('❌ TEST ÉCHOUÉ : JSON invalide', 'error');
+              updateStatus('❌ Test automatique échoué', 'error');
+            }
+          } else {
+            log('❌ TEST ÉCHOUÉ : Pas de data-cell-state', 'error');
+            updateStatus('❌ Test automatique échoué', 'error');
+          }
+
+          // Restaurer
+          setTimeout(() => {
+            testCell.textContent = originalValue;
+            testCell.blur();
+            log(`🔄 Valeur restaurée: "${originalValue}"`, 'info');
+          }, 1000);
+        }, 500);
+      }, 100);
+    }
+
+    // Si le manager n'est pas chargé après 5 secondes
+    setTimeout(() => {
+      if (!window.ClaraverseTableDataManager) {
+        updateStatus('❌ Table Data Manager non chargé', 'error');
+        log('❌ ERREUR: table_data.js n\'a pas été chargé', 'error');
+        log('⚠️ Vérifier que table_data.js est dans le même dossier', 'warning');
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

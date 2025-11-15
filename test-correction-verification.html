@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification Correction</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .test-table th, .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+        .prose {
+            max-width: none;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .test-results {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Vérification de la Correction</h1>
+        <p>Test rapide pour vérifier que la correction de restauration fonctionne</p>
+        
+        <div class="container">
+            <h2>🎯 Tests Rapides</h2>
+            <button onclick="testBasicRestore()">Test Basique</button>
+            <button onclick="testMultipleCycles()">Test 5 Cycles</button>
+            <button onclick="testComplexTable()">Test Table Complexe</button>
+            <button onclick="clearResults()">🧹 Effacer</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="test-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Valeur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Test</td>
+                            <td>Original</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Résultats</h2>
+            <div id="test-results" class="test-results">
+Prêt pour les tests de vérification.
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        let testResults = [];
+
+        function log(message) {
+            console.log(message);
+            testResults.push(`${new Date().toLocaleTimeString()} - ${message}`);
+            updateResultsDisplay();
+        }
+
+        function updateResultsDisplay() {
+            document.getElementById('test-results').textContent = testResults.join('\n');
+        }
+
+        function clearResults() {
+            testResults = [];
+            updateResultsDisplay();
+        }
+
+        async function testBasicRestore() {
+            log('🧪 === TEST BASIQUE APRÈS CORRECTION ===');
+            
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'CORRECTION_TEST_' + Date.now();
+
+                // Nettoyer
+                table.removeAttribute('data-robust-table-id');
+                firstCell.textContent = testContent;
+                log(`📝 Contenu défini: "${testContent}"`);
+
+                // Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                if (saveResult) {
+                    // Modifier temporairement
+                    firstCell.textContent = 'CONTENU_TEMPORAIRE';
+                    log(`📝 Contenu modifié temporairement`);
+
+                    // Restaurer
+                    const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                    log(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                    // Vérifier
+                    const finalContent = firstCell.textContent;
+                    if (finalContent === testContent) {
+                        log('✅ TEST BASIQUE RÉUSSI: Correction fonctionne !');
+                    } else {
+                        log(`❌ TEST BASIQUE ÉCHOUÉ: Attendu "${testContent}", obtenu "${finalContent}"`);
+                    }
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testMultipleCycles() {
+            log('🧪 === TEST 5 CYCLES APRÈS CORRECTION ===');
+            
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                let successCount = 0;
+
+                table.removeAttribute('data-robust-table-id');
+
+                for (let i = 1; i <= 5; i++) {
+                    const testContent = `CYCLE_${i}_${Date.now()}`;
+                    
+                    firstCell.textContent = testContent;
+                    const saveResult = window.claraverseStorageAPI.saveTable(table);
+                    
+                    if (saveResult) {
+                        firstCell.textContent = 'TEMP';
+                        const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                        
+                        if (restoreResult && firstCell.textContent === testContent) {
+                            successCount++;
+                            log(`✅ Cycle ${i}/5 réussi`);
+                        } else {
+                            log(`❌ Cycle ${i}/5 échoué - Obtenu: "${firstCell.textContent}"`);
+                        }
+                    } else {
+                        log(`❌ Cycle ${i}/5 - Sauvegarde échouée`);
+                    }
+                }
+
+                if (successCount === 5) {
+                    log('✅ TEST CYCLES RÉUSSI: Tous les cycles fonctionnent !');
+                } else {
+                    log(`❌ TEST CYCLES PARTIELLEMENT RÉUSSI: ${successCount}/5 cycles`);
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testComplexTable() {
+            log('🧪 === TEST TABLE COMPLEXE APRÈS CORRECTION ===');
+            
+            try {
+                const table = document.getElementById('test-table');
+                
+                // Ajouter plus de cellules
+                const tbody = table.querySelector('tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td>Alice</td>
+                        <td>25</td>
+                    </tr>
+                    <tr>
+                        <td>Bob</td>
+                        <td>30</td>
+                    </tr>
+                    <tr>
+                        <td>Charlie</td>
+                        <td>35</td>
+                    </tr>
+                `;
+
+                const cells = table.querySelectorAll('td');
+                const testContents = [];
+                
+                table.removeAttribute('data-robust-table-id');
+
+                // Modifier toutes les cellules
+                cells.forEach((cell, index) => {
+                    const content = `MODIF_${index}_${Date.now()}`;
+                    cell.textContent = content;
+                    testContents.push(content);
+                });
+
+                log(`📝 ${cells.length} cellules modifiées`);
+
+                // Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                if (saveResult) {
+                    // Modifier temporairement
+                    cells.forEach(cell => {
+                        cell.textContent = 'TEMP';
+                    });
+
+                    // Restaurer
+                    const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                    log(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                    // Vérifier
+                    let correctCells = 0;
+                    cells.forEach((cell, index) => {
+                        if (cell.textContent === testContents[index]) {
+                            correctCells++;
+                        }
+                    });
+
+                    if (correctCells === cells.length) {
+                        log('✅ TEST COMPLEXE RÉUSSI: Toutes les cellules restaurées !');
+                    } else {
+                        log(`❌ TEST COMPLEXE PARTIELLEMENT RÉUSSI: ${correctCells}/${cells.length} cellules`);
+                    }
+                }
+
+                // Restaurer table simple
+                tbody.innerHTML = `
+                    <tr>
+                        <td>Test</td>
+                        <td>Original</td>
+                    </tr>
+                `;
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`);
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🔧 Test de vérification de correction chargé');
+            log('💡 Cliquez sur les boutons pour tester la correction');
+        });
+    </script>
+</body>
+</html>

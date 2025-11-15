@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowise Table Diagnostics Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #555;
+            margin-top: 0;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .output {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Flowise Table Diagnostics Test</h1>
+
+    <div class="container">
+        <h2>Storage Statistics</h2>
+        <div class="button-group">
+            <button onclick="getStorageStats()">Get Storage Stats</button>
+            <button onclick="getStorageStatsFormatted()">Get Formatted Stats</button>
+        </div>
+        <div id="stats-output" class="output"></div>
+    </div>
+
+    <div class="container">
+        <h2>Integrity Check</h2>
+        <div class="button-group">
+            <button onclick="checkIntegrity()">Check Integrity</button>
+            <button onclick="checkIntegrityFormatted()">Get Formatted Report</button>
+        </div>
+        <div id="integrity-output" class="output"></div>
+    </div>
+
+    <div class="container">
+        <h2>Session Tables</h2>
+        <div class="button-group">
+            <input type="text" id="session-id-input" placeholder="Enter session ID"
+                style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 300px;">
+            <button onclick="listSessionTables()">List Session Tables</button>
+            <button onclick="listSessionTablesFormatted()">Get Formatted List</button>
+        </div>
+        <div id="session-output" class="output"></div>
+    </div>
+
+    <div class="container">
+        <h2>Full Diagnostic Report</h2>
+        <div class="button-group">
+            <button onclick="getFullReport()">Generate Full Report</button>
+            <button onclick="logReport()">Log Report to Console</button>
+        </div>
+        <div id="report-output" class="output"></div>
+    </div>
+
+    <div class="container">
+        <h2>Service Logs</h2>
+        <div class="button-group">
+            <button onclick="getLogs()">Get All Logs</button>
+            <button onclick="getErrorLogs()">Get Error Logs</button>
+            <button onclick="getWarningLogs()">Get Warning Logs</button>
+            <button onclick="clearLogs()">Clear Logs</button>
+        </div>
+        <div id="logs-output" class="output"></div>
+    </div>
+
+    <script type="module">
+        import { flowiseTableDiagnostics } from './src/services/flowiseTableDiagnostics.ts';
+        import { flowiseTableService } from './src/services/flowiseTableService.ts';
+
+        // Make functions available globally
+        window.diagnostics = flowiseTableDiagnostics;
+        window.tableService = flowiseTableService;
+
+        // Storage Statistics
+        window.getStorageStats = async function () {
+            const output = document.getElementById('stats-output');
+            output.textContent = 'Loading...';
+            try {
+                const stats = await flowiseTableDiagnostics.getStorageStats();
+                output.textContent = JSON.stringify(stats, (key, value) => {
+                    if (value instanceof Map) {
+                        return Object.fromEntries(value);
+                    }
+                    return value;
+                }, 2);
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        window.getStorageStatsFormatted = async function () {
+            const output = document.getElementById('stats-output');
+            output.textContent = 'Loading...';
+            try {
+                const formatted = await flowiseTableDiagnostics.getStorageStatsFormatted();
+                output.textContent = formatted;
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        // Integrity Check
+        window.checkIntegrity = async function () {
+            const output = document.getElementById('integrity-output');
+            output.textContent = 'Checking...';
+            try {
+                const result = await flowiseTableDiagnostics.checkIntegrity();
+                output.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        window.checkIntegrityFormatted = async function () {
+            const output = document.getElementById('integrity-output');
+            output.textContent = 'Checking...';
+            try {
+                const formatted = await flowiseTableDiagnostics.checkIntegrityFormatted();
+                output.textContent = formatted;
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        // Session Tables
+        window.listSessionTables = async function () {
+            const sessionId = document.getElementById('session-id-input').value;
+            const output = document.getElementById('session-output');
+
+            if (!sessionId) {
+                output.textContent = 'Please enter a session ID';
+                return;
+            }
+
+            output.textContent = 'Loading...';
+            try {
+                const tables = await flowiseTableDiagnostics.listSessionTables(sessionId);
+                output.textContent = JSON.stringify(tables, null, 2);
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        window.listSessionTablesFormatted = async function () {
+            const sessionId = document.getElementById('session-id-input').value;
+            const output = document.getElementById('session-output');
+
+            if (!sessionId) {
+                output.textContent = 'Please enter a session ID';
+                return;
+            }
+
+            output.textContent = 'Loading...';
+            try {
+                const formatted = await flowiseTableDiagnostics.listSessionTablesFormatted(sessionId);
+                output.textContent = formatted;
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        // Full Report
+        window.getFullReport = async function () {
+            const output = document.getElementById('report-output');
+            output.textContent = 'Generating report...';
+            try {
+                const report = await flowiseTableDiagnostics.getFullDiagnosticReport();
+                output.textContent = report;
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        window.logReport = async function () {
+            const output = document.getElementById('report-output');
+            output.textContent = 'Logging to console...';
+            try {
+                await flowiseTableDiagnostics.logDiagnosticReport();
+                output.textContent = 'Report logged to console. Check browser console (F12).';
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        // Service Logs
+        window.getLogs = function () {
+            const output = document.getElementById('logs-output');
+            try {
+                const formatted = flowiseTableService.getLogsFormatted();
+                output.textContent = formatted;
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        window.getErrorLogs = function () {
+            const output = document.getElementById('logs-output');
+            try {
+                const formatted = flowiseTableService.getLogsFormatted('ERROR');
+                output.textContent = formatted;
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        window.getWarningLogs = function () {
+            const output = document.getElementById('logs-output');
+            try {
+                const formatted = flowiseTableService.getLogsFormatted('WARN');
+                output.textContent = formatted;
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        window.clearLogs = function () {
+            const output = document.getElementById('logs-output');
+            try {
+                flowiseTableService.clearLogs();
+                output.textContent = 'Logs cleared successfully.';
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+
+        // Initialize
+        console.log('✅ Diagnostic tools loaded');
+        console.log('Available functions:', {
+            getStorageStats: 'Get storage statistics',
+            checkIntegrity: 'Check data integrity',
+            listSessionTables: 'List tables for a session',
+            getFullReport: 'Generate full diagnostic report',
+            getLogs: 'Get service logs'
+        });
+    </script>
+</body>
+
+</html>

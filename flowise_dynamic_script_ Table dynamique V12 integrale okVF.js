@@ -1,446 +1,311 @@
-function addCriteriaTablesToChatTables() {
-  console.log('🔍 Recherche des tables dans le chat...');
-  
-  const chatTables = document.querySelectorAll('div.prose.prose-base.dark\\:prose-invert.max-w-none table.min-w-full.border.border-gray-200.dark\\:border-gray-700.rounded-lg');
-  
-  console.log(`📊 ${chatTables.length} table(s) cible(s) trouvée(s)`);
+/**
+ * Script dynamique pour les tables de critères dans Claraverse - V13.0 (Persistance avec Signature DOM)
+ * @version 13.0.0
+ * @description
+ * - INTÉGRATION DE LA PERSISTANCE : Les données traitées par Flowise sont sauvegardées dans le localStorage.
+ * - RESTAURATION AUTOMATIQUE : Après un rechargement de page, les résultats sont restaurés sans nouvel appel API.
+ * - SIGNATURE DOM UNIQUE : Utilise un système de hash du contenu pour identifier de manière fiable chaque table et éviter les erreurs de restauration.
+ * - ISOLATION PAR CHAT : Les données sont compartimentées pour chaque conversation.
+ * - NETTOYAGE : Une fonction de nettoyage supprime les anciennes données du cache pour éviter de saturer le localStorage.
+ * - Basé sur la logique de V12.2 avec les améliorations de persistance de V14.
+ */
+(function () {
+  "use strict";
 
-  // Configuration des mots-clés de recherche dynamiques
-  const SEARCH_KEYWORDS = {
-    'frap': ['frap', 'FRAP', 'Frap'],
-    'synthese': ['synthese', 'SYNTHESE', 'Synthèse', 'Synthese', 'synth', 'SYNTH', 'Synth'],
-    'rapport': ['rapport', 'RAPPORT', 'Rapport', 'rapport provisoire', 'rapport final'],
-    'suivi': ['suivi', 'SUIVI', 'Suivi', 'suivi recos', 'SUIVI RECOS']
+  console.log(
+    "🚀 Initialisation V13.0 - Persistance avec Signature DOM"
+  );
+
+  // --- CONFIGURATION CENTRALE ---
+  const CONFIG = {
+    FLOWISE_ENDPOINT_URL:
+      "https://r534c2br.rpcld.co/api/v1/prediction/18321750-25e8-46e3-9456-955def4ccddd",
+    SEARCH_KEYWORDS: {
+      frap: ["frap", "FRAP", "Frap"],
+      synthese: ["synthese", "SYNTHESE", "Synthèse", "Synthese", "synth"],
+      rapport: ["rapport", "RAPPORT", "Rapport"],
+      suivi: ["suivi", "SUIVI", "Suivi"],
+    },
+    STORAGE_PREFIX: "claraverse_v13_", // Préfixe pour le localStorage
+    PROCESSED_DIV_CLASS: "flowise-div-processed", // Marqueur DOM
+    PROCESSED_DATA_CLASS: "flowise-data-injected", // Marqueur pour les données injectées
+    CLEANUP_MAX_AGE: 7 * 24 * 60 * 60 * 1000, // 7 jours
   };
 
-  // Fonction pour interroger l'endpoint Flowise
-  async function queryFlowiseEndpoint(question) {
-    try {
-      const response = await fetch(
-        "https://hqg4f4xc.rcld.dev/api/v1/prediction/d110c3d1-472b-498e-a225-b56182f03817",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question })
+  // =================================================================
+  // NOUVEAU : SYSTÈME DE SIGNATURE DOM POUR IDENTIFICATION UNIQUE
+  // =================================================================
+  const DOMSignature = {
+    generate(div) {
+      if (!div) return null;
+      // Le hash est basé sur TOUT le contenu textuel de la div. C'est très fiable.
+      const textContent = div.textContent.trim().replace(/\s+/g, " ");
+      const textHash = this.hashString(textContent);
+      // On combine le hash avec l'index de la div pour encore plus de précision.
+      const divIndex = Array.from(document.querySelectorAll("div.prose")).indexOf(div);
+
+      return `sig_${textHash}_${divIndex}`;
+    },
+
+    hashString(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash &= hash; // Convert to 32bit integer
+      }
+      return Math.abs(hash).toString(36);
+    },
+  };
+
+  // =================================================================
+  // NOUVEAU : GESTIONNAIRE DE PERSISTANCE (LOCALSTORAGE)
+  // =================================================================
+  const PersistenceManager = {
+    getCurrentChatId() {
+      const urlPath = window.location.pathname;
+      const chatMatch = urlPath.match(/\/chat\/([^\/]+)/);
+      return chatMatch ? chatMatch[1] : "default_chat";
+    },
+
+    getStorageKey(signature) {
+      const chatId = this.getCurrentChatId();
+      return `${CONFIG.STORAGE_PREFIX}${chatId}_${signature}`;
+    },
+
+    saveProcessedData(signature, flowiseHTML) {
+      const key = this.getStorageKey(signature);
+      const record = {
+        signature,
+        flowiseHTML,
+        timestamp: Date.now(),
+        url: window.location.href,
+      };
+      localStorage.setItem(key, JSON.stringify(record));
+      console.log(`💾 Données sauvegardées pour la signature: ${signature}`);
+    },
+
+    getProcessedData(signature) {
+      const key = this.getStorageKey(signature);
+      const record = localStorage.getItem(key);
+      if (!record) return null;
+
+      try {
+        console.log(`📦 Données trouvées dans le cache pour: ${signature}`);
+        return JSON.parse(record);
+      } catch (e) {
+        return null;
+      }
+    },
+
+    cleanup() {
+      const now = Date.now();
+      let cleaned = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(CONFIG.STORAGE_PREFIX)) {
+          try {
+            const data = JSON.parse(localStorage.getItem(key));
+            if (now - data.timestamp > CONFIG.CLEANUP_MAX_AGE) {
+              localStorage.removeItem(key);
+              cleaned++;
+            }
+          } catch (e) {
+            localStorage.removeItem(key);
+          }
         }
-      );
-      const result = await response.json();
-      return result;
+      }
+      if (cleaned > 0) {
+        console.log(`🧹 Nettoyage: ${cleaned} anciens enregistrements supprimés.`);
+      }
+    },
+  };
+
+  // --- Fonctions existantes (légèrement adaptées) ---
+
+  async function queryFlowiseEndpoint(tablesHTML) {
+    try {
+      console.log("📡 Envoi des données vers Flowise...");
+      const response = await fetch(CONFIG.FLOWISE_ENDPOINT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: tablesHTML }),
+      });
+      if (!response.ok)
+        throw new Error(`Erreur HTTP ${response.status}`);
+      console.log("✅ Réponse de Flowise reçue !");
+      return await response.json();
     } catch (error) {
-      console.error('Erreur Flowise:', error);
-      return null;
+      console.error("❌ Erreur API Flowise:", error);
+      throw error;
     }
   }
 
-  // Fonction pour détecter quel mot-clé est présent dans la première table d'une div
-  function detectKeywordInFirstTable(div) {
-    const firstTable = div.querySelector('table.min-w-full.border.border-gray-200.dark\\:border-gray-700.rounded-lg');
-    
-    if (!firstTable) return null;
-    
-    // Vérifier les en-têtes de la première table
-    const headers = Array.from(firstTable.querySelectorAll('th')).map(th => 
-      th.textContent.trim().toLowerCase()
-    );
-    
-    // Vérifier si la première table a les colonnes requises
-    const hasRubrique = headers.some(header => header === 'rubrique');
-    const hasDescription = headers.some(header => header === 'description');
-    
-    if (!hasRubrique || !hasDescription) {
-      return null;
-    }
-    
-    // Rechercher les mots-clés dans toutes les cellules de la première table
-    const allCells = firstTable.querySelectorAll('td');
-    
-    for (const [keywordGroup, variations] of Object.entries(SEARCH_KEYWORDS)) {
+  function detectTargetKeyword(flowiseTable) {
+    const allCells = flowiseTable.querySelectorAll("td");
+    for (const [group, variations] of Object.entries(CONFIG.SEARCH_KEYWORDS)) {
       for (const cell of allCells) {
-        const cellText = cell.textContent.trim();
-        
-        // Vérifier si une variation du mot-clé est présente
-        if (variations.some(keyword => 
-          cellText.toLowerCase().includes(keyword.toLowerCase()) ||
-          cellText.match(new RegExp(`\\b${keyword.replace(/\s+/g, '\\s+')}\\b`, 'i'))
-        )) {
-          console.log(`🎯 Mot-clé "${keywordGroup}" détecté dans la première table:`, cellText);
-          return keywordGroup;
+        if (variations.some(v => cell.textContent.toLowerCase().includes(v.toLowerCase()))) {
+          console.log(`🎯 Mot-clé détecté: "${group}"`);
+          return group;
         }
       }
     }
-    
     return null;
   }
 
-  // Fonction dynamique pour collecter toutes les tables des divs ayant le mot-clé cible
-  function getCriteriaTablesWithDynamicKeyword(targetKeyword) {
-    const tablesHTML = [];
-    const processedDivs = new Set();
-    
-    console.log(`🔍 Recherche dynamique des tables contenant le mot-clé: ${targetKeyword}`);
-    
-    // Obtenir toutes les divs contenant des tables
-    const allDivs = document.querySelectorAll('div.prose.prose-base.dark\\:prose-invert.max-w-none');
-    
-    allDivs.forEach((div, divIndex) => {
-      if (processedDivs.has(div)) return;
+  function collectCriteriaTables(targetKeyword) {
+    const allDivs = document.querySelectorAll("div.prose");
+    const collectedTablesHTML = [];
+    allDivs.forEach(div => {
+      const firstTable = div.querySelector("table");
+      if (!firstTable) return;
       
-      // Détecter le mot-clé dans la première table de cette div
-      const detectedKeyword = detectKeywordInFirstTable(div);
+      const headers = Array.from(firstTable.querySelectorAll("th")).map(th => th.textContent.toLowerCase());
+      if (!headers.includes("rubrique") || !headers.includes("description")) return;
       
-      if (detectedKeyword === targetKeyword) {
-        processedDivs.add(div);
-        
-        // Collecter TOUTES les tables de cette div
-        const allTablesInDiv = div.querySelectorAll('table.min-w-full.border.border-gray-200.dark\\:border-gray-700.rounded-lg');
-        
-        console.log(`✅ Div ${divIndex + 1}: Mot-clé "${targetKeyword}" détecté! Collecte de ${allTablesInDiv.length} table(s)`);
-        
-        allTablesInDiv.forEach((table, tableIndex) => {
-          tablesHTML.push(table.outerHTML);
-          console.log(`   📋 Table HTML ${tableIndex + 1}/${allTablesInDiv.length} ajoutée`);
+      const keywordFound = Array.from(firstTable.querySelectorAll("td")).some(cell => {
+          const keywords = CONFIG.SEARCH_KEYWORDS[targetKeyword] || [];
+          return keywords.some(kw => cell.textContent.toLowerCase().includes(kw.toLowerCase()));
+      });
+
+      if (keywordFound) {
+        div.querySelectorAll("table").forEach(table => {
+            collectedTablesHTML.push(table.outerHTML);
         });
       }
     });
-    
-    console.log(`📊 Résultat: ${tablesHTML.length} table(s) HTML collectée(s) pour le mot-clé "${targetKeyword}"`);
-    return tablesHTML.join('\n');
+    return collectedTablesHTML.join("\n");
   }
 
-  // Fonction robuste pour détecter et convertir les tables Markdown en HTML
-  function extractAndConvertTables(responseText) {
-    try {
-      const tables = [];
-      
-      // Expression régulière pour détecter les tables Markdown
-      const tableRegex = /^ *\|(.+)\| *\n *\|( *[-:]+[-| :]*) *\n((?: *\|.*\| *\n)*)/gm;
-      let match;
-      
-      while ((match = tableRegex.exec(responseText)) !== null) {
-        const headerRow = match[1];
-        const separatorRow = match[2];
-        const contentRows = match[3];
-        
-        // Créer la table HTML
-        const table = document.createElement('table');
-        table.className = 'min-w-full border border-gray-200 dark:border-gray-700 rounded-lg mb-2';
-        
-        // Créer l'en-tête
-        const thead = document.createElement('thead');
-        const headerTr = document.createElement('tr');
-        headerRow.split('|').forEach(cell => {
-          if (cell.trim() === '') return;
-          const th = document.createElement('th');
-          th.className = 'px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800';
-          th.textContent = cell.trim();
-          headerTr.appendChild(th);
-        });
-        thead.appendChild(headerTr);
-        table.appendChild(thead);
-        
-        // Créer le corps
-        const tbody = document.createElement('tbody');
-        contentRows.trim().split('\n').forEach(row => {
-          if (row.trim() === '') return;
-          const tr = document.createElement('tr');
-          row.split('|').forEach((cell, index) => {
-            if (index === 0 || cell.trim() === '') return;
-            const td = document.createElement('td');
-            td.className = 'px-4 py-3 border-b border-gray-200 dark:border-gray-700';
-            td.textContent = cell.trim();
-            tr.appendChild(td);
-          });
-          tbody.appendChild(tr);
-        });
-        table.appendChild(tbody);
-        
-        tables.push(table);
-      }
-      
-      // Si aucune table Markdown n'est trouvée, essayer d'extraire les tables HTML
-      if (tables.length === 0) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(responseText, 'text/html');
-        const htmlTables = doc.querySelectorAll('table');
-        
-        if (htmlTables.length > 0) {
-          htmlTables.forEach(table => {
-            const clone = table.cloneNode(true);
-            clone.classList.add('min-w-full', 'border', 'border-gray-200', 
-                              'dark:border-gray-700', 'rounded-lg', 'mb-2');
-            tables.push(clone);
-          });
-        }
-      }
-      
-      return tables;
-    } catch (e) {
-      console.error('Erreur extraction tables:', e);
-      return [];
-    }
+  function extractTablesFromResponse(responseText) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(responseText, "text/html");
+    const tables = doc.querySelectorAll("table");
+    
+    // Appliquer le style Claraverse aux tables extraites
+    tables.forEach(table => {
+        table.className = "min-w-full border border-gray-200 dark:border-gray-700 rounded-lg";
+    });
+
+    return Array.from(tables);
   }
 
-  // Fonction pour détecter le mot-clé cible dans une table Flowise
-  function detectTargetKeywordInFlowiseTable(flowiseTable) {
-    const allCells = flowiseTable.querySelectorAll('td');
-    
-    for (const [keywordGroup, variations] of Object.entries(SEARCH_KEYWORDS)) {
-      for (const cell of allCells) {
-        const cellText = cell.textContent.trim();
-        
-        if (variations.some(keyword => 
-          cellText.toLowerCase().includes(keyword.toLowerCase()) ||
-          cellText.match(new RegExp(`\\b${keyword.replace(/\s+/g, '\\s+')}\\b`, 'i'))
-        )) {
-          console.log(`🎯 Mot-clé cible "${keywordGroup}" détecté dans table Flowise:`, cellText);
-          return keywordGroup;
-        }
-      }
-    }
-    
-    return null;
+  function integrateDataIntoDOM(flowiseTables, parentDiv) {
+    if (!flowiseTables.length || !parentDiv) return;
+
+    // Vérifier si des données ne sont pas déjà injectées pour éviter les doublons
+    if (parentDiv.querySelector(`.${CONFIG.PROCESSED_DATA_CLASS}`)) return;
+
+    const container = document.createElement("div");
+    container.className = CONFIG.PROCESSED_DATA_CLASS;
+    flowiseTables.forEach(table => container.appendChild(table));
+    parentDiv.appendChild(container);
+    console.log(`✅ ${flowiseTables.length} table(s) intégrée(s) dans le DOM.`);
   }
 
-  chatTables.forEach((targetTable, index) => {
-    const parentDiv = targetTable.closest('div.prose.prose-base.dark\\:prose-invert.max-w-none');
-    
+  // =================================================================
+  // MISE À JOUR : LOGIQUE DE TRAITEMENT PRINCIPALE AVEC PERSISTANCE
+  // =================================================================
+  async function processFlowiseTable(table) {
+    const parentDiv = table.closest("div.prose");
     if (!parentDiv) return;
 
-    // Vérifier les conteneurs existants
-    const hasCriteriaContainer = parentDiv.querySelector('.criteria-tables-container');
-    const hasFlowiseContainer = parentDiv.querySelector('.flowise-tables-container');
-    
-    const targetHeaders = Array.from(targetTable.querySelectorAll('th'))
-      .map(th => th.textContent.trim());
-    
-    let caseType = 0;
-    let targetKeyword = null;
-    
-    const headerCheck = (patterns) => targetHeaders.some(header => 
-      patterns.some(pattern => 
-        header.toLowerCase() === pattern.toLowerCase()
-      )
-    );
+    const signature = DOMSignature.generate(parentDiv);
+    if (!signature) return;
 
-    // Cas dynamiques basés sur les en-têtes
-    if (headerCheck(["Synthese", "SYNTHESE", "Synthèse", "synthese"])) {
-      caseType = 1;
-      targetKeyword = 'frap';
-    } 
-    else if (headerCheck(["Rapport provisoire", "rapport provisoire", "RAPPORT PROVISOIRE"])) {
-      caseType = 2;
-      targetKeyword = 'synthese';
-    } 
-    else if (headerCheck(["Rapport final", "rapport final", "RAPPORT FINAL"])) {
-      caseType = 3;
-      targetKeyword = 'rapport';
-    } 
-    else if (headerCheck(["Suivi recos", "suivi recos", "SUIVI RECOS"])) {
-      caseType = 4;
-      targetKeyword = 'rapport';
-    }
-    else if (headerCheck(["Flowise", "FLOWISE", "Flowise"])) {
-      caseType = 5;
-      // Pour Flowise, on détecte dynamiquement le mot-clé cible
-      targetKeyword = detectTargetKeywordInFlowiseTable(targetTable);
-    }
-    
-    if (caseType === 0) {
-      console.log(`ℹ️ Table ${index+1} non concernée par les cas dynamiques`);
-      return;
-    }
-    
-    console.log(`➕ Traitement table ${index+1} - Cas ${caseType} - Mot-clé cible: ${targetKeyword || 'N/A'}`);
-
-    // Traitement spécial pour le Cas 5 (Flowise) - Version dynamique
-    if (caseType === 5 && !hasFlowiseContainer && targetKeyword) {
-      const containerId = `flowise-container-${Date.now()}`;
-      const container = document.createElement('div');
-      container.id = containerId;
-      container.className = 'flowise-tables-container';
-      container.style.marginTop = '10px';
-      container.style.padding = '0';
-      
-      // Ajouter l'indicateur de chargement
-      const loader = document.createElement('div');
-      loader.className = 'text-center py-2 text-indigo-600 font-semibold';
-      loader.textContent = `Chargement des tables Flowise (${targetKeyword})...`;
-      container.appendChild(loader);
-      
-      targetTable.insertAdjacentElement('afterend', container);
-      console.log(`🌐 Démarrage de la requête Flowise pour le mot-clé: ${targetKeyword}`);
-
-      // Traitement de la requête Flowise avec détection dynamique
-      const processFlowiseRequest = async () => {
-        try {
-          // Obtenir les tables basées sur le mot-clé détecté dynamiquement
-          const criteriaTablesHTML = getCriteriaTablesWithDynamicKeyword(targetKeyword);
-          const tablesCount = criteriaTablesHTML ? criteriaTablesHTML.split('</table>').length - 1 : 0;
-          console.log(`🔍 ${tablesCount} table(s) HTML collectée(s) pour le mot-clé "${targetKeyword}"`);
-          
-          // Afficher l'alerte avec les tables consolidées HTML
-          if (criteriaTablesHTML && tablesCount > 0) {
-            alert(`✅ DÉTECTION DYNAMIQUE RÉUSSIE!\n\nMot-clé détecté: "${targetKeyword}"\nTables HTML consolidées: ${tablesCount} table(s)\n\n` + 
-                  criteriaTablesHTML.substring(0, 800) + 
-                  (criteriaTablesHTML.length > 800 ? '... [tronqué pour affichage]' : ''));
-            
-            // Envoyer la requête à Flowise
-            const response = await queryFlowiseEndpoint(criteriaTablesHTML);
-            
-            if (!response || !response.text) {
-              throw new Error('Réponse Flowise vide');
-            }
-            
-            console.log('📩 Réponse Flowise reçue');
-            
-            // Extraire et convertir les tables de la réponse
-            const tables = extractAndConvertTables(response.text);
-            console.log(`🔍 ${tables.length} table(s) trouvée(s) dans la réponse`);
-            
-            // Mettre à jour le conteneur
-            const container = document.getElementById(containerId);
-            if (!container) {
-              console.error('Conteneur Flowise introuvable');
-              return;
-            }
-            
-            // Créer un conteneur pour les tables
-            const tablesContainer = document.createElement('div');
-            tablesContainer.className = 'flowise-tables-only';
-            
-            if (tables.length > 0) {
-              tables.forEach(table => {
-                table.style.marginBottom = '5px';
-                tablesContainer.appendChild(table);
-              });
-              console.log(`✅ ${tables.length} table(s) ajoutée(s) pour le mot-clé "${targetKeyword}"`);
-            } else {
-              const noTableMsg = document.createElement('div');
-              noTableMsg.className = 'text-gray-500 italic p-3';
-              noTableMsg.textContent = 'Aucune table trouvée dans la réponse Flowise';
-              tablesContainer.appendChild(noTableMsg);
-            }
-            
-            // Mettre à jour le conteneur
-            container.innerHTML = '';
-            container.appendChild(tablesContainer);
-            
-          } else {
-            alert(`❌ PROBLÈME DE DÉTECTION DYNAMIQUE!\n\nMot-clé recherché: "${targetKeyword}"\nAucune table correspondante trouvée.\n\nVérifiez que:\n1. Il existe des tables avec colonnes "Rubrique" et "Description"\n2. Au moins une cellule contient le mot-clé "${targetKeyword}"`);
-            
-            const container = document.getElementById(containerId);
-            if (container) {
-              const errorDiv = document.createElement('div');
-              errorDiv.className = 'text-orange-500 p-3 bg-orange-50 rounded';
-              errorDiv.innerHTML = `<strong>Aucune table "${targetKeyword}" détectée:</strong> Vérifiez les critères dans la console.`;
-              container.innerHTML = '';
-              container.appendChild(errorDiv);
-            }
-          }
-          
-        } catch (error) {
-          console.error('❌ Erreur Flowise:', error);
-          alert(`❌ ERREUR FLOWISE DYNAMIQUE!\n\nMot-clé: "${targetKeyword}"\nErreur: ${error.message}`);
-          
-          const container = document.getElementById(containerId);
-          if (!container) return;
-          
-          const errorDiv = document.createElement('div');
-          errorDiv.className = 'text-red-500 p-3 bg-red-50 rounded';
-          errorDiv.innerHTML = `<strong>Erreur Flowise (${targetKeyword}):</strong> ${error.message}`;
-          container.innerHTML = '';
-          container.appendChild(errorDiv);
-        }
-      };
-
-      // Lancer la requête
-      processFlowiseRequest();
-      
+    // Étape 1 : Vérifier si la div est DÉJÀ traitée (cache ou DOM)
+    if (parentDiv.classList.contains(CONFIG.PROCESSED_DIV_CLASS)) {
       return;
     }
 
-    // Traitement normal pour les cas 1-4 avec recherche dynamique
-    if (caseType <= 4 && !hasCriteriaContainer && targetKeyword) {
-      const container = document.createElement('div');
-      container.className = 'criteria-tables-container';
-      container.style.marginTop = '10px';
-
-      // Utiliser la fonction de recherche dynamique
-      const criteriaTablesHTML = getCriteriaTablesWithDynamicKeyword(targetKeyword);
+    // Tenter de restaurer depuis le localStorage
+    const cachedData = PersistenceManager.getProcessedData(signature);
+    if (cachedData) {
+      console.log(`♻️ Restauration des données depuis le cache pour ${signature}`);
+      const flowiseTables = extractTablesFromResponse(cachedData.flowiseHTML);
+      integrateDataIntoDOM(flowiseTables, parentDiv);
       
-      if (criteriaTablesHTML) {
-        // Parser et ajouter les tables HTML
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(criteriaTablesHTML, 'text/html');
-        const tables = doc.querySelectorAll('table');
-        
-        tables.forEach((table, tableIndex) => {
-          const clone = table.cloneNode(true);
-          container.appendChild(clone);
-          
-          if (tableIndex < tables.length - 1) {
-            const spacer = document.createElement('div');
-            spacer.style.height = '10px';
-            container.appendChild(spacer);
-          }
-        });
-        
-        console.log(`✅ ${tables.length} table(s) de critères ajoutée(s) pour le cas ${caseType} (mot-clé: ${targetKeyword})`);
-      }
-
-      if (container.children.length > 0) {
-        targetTable.insertAdjacentElement('afterend', container);
-      } else {
-        console.log(`⚠️ Aucune table correspondante trouvée pour le cas ${caseType} (mot-clé: ${targetKeyword})`);
-      }
+      parentDiv.classList.add(CONFIG.PROCESSED_DIV_CLASS);
+      table.remove(); // Supprimer la table de déclenchement
+      return;
     }
-  });
-}
 
-// L'observateur et l'initialisation
-const observer = new MutationObserver(mutations => {
-  let tablesDetected = false;
-  
-  mutations.forEach(mutation => {
-    if (!tablesDetected && mutation.addedNodes.length > 0) {
-      mutation.addedNodes.forEach(node => {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          if (node.matches('table, div.prose') || 
-              (node.querySelector && node.querySelector('table.min-w-full.border'))) {
-            tablesDetected = true;
-          }
-        }
-      });
+    // Étape 2 : Si pas dans le cache, lancer le processus normal
+    const targetKeyword = detectTargetKeyword(table);
+    if (!targetKeyword) return;
+
+    // Marquer immédiatement pour éviter les traitements multiples
+    parentDiv.classList.add(CONFIG.PROCESSED_DIV_CLASS);
+    console.log(`✨ Nouveau traitement pour le mot-clé "${targetKeyword}" (Signature: ${signature})`);
+
+    try {
+      const criteriaTablesHTML = collectCriteriaTables(targetKeyword);
+      if (!criteriaTablesHTML) throw new Error("Aucune table de critère trouvée.");
+
+      const response = await queryFlowiseEndpoint(criteriaTablesHTML);
+      if (!response || !response.text) throw new Error("Réponse Flowise vide.");
+
+      const flowiseTables = extractTablesFromResponse(response.text);
+      if (!flowiseTables.length) throw new Error("Aucune table dans la réponse Flowise.");
+      
+      const flowiseHTML = flowiseTables.map(t => t.outerHTML).join('');
+
+      // NOUVEAU : Sauvegarder le résultat avant de l'afficher
+      PersistenceManager.saveProcessedData(signature, flowiseHTML);
+
+      // Intégrer les données et supprimer la table de déclenchement
+      integrateDataIntoDOM(flowiseTables, parentDiv);
+      table.remove();
+
+    } catch (error) {
+      console.error(`❌ Erreur de traitement pour "${targetKeyword}":`, error);
+      // En cas d'erreur, on retire la classe pour permettre une nouvelle tentative
+      parentDiv.classList.remove(CONFIG.PROCESSED_DIV_CLASS);
     }
-  });
-  
-  if (tablesDetected) {
-    console.log('🔄 Nouveau contenu tabulaire détecté');
-    setTimeout(() => addCriteriaTablesToChatTables(), 100);
   }
-});
 
-const observerConfig = {
-  childList: true,
-  subtree: true,
-  attributes: false
-};
+  function scanAndProcess() {
+    const allTables = document.querySelectorAll("table");
+    allTables.forEach(table => {
+      const headers = Array.from(table.querySelectorAll("th")).map(th => th.textContent.trim().toLowerCase());
+      if (headers.includes("flowise")) {
+        processFlowiseTable(table);
+      }
+    });
+  }
 
-function initializeCriteriaTables() {
-  console.log('🚀 Initialisation du système dynamique de tables de critères');
-  observer.observe(document.body, observerConfig);
-  setTimeout(() => addCriteriaTablesToChatTables(), 1000);
-}
-
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  setTimeout(initializeCriteriaTables, 500);
-} else {
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(initializeCriteriaTables, 500);
+  // --- OBSERVATEUR ET INITIALISATION ---
+  const observer = new MutationObserver((mutations) => {
+    const hasAddedTables = mutations.some(m => 
+        Array.from(m.addedNodes).some(n => 
+            n.nodeType === Node.ELEMENT_NODE && (n.tagName === 'TABLE' || n.querySelector('table'))
+        )
+    );
+    if (hasAddedTables) {
+      setTimeout(scanAndProcess, 200);
+    }
   });
-}
 
-window.updateCriteriaTables = function() {
-  console.log('🔧 Mise à jour manuelle des tables dynamiques');
-  addCriteriaTablesToChatTables();
-};
+  function initialize() {
+    console.log("🔧 Initialisation du script V13.0...");
+    
+    // NOUVEAU : Nettoyer les anciennes données au démarrage
+    PersistenceManager.cleanup();
+
+    // Scan initial pour les tables déjà présentes (essentiel après un F5)
+    setTimeout(scanAndProcess, 500);
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+    console.log("✅ Script V13.0 initialisé - Observateur DOM actif et persistance activée.");
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initialize);
+  } else {
+    initialize();
+  }
+})();

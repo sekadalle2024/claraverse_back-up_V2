@@ -1,5 +1,5 @@
 const DB_NAME = 'clara_db';
-const DB_VERSION = 11; // Increment version to add user_id indexes for Clara stores
+const DB_VERSION = 12; // Increment version to add clara_generated_tables store for Flowise persistence
 
 export class IndexedDBService {
   private db: IDBDatabase | null = null;
@@ -188,6 +188,58 @@ export class IndexedDBService {
           uiStore.createIndex('agent_id_index', 'agentId', { unique: false });
           uiStore.createIndex('created_at_index', 'createdAt', { unique: false });
           uiStore.createIndex('updated_at_index', 'updatedAt', { unique: false });
+        }
+
+        // Add Flowise Generated Tables store for table persistence
+        if (!db.objectStoreNames.contains('clara_generated_tables')) {
+          console.log('🔧 IndexedDB: Creating clara_generated_tables store');
+          const tablesStore = db.createObjectStore('clara_generated_tables', { keyPath: 'id' });
+          
+          // Create indexes for efficient querying
+          tablesStore.createIndex('sessionId', 'sessionId', { unique: false });
+          tablesStore.createIndex('messageId', 'messageId', { unique: false });
+          tablesStore.createIndex('keyword', 'keyword', { unique: false });
+          tablesStore.createIndex('fingerprint', 'fingerprint', { unique: false });
+          tablesStore.createIndex('user_id', 'user_id', { unique: false });
+          tablesStore.createIndex('timestamp', 'timestamp', { unique: false });
+          tablesStore.createIndex('source', 'source', { unique: false });
+          
+          // Composite index for duplicate detection (sessionId + fingerprint must be unique)
+          tablesStore.createIndex('sessionId_fingerprint', ['sessionId', 'fingerprint'], { unique: true });
+          
+          console.log('✅ IndexedDB: clara_generated_tables store created successfully');
+        } else {
+          console.log('ℹ️ IndexedDB: clara_generated_tables store already exists');
+          
+          // Ensure all indexes exist on existing store (for migration from older versions)
+          const tablesStore = transaction.objectStore('clara_generated_tables');
+          if (tablesStore) {
+            if (!tablesStore.indexNames.contains('sessionId')) {
+              tablesStore.createIndex('sessionId', 'sessionId', { unique: false });
+            }
+            if (!tablesStore.indexNames.contains('messageId')) {
+              tablesStore.createIndex('messageId', 'messageId', { unique: false });
+            }
+            if (!tablesStore.indexNames.contains('keyword')) {
+              tablesStore.createIndex('keyword', 'keyword', { unique: false });
+            }
+            if (!tablesStore.indexNames.contains('fingerprint')) {
+              tablesStore.createIndex('fingerprint', 'fingerprint', { unique: false });
+            }
+            if (!tablesStore.indexNames.contains('user_id')) {
+              tablesStore.createIndex('user_id', 'user_id', { unique: false });
+            }
+            if (!tablesStore.indexNames.contains('timestamp')) {
+              tablesStore.createIndex('timestamp', 'timestamp', { unique: false });
+            }
+            if (!tablesStore.indexNames.contains('source')) {
+              tablesStore.createIndex('source', 'source', { unique: false });
+            }
+            if (!tablesStore.indexNames.contains('sessionId_fingerprint')) {
+              tablesStore.createIndex('sessionId_fingerprint', ['sessionId', 'fingerprint'], { unique: true });
+            }
+            console.log('✅ IndexedDB: clara_generated_tables indexes verified/created');
+          }
         }
       };
     });
@@ -479,6 +531,203 @@ export class IndexedDBService {
     } catch (error) {
       // ignore
     }
+  }
+
+  // ================================
+  // FLOWISE GENERATED TABLES METHODS
+  // ================================
+
+  /**
+   * Get all generated tables for a specific session
+   */
+  async getGeneratedTablesBySession<T>(sessionId: string): Promise<T[]> {
+    try {
+      const db = await this.initDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction('clara_generated_tables', 'readonly');
+        const store = transaction.objectStore('clara_generated_tables');
+        const index = store.index('sessionId');
+        const request = index.getAll(sessionId);
+
+        request.onsuccess = (event) => {
+          const result = ((event.target as IDBRequest).result as T[]);
+          resolve(result);
+        };
+        request.onerror = (event) => {
+          const error = (event.target as IDBRequest).error;
+          reject(error);
+        };
+      });
+    } catch (error) {
+      console.error(`Error in getGeneratedTablesBySession(${sessionId}):`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if a table with the same fingerprint exists in a session
+   */
+  async generatedTableExists(sessionId: string, fingerprint: string): Promise<boolean> {
+    try {
+      const db = await this.initDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction('clara_generated_tables', 'readonly');
+        const store = transaction.objectStore('clara_generated_tables');
+        const index = store.index('sessionId_fingerprint');
+        const request = index.get([sessionId, fingerprint]);
+
+        request.onsuccess = (event) => {
+          const result = (event.target as IDBRequest).result;
+          resolve(result !== undefined);
+        };
+        request.onerror = (event) => {
+          const error = (event.target as IDBRequest).error;
+          console.error('Error checking table existence:', error);
+          resolve(false);
+        };
+      });
+    } catch (error) {
+      console.error('Error in generatedTableExists:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Delete all generated tables for a specific session (cascade delete)
+   */
+  async deleteGeneratedTablesBySession(sessionId: string): Promise<number> {
+    try {
+      const db = await this.initDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction('clara_generated_tables', 'readwrite');
+        const store = transaction.objectStore('clara_generated_tables');
+        const index = store.index('sessionId');
+        const request = index.openCursor(sessionId);
+        let deletedCount = 0;
+
+        request.onsuccess = (event) => {
+          const cursor = (event.target as IDBRequest).result;
+          if (cursor) {
+            cursor.delete();
+            deletedCount++;
+            cursor.continue();
+          } else {
+            resolve(deletedCount);
+          }
+        };
+        request.onerror = (event) => {
+          const error = (event.target as IDBRequest).error;
+          reject(error);
+        };
+      });
+    } catch (error) {
+      console.error(`Error in deleteGeneratedTablesBySession(${sessionId}):`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all generated tables (for diagnostics)
+   */
+  async getAllGeneratedTables<T>(): Promise<T[]> {
+    return this.getAll<T>('clara_generated_tables');
+  }
+
+  /**
+   * Add or update a generated table
+   */
+  async putGeneratedTable<T>(table: T): Promise<T> {
+    return this.put<T>('clara_generated_tables', table);
+  }
+
+  /**
+   * Delete a specific generated table by ID
+   */
+  async deleteGeneratedTable(id: string): Promise<void> {
+    return this.delete('clara_generated_tables', id);
+  }
+
+  /**
+   * Clear all generated tables (for testing/debugging)
+   */
+  async clearGeneratedTables(): Promise<void> {
+    return this.clear('clara_generated_tables');
+  }
+
+  /**
+   * Add or update multiple generated tables in a single transaction
+   * Task 13.2: Batch operations for performance
+   * Requirements: 7.1
+   */
+  async putGeneratedTablesBatch<T>(tables: T[]): Promise<void> {
+    if (tables.length === 0) {
+      return;
+    }
+
+    return new Promise((resolve, reject) => {
+      this.initDB().then(db => {
+        const transaction = db.transaction(['clara_generated_tables'], 'readwrite');
+        const store = transaction.objectStore('clara_generated_tables');
+
+        // Add all tables to the transaction
+        for (const table of tables) {
+          store.put(table);
+        }
+
+        transaction.oncomplete = () => {
+          console.log(`✅ Batch put ${tables.length} generated table(s)`);
+          resolve();
+        };
+
+        transaction.onerror = () => {
+          console.error('❌ Batch put transaction error:', transaction.error);
+          reject(transaction.error);
+        };
+
+        transaction.onabort = () => {
+          console.error('❌ Batch put transaction aborted');
+          reject(new Error('Transaction aborted'));
+        };
+      }).catch(reject);
+    });
+  }
+
+  /**
+   * Delete multiple generated tables in a single transaction
+   * Task 13.2: Batch operations for performance
+   * Requirements: 7.1
+   */
+  async deleteGeneratedTablesBatch(tableIds: string[]): Promise<void> {
+    if (tableIds.length === 0) {
+      return;
+    }
+
+    return new Promise((resolve, reject) => {
+      this.initDB().then(db => {
+        const transaction = db.transaction(['clara_generated_tables'], 'readwrite');
+        const store = transaction.objectStore('clara_generated_tables');
+
+        // Delete all tables in the transaction
+        for (const tableId of tableIds) {
+          store.delete(tableId);
+        }
+
+        transaction.oncomplete = () => {
+          console.log(`✅ Batch deleted ${tableIds.length} generated table(s)`);
+          resolve();
+        };
+
+        transaction.onerror = () => {
+          console.error('❌ Batch delete transaction error:', transaction.error);
+          reject(transaction.error);
+        };
+
+        transaction.onabort = () => {
+          console.error('❌ Batch delete transaction aborted');
+          reject(new Error('Transaction aborted'));
+        };
+      }).catch(reject);
+    });
   }
 }
 

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Stabilité des IDs</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .test-table th,
+        .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+
+        .prose {
+            max-width: none;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔧 Test Stabilité des IDs</h1>
+        <p>Test pour vérifier que les IDs générés sont stables et que la restauration fonctionne correctement</p>
+
+        <div class="container">
+            <h2>🎯 Tests de Stabilité</h2>
+            <button onclick="testIdStability()">Test Stabilité ID</button>
+            <button onclick="testSaveRestoreCycle()">Test Cycle Sauvegarde/Restauration</button>
+            <button onclick="testMultipleCycles()">Test Cycles Multiples (Même Contenu)</button>
+            <button onclick="testDifferentContentCycles()">Test Cycles Contenus Différents</button>
+            <button onclick="clearLog()">Effacer Log</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="test-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Valeur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Test Item 1</td>
+                            <td>100</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Test Item 2</td>
+                            <td>200</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Test Item 3</td>
+                            <td>300</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Log des Tests</h2>
+            <div id="test-log" class="log">
+                Cliquez sur un bouton pour commencer les tests...
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        let logDiv = document.getElementById('test-log');
+
+        function logMessage(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            let className = '';
+            let icon = '';
+
+            switch (type) {
+                case 'error':
+                    className = 'error';
+                    icon = '❌';
+                    break;
+                case 'warn':
+                    className = 'warning';
+                    icon = '⚠️';
+                    break;
+                case 'success':
+                    className = 'success';
+                    icon = '✅';
+                    break;
+                default:
+                    icon = 'ℹ️';
+            }
+
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${icon} ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function testIdStability() {
+            logMessage('🧪 Test de stabilité des IDs...', 'log');
+
+            try {
+                const table = document.getElementById('test-table');
+                if (!table) {
+                    logMessage('❌ Table de test non trouvée', 'error');
+                    return;
+                }
+
+                // Effacer les attributs existants pour un test propre
+                table.removeAttribute('data-robust-table-id');
+                table.removeAttribute('data-menu-table-id');
+
+                // Générer l'ID plusieurs fois
+                const ids = [];
+                for (let i = 0; i < 5; i++) {
+                    // Effacer l'attribut pour forcer la régénération
+                    table.removeAttribute('data-robust-table-id');
+
+                    const id = window.claraverseStorageAPI.generateRobustTableId(table);
+                    ids.push(id);
+                    logMessage(`Génération ${i + 1}: ${id}`, 'log');
+
+                    // Petite pause
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                // Vérifier la stabilité
+                const uniqueIds = [...new Set(ids)];
+                if (uniqueIds.length === 1) {
+                    logMessage('✅ IDs stables - tous identiques', 'success');
+                } else {
+                    logMessage(`❌ IDs instables - ${uniqueIds.length} IDs différents générés`, 'error');
+                    uniqueIds.forEach((id, index) => {
+                        logMessage(`  ID unique ${index + 1}: ${id}`, 'warn');
+                    });
+                }
+
+            } catch (error) {
+                logMessage(`❌ Erreur test stabilité: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSaveRestoreCycle() {
+            logMessage('🧪 Test cycle sauvegarde/restauration...', 'log');
+
+            try {
+                const table = document.getElementById('test-table');
+                if (!table) {
+                    logMessage('❌ Table de test non trouvée', 'error');
+                    return;
+                }
+
+                // Étape 1: Capturer le contenu original
+                const originalContent = table.innerHTML;
+                const originalFirstCell = table.querySelector('td');
+                const originalFirstCellContent = originalFirstCell ? originalFirstCell.textContent : '';
+                logMessage(`📋 Contenu original première cellule: "${originalFirstCellContent}"`, 'log');
+
+                // Étape 2: Modifier le contenu
+                const testContent = `MODIFIED_${Date.now()}`;
+                if (originalFirstCell) {
+                    originalFirstCell.textContent = testContent;
+                    logMessage(`📝 Contenu modifié: "${testContent}"`, 'log');
+                }
+
+                // Étape 3: Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                if (!saveResult) {
+                    logMessage('❌ Échec sauvegarde', 'error');
+                    return;
+                }
+                logMessage('✅ Sauvegarde réussie', 'success');
+
+                // Étape 4: Modifier à nouveau le contenu
+                const tempContent = 'TEMPORARY_CONTENT';
+                if (originalFirstCell) {
+                    originalFirstCell.textContent = tempContent;
+                    logMessage(`📝 Contenu temporaire: "${tempContent}"`, 'log');
+                }
+
+                // Étape 5: Restaurer
+                const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                if (!restoreResult) {
+                    logMessage('❌ Échec restauration', 'error');
+                    return;
+                }
+                logMessage('✅ Restauration réussie', 'success');
+
+                // Étape 6: Vérifier le contenu restauré
+                const restoredFirstCell = table.querySelector('td');
+                const restoredContent = restoredFirstCell ? restoredFirstCell.textContent : '';
+                logMessage(`📋 Contenu restauré: "${restoredContent}"`, 'log');
+
+                if (restoredContent === testContent) {
+                    logMessage('✅ Contenu correctement restauré!', 'success');
+                } else {
+                    logMessage(`❌ Contenu incorrect - attendu: "${testContent}", obtenu: "${restoredContent}"`, 'error');
+                }
+
+            } catch (error) {
+                logMessage(`❌ Erreur test cycle: ${error.message}`, 'error');
+            }
+        }
+
+        async function testMultipleCycles() {
+            logMessage('🧪 Test cycles multiples...', 'log');
+
+            try {
+                const table = document.getElementById('test-table');
+                if (!table) {
+                    logMessage('❌ Table de test non trouvée', 'error');
+                    return;
+                }
+
+                const cycles = 5;
+                let successCount = 0;
+                let errorCount = 0;
+
+                for (let i = 0; i < cycles; i++) {
+                    try {
+                        logMessage(`🔄 Cycle ${i + 1}/${cycles}...`, 'log');
+
+                        // Utiliser le MÊME contenu pour tous les cycles (pour tester la robustesse)
+                        const testContent = `STABLE_CONTENT_FOR_ALL_CYCLES`;
+                        const firstCell = table.querySelector('td');
+                        if (firstCell) {
+                            firstCell.textContent = testContent;
+                        }
+
+                        // Sauvegarder
+                        const saveResult = window.claraverseStorageAPI.saveTable(table);
+                        if (!saveResult) {
+                            throw new Error(`Échec sauvegarde cycle ${i}`);
+                        }
+
+                        // Modifier temporairement
+                        if (firstCell) {
+                            firstCell.textContent = 'TEMP';
+                        }
+
+                        // Restaurer
+                        const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                        if (!restoreResult) {
+                            throw new Error(`Échec restauration cycle ${i}`);
+                        }
+
+                        // Vérifier le contenu
+                        const restoredContent = firstCell ? firstCell.textContent : '';
+                        if (restoredContent !== testContent) {
+                            throw new Error(`Contenu incorrect cycle ${i}: attendu "${testContent}", obtenu "${restoredContent}"`);
+                        }
+
+                        successCount++;
+                        logMessage(`✅ Cycle ${i + 1} réussi`, 'success');
+
+                    } catch (error) {
+                        errorCount++;
+                        logMessage(`❌ Erreur cycle ${i + 1}: ${error.message}`, 'error');
+                    }
+
+                    // Pause entre les cycles
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+
+                // Résultats finaux
+                const successRate = Math.round((successCount / cycles) * 100);
+                logMessage(`📊 Résultats: ${successCount}/${cycles} cycles réussis (${successRate}%)`, 'log');
+
+                if (successRate === 100) {
+                    logMessage('🎉 Tous les cycles ont réussi!', 'success');
+                } else if (successRate >= 80) {
+                    logMessage('⚠️ Cycles majoritairement réussis', 'warn');
+                } else {
+                    logMessage('❌ Échec de la majorité des cycles', 'error');
+                }
+
+            } catch (error) {
+                logMessage(`❌ Erreur test cycles multiples: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDifferentContentCycles() {
+            logMessage('🧪 Test cycles avec contenus différents...', 'log');
+
+            try {
+                const table = document.getElementById('test-table');
+                if (!table) {
+                    logMessage('❌ Table de test non trouvée', 'error');
+                    return;
+                }
+
+                const cycles = 3;
+                let successCount = 0;
+                const savedContents = [];
+
+                // Phase 1: Sauvegarder différents contenus
+                logMessage('📝 Phase 1: Sauvegarde de contenus différents...', 'log');
+                for (let i = 0; i < cycles; i++) {
+                    try {
+                        const testContent = `DIFFERENT_CONTENT_${i}_STABLE`;
+                        const firstCell = table.querySelector('td');
+                        if (firstCell) {
+                            firstCell.textContent = testContent;
+                        }
+
+                        const saveResult = window.claraverseStorageAPI.saveTable(table);
+                        if (!saveResult) {
+                            throw new Error(`Échec sauvegarde contenu ${i}`);
+                        }
+
+                        savedContents.push({
+                            content: testContent,
+                            tableId: table.getAttribute('data-robust-table-id')
+                        });
+
+                        logMessage(`✅ Sauvegardé: "${testContent}" avec ID: ${savedContents[i].tableId?.substring(0, 30)}...`, 'success');
+
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    } catch (error) {
+                        logMessage(`❌ Erreur sauvegarde ${i}: ${error.message}`, 'error');
+                    }
+                }
+
+                // Phase 2: Restaurer chaque contenu
+                logMessage('🔄 Phase 2: Restauration de chaque contenu...', 'log');
+                for (let i = 0; i < savedContents.length; i++) {
+                    try {
+                        const expectedContent = savedContents[i].content;
+                        const expectedId = savedContents[i].tableId;
+
+                        // Remettre le contenu pour que l'ID soit correct
+                        const firstCell = table.querySelector('td');
+                        if (firstCell) {
+                            firstCell.textContent = expectedContent;
+                        }
+
+                        // Vérifier que l'ID est correct
+                        const currentId = window.claraverseStorageAPI.generateRobustTableId(table);
+                        if (currentId !== expectedId) {
+                            logMessage(`⚠️ ID différent pour contenu ${i}: attendu ${expectedId?.substring(0, 30)}..., obtenu ${currentId?.substring(0, 30)}...`, 'warn');
+                        }
+
+                        // Modifier temporairement
+                        if (firstCell) {
+                            firstCell.textContent = 'TEMP_BEFORE_RESTORE';
+                        }
+
+                        // Restaurer
+                        const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                        if (!restoreResult) {
+                            throw new Error(`Échec restauration contenu ${i}`);
+                        }
+
+                        // Vérifier le contenu restauré
+                        const restoredContent = firstCell ? firstCell.textContent : '';
+                        if (restoredContent === expectedContent) {
+                            successCount++;
+                            logMessage(`✅ Contenu ${i} restauré correctement: "${restoredContent}"`, 'success');
+                        } else {
+                            logMessage(`❌ Contenu ${i} incorrect: attendu "${expectedContent}", obtenu "${restoredContent}"`, 'error');
+                        }
+
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    } catch (error) {
+                        logMessage(`❌ Erreur restauration ${i}: ${error.message}`, 'error');
+                    }
+                }
+
+                // Résultats finaux
+                const successRate = Math.round((successCount / cycles) * 100);
+                logMessage(`📊 Résultats contenus différents: ${successCount}/${cycles} restaurations réussies (${successRate}%)`, 'log');
+
+                if (successRate === 100) {
+                    logMessage('🎉 Tous les contenus différents restaurés correctement!', 'success');
+                } else if (successRate >= 70) {
+                    logMessage('⚠️ Majorité des contenus restaurés', 'warn');
+                } else {
+                    logMessage('❌ Échec restauration contenus différents', 'error');
+                }
+
+            } catch (error) {
+                logMessage(`❌ Erreur test contenus différents: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLog() {
+            logDiv.innerHTML = 'Log effacé...\n';
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function () {
+            logMessage('🚀 Interface de test de stabilité chargée', 'log');
+
+            setTimeout(() => {
+                if (typeof window.claraverseStorageAPI !== 'undefined') {
+                    logMessage('✅ API claraverseStorageAPI disponible', 'success');
+                } else {
+                    logMessage('❌ API claraverseStorageAPI non disponible', 'error');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Diagnostic Complet Persistance</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #252526;
+            border-left: 3px solid #007acc;
+        }
+
+        .success {
+            color: #4ec9b0;
+        }
+
+        .error {
+            color: #f48771;
+        }
+
+        .warning {
+            color: #dcdcaa;
+        }
+
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            background: #0e639c;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1177bb;
+        }
+
+        pre {
+            background: #1e1e1e;
+            padding: 10px;
+            overflow-x: auto;
+            max-height: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Diagnostic Complet Persistance</h1>
+
+    <div class="section">
+        <h2>1. Session Stable</h2>
+        <button onclick="checkSession()">Vérifier</button>
+        <pre id="session-result"></pre>
+    </div>
+
+    <div class="section">
+        <h2>2. Tables dans IndexedDB</h2>
+        <button onclick="listTables()">Lister</button>
+        <pre id="tables-result"></pre>
+    </div>
+
+    <div class="section">
+        <h2>3. Tables dans DOM</h2>
+        <button onclick="checkDOM()">Vérifier</button>
+        <pre id="dom-result"></pre>
+    </div>
+
+    <div class="section">
+        <h2>4. Forcer Restauration</h2>
+        <button onclick="forceRestore()">Restaurer</button>
+        <pre id="restore-result"></pre>
+    </div>
+
+    <script type="module">
+        function log(id, msg, type = 'info') {
+            const el = document.getElementById(id);
+            const span = document.createElement('span');
+            span.className = type;
+            span.textContent = msg + '\n';
+            el.appendChild(span);
+        }
+
+        // 1. Vérifier session
+        window.checkSession = () => {
+            const result = document.getElementById('session-result');
+            result.innerHTML = '';
+
+            try {
+                const session = sessionStorage.getItem('claraverse_stable_session');
+                if (session) {
+                    log('session-result', `✅ Session trouvée: ${session}`, 'success');
+                } else {
+                    log('session-result', '❌ Aucune session stable', 'error');
+                }
+            } catch (error) {
+                log('session-result', `❌ Erreur: ${error.message}`, 'error');
+            }
+        };
+
+        // 2. Lister tables dans IndexedDB
+        window.listTables = async () => {
+            const result = document.getElementById('tables-result');
+            result.innerHTML = '';
+
+            try {
+                const session = sessionStorage.getItem('claraverse_stable_session');
+                if (!session) {
+                    log('tables-result', '❌ Pas de session', 'error');
+                    return;
+                }
+
+                log('tables-result', `🔍 Recherche tables pour: ${session}`, 'warning');
+
+                const db = await openDB();
+                const tables = await getAllTables(db, session);
+
+                log('tables-result', `📊 ${tables.length} table(s) trouvée(s)`, 'success');
+
+                tables.forEach((t, i) => {
+                    log('tables-result', `  ${i + 1}. ID: ${t.id}`, 'info');
+                    log('tables-result', `     Keyword: ${t.keyword}`, 'info');
+                    log('tables-result', `     Rows: ${t.tableElement.querySelectorAll('tr').length}`, 'info');
+                });
+
+            } catch (error) {
+                log('tables-result', `❌ Erreur: ${error.message}`, 'error');
+            }
+        };
+
+        // 3. Vérifier DOM
+        window.checkDOM = () => {
+            const result = document.getElementById('dom-result');
+            result.innerHTML = '';
+
+            const allTables = document.querySelectorAll('table');
+            log('dom-result', `📊 ${allTables.length} table(s) dans le DOM`, 'success');
+
+            allTables.forEach((table, i) => {
+                const parent = table.parentElement;
+                const containerId = parent?.getAttribute('data-container-id');
+                const rows = table.querySelectorAll('tr').length;
+
+                log('dom-result', `  ${i + 1}. Rows: ${rows}`, 'info');
+                log('dom-result', `     Container: ${containerId || 'none'}`, 'info');
+                log('dom-result', `     Parent: ${parent?.tagName}`, 'info');
+            });
+        };
+
+        // 4. Forcer restauration
+        window.forceRestore = async () => {
+            const result = document.getElementById('restore-result');
+            result.innerHTML = '';
+
+            try {
+                const session = sessionStorage.getItem('claraverse_stable_session');
+                if (!session) {
+                    log('restore-result', '❌ Pas de session', 'error');
+                    return;
+                }
+
+                log('restore-result', `🔄 Restauration pour: ${session}`, 'warning');
+
+                const { flowiseTableBridge } = await import('/src/services/flowiseTableBridge.ts');
+                await flowiseTableBridge.restoreTablesForSession(session);
+
+                log('restore-result', '✅ Restauration terminée', 'success');
+
+                // Vérifier le résultat
+                setTimeout(() => {
+                    const tables = document.querySelectorAll('table');
+                    log('restore-result', `📊 ${tables.length} table(s) maintenant dans le DOM`, 'success');
+                }, 500);
+
+            } catch (error) {
+                log('restore-result', `❌ Erreur: ${error.message}`, 'error');
+                console.error(error);
+            }
+        };
+
+        // Helper: Ouvrir IndexedDB
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('clara_db', 12);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Helper: Récupérer toutes les tables
+        function getAllTables(db, sessionId) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction('clara_generated_tables', 'readonly');
+                const store = tx.objectStore('clara_generated_tables');
+                const index = store.index('sessionId');
+                const request = index.getAll(sessionId);
+
+                request.onsuccess = () => {
+                    const tables = request.result.map(record => ({
+                        ...record,
+                        tableElement: createTableFromHTML(record.tableHTML)
+                    }));
+                    resolve(tables);
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Helper: Créer table depuis HTML
+        function createTableFromHTML(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            return div.querySelector('table');
+        }
+
+        // Auto-check au chargement
+        setTimeout(() => {
+            checkSession();
+            listTables();
+            checkDOM();
+        }, 1000);
+    </script>
+</body>
+
+</html>

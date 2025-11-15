@@ -1,31 +1,107 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="favicon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Clara - AI Assistant</title>
-    <!-- Font Awesome for icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
-    <!-- Monaco Editor CDN -->
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
 
-    <!-- Script for etape.js -->
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="favicon" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clara - AI Assistant</title>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Monaco Editor CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js" crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+</head>
 
-    <script type="module" src="/Flowise.js"></script>
-  </body>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+  <!-- Wrapper automatique de tables - DOIT être chargé EN PREMIER -->
+  <script src="/wrap-tables-auto.js"></script>
+  <script src="/Flowise.js"></script>
+  <!-- Restauration forcée -->
+  <script type="module" src="/force-restore-on-load.js"></script>
+  <!-- Pont de persistance - DOIT être chargé AVANT menu.js -->
+  <script src="/menu-persistence-bridge.js"></script>
+  <script src="/menu.js"></script>
+  <!-- Restauration automatique au changement de chat -->
+  <script type="module" src="/auto-restore-chat-change.js"></script>
+  <!-- Diagnostic changement de chat -->
+  <script src="/diagnostic-chat-change.js"></script>
+  <!-- Diagnostic restauration détaillé -->
+  <script src="/diagnostic-restauration-detaille.js"></script>
+  <!-- Test restauration forcée -->
+  <script src="/test-restore-force.js"></script>
+  <!-- 2. Puis le Patch (nouveau) -->
+
+
+
+  <!-- ClaraVerse Synchronization System v3.0 -->
+  <!-- CRITICAL: Load scripts in this exact order for proper synchronization -->
+
+  <!-- 3. Conso.js - Consolidation and calculations -->
+
+
+
+  <!-- 2. Dev.js v3.0 - Enhanced persistence system -->
+
+  <!-- Initialization Script -->
+  <script>
+    // Wait for all scripts to load and initialize coordination
+    document.addEventListener("DOMContentLoaded", function () {
+      console.log("🚀 ClaraVerse v3.0 - Synchronization System Loading...");
+
+      // Monitor coordinator readiness
+      document.addEventListener(
+        "claraverse:coordinator:ready",
+        function (event) {
+          console.log("✅ ClaraVerse Coordination System Ready!");
+          console.log(
+            "📊 Registered Scripts:",
+            event.detail.registeredScripts,
+          );
+
+          // Optional: Display status notification
+          if (window.claraverseSyncAPI) {
+            const notification = document.createElement("div");
+            notification.style.cssText = `
+              position: fixed;
+              top: 20px;
+              right: 20px;
+              background: linear-gradient(45deg, #10b981, #059669);
+              color: white;
+              padding: 12px 20px;
+              border-radius: 8px;
+              font-family: system-ui;
+              font-size: 14px;
+              font-weight: 600;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+              z-index: 10000;
+              transition: transform 0.3s ease;
+            `;
+            notification.innerHTML = "🎯 ClaraVerse v3.0 Ready!";
+
+            document.body.appendChild(notification);
+
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+              notification.style.transform = "translateX(100%)";
+              setTimeout(() => notification.remove(), 300);
+            }, 3000);
+          }
+        },
+      );
+
+      // Error handling for script loading issues
+      window.addEventListener("error", function (event) {
+        if (event.filename && event.filename.includes("claraverse")) {
+          console.error("❌ ClaraVerse Script Error:", event.message);
+        }
+      });
+    });
+  </script>
+</body>
+
 </html>

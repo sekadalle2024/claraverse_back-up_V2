@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClaraVerse - Diagnostic de Persistance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            margin: -20px -20px 20px -20px;
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .debug-section h3 {
+            margin-top: 0;
+            color: #1f2937;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        .btn.danger {
+            background: #dc2626;
+        }
+        .btn.danger:hover {
+            background: #b91c1c;
+        }
+        .btn.success {
+            background: #16a34a;
+        }
+        .btn.success:hover {
+            background: #15803d;
+        }
+        .log {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        table.min-w-full.border.border-gray-200.dark\:border-gray-700 .rounded-lg {
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+        }
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background: #f3f4f6;
+            font-weight: bold;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status.error {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        .status.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .prose {
+            /* Simuler l'environnement ClaraVerse */
+        }
+        .prose-base {
+            /* Simuler l'environnement ClaraVerse */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1></h1>🔧 ClaraVerse - Diagnostic de Persistance</h1>
+            <p>Outil de diagnostic pour tester la sauvegarde et restauration des données</p>
+        </div>
+
+        <!-- Status Section -->
+        <div class="debug-section">
+            <h3>📊 État du Système</h3>
+            <div id="systemStatus">
+                <div>Dev.js: <span id="devStatus" class="status">⏳ Test...</span></div>
+                <div>Conso.js: <span id="consoStatus" class="status">⏳ Test...</span></div>
+                <div>Menu.js: <span id="menuStatus" class="status">⏳ Test...</span></div>
+                <div>LocalStorage: <span id="storageStatus" class="status">⏳ Test...</span></div>
+            </div>
+        </div>
+
+        <!-- Actions Section -->
+        <div class="debug-section">
+            <h3>🛠️ Actions de Diagnostic</h3>
+            <button class="btn" onclick="testLocalStorage()">Test LocalStorage</button>
+            <button class="btn" onclick="debugStorage()">Debug Storage</button>
+            <button class="btn" onclick="restoreAll()">Forcer Restauration</button>
+            <button class="btn" onclick="scanTables()">Scanner Tables</button>
+            <button class="btn" onclick="checkConflicts()">Vérifier Conflits</button>
+            <button class="btn danger" onclick="hardReset()">Hard Reset</button>
+        </div>
+
+        <!-- Test Tables Section -->
+        <div class="debug-section">
+            <h3>📋 Tables de Test</h3>
+
+            <div class="prose prose-base">
+                <h4>Table de Pointage (Compatible ClaraVerse)</h4>
+                <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <thead>
+                        <tr>
+                            <th>Assertion</th>
+                            <th>CTR1</th>
+                            <th>CTR2</th>
+                            <th>Ecart</th>
+                            <th>Conclusion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Test donnée 1</td>
+                            <td>1000.50</td>
+                            <td>950.25</td>
+                            <td></td>
+                            <td>À vérifier</td>
+                        </tr>
+                        <tr>
+                            <td>Test donnée 2</td>
+                            <td>2500</td>
+                            <td>2500</td>
+                            <td></td>
+                            <td>Conforme</td>
+                        </tr>
+                        <tr>
+                            <td>Test donnée 3</td>
+                            <td>750.75</td>
+                            <td>800</td>
+                            <td></td>
+                            <td>Écart détecté</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>Table Simple</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Valeur</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Item 1</td>
+                        <td>100</td>
+                        <td>OK</td>
+                    </tr>
+                    <tr>
+                        <td>Item 2</td>
+                        <td>200</td>
+                        <td>OK</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Logs Section -->
+        <div class="debug-section">
+            <h3>📝 Console de Debug</h3>
+            <button class="btn" onclick="clearLogs()">Clear Logs</button>
+            <div id="debugLogs" class="log">
+                === Logs de diagnostic ===<br>
+            </div>
+        </div>
+
+        <!-- Storage Info Section -->
+        <div class="debug-section">
+            <h3>💾 Informations Storage</h3>
+            <div id="storageInfo">
+                <p>Cliquez sur "Debug Storage" pour afficher les informations</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="dev.js"></script>
+    <script src="conso.js"></script>
+    <script src="menu.js"></script>
+
+    <script>
+        // Fonctions de diagnostic
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logsDiv = document.getElementById('debugLogs');
+            logsDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(`[DEBUG] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('debugLogs').innerHTML = '=== Logs de diagnostic ===<br>';
+        }
+
+        function updateStatus(elementId, status, text) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${status}`;
+            element.textContent = text;
+        }
+
+        function testLocalStorage() {
+            log('🧪 Test LocalStorage...');
+
+            try {
+                const testKey = 'claraverse_test_' + Date.now();
+                const testValue = { test: true, timestamp: Date.now() };
+
+                localStorage.setItem(testKey, JSON.stringify(testValue));
+                const retrieved = JSON.parse(localStorage.getItem(testKey));
+                localStorage.removeItem(testKey);
+
+                if (retrieved && retrieved.test) {
+                    updateStatus('storageStatus', 'success', '✅ Opérationnel');
+                    log('✅ LocalStorage fonctionne correctement');
+                } else {
+                    updateStatus('storageStatus', 'error', '❌ Erreur lecture');
+                    log('❌ Erreur de lecture LocalStorage');
+                }
+            } catch (e) {
+                updateStatus('storageStatus', 'error', '❌ Défaillant');
+                log(`❌ Erreur LocalStorage: ${e.message}`);
+            }
+        }
+
+        function debugStorage() {
+            log('🔍 Debug Storage...');
+
+            if (window.debugClaraVerse && window.debugClaraVerse.debugLocalStorage) {
+                const result = window.debugClaraVerse.debugLocalStorage();
+
+                const infoDiv = document.getElementById('storageInfo');
+                infoDiv.innerHTML = `
+                    <p><strong>Clés totales:</strong> ${result.totalKeys}</p>
+                    <p><strong>Clés ClaraVerse:</strong> ${result.claraVerseKeys}</p>
+                    <p><strong>Données valides:</strong> ${result.validData}</p>
+                    <p><strong>Données corrompues:</strong> ${result.corruptedData}</p>
+                `;
+
+                log(`📊 Storage: ${result.claraVerseKeys} clés ClaraVerse, ${result.validData} valides`);
+            } else {
+                log('❌ debugClaraVerse non disponible');
+            }
+        }
+
+        function restoreAll() {
+            log('🔄 Force restauration...');
+
+            if (window.debugClaraVerse && window.debugClaraVerse.restoreAllData) {
+                const result = window.debugClaraVerse.restoreAllData();
+                log(`✅ Restauration: ${result?.restored || 0} cellules`);
+            } else {
+                log('❌ restoreAllData non disponible');
+            }
+        }
+
+        function scanTables() {
+            log('🔍 Scan des tables...');
+
+            if (window.debugClaraVerse && window.debugClaraVerse.performScan) {
+                const result = window.debugClaraVerse.performScan();
+                log(`📊 Scan: ${result.processed}/${result.total} tables`);
+            } else {
+                log('❌ performScan non disponible');
+            }
+        }
+
+        function checkConflicts() {
+            log('⚔️ Vérification conflits...');
+
+            if (window.debugClaraVerse && window.debugClaraVerse.diagnosticConflicts) {
+                const result = window.debugClaraVerse.diagnosticConflicts();
+                log(`⚠️ Conflits: ${result.conflicts} tables en double traitement`);
+                log(`📈 Dev: ${result.devProcessed} | Conso: ${result.consoProcessed}`);
+            } else {
+                log('❌ diagnosticConflicts non disponible');
+            }
+        }
+
+        function hardReset() {
+            if (confirm('⚠️ ATTENTION: Cela va supprimer toutes les données sauvegardées. Continuer?')) {
+                log('🔥 HARD RESET en cours...');
+
+                if (window.debugClaraVerse && window.debugClaraVerse.hardReset) {
+                    window.debugClaraVerse.hardReset();
+                    log('✅ Hard reset terminé');
+                } else {
+                    log('❌ hardReset non disponible');
+                }
+            }
+        }
+
+        // Test initial des composants
+        function checkComponents() {
+            // Test dev.js
+            if (typeof window.debugClaraVerse !== 'undefined') {
+                updateStatus('devStatus', 'success', '✅ Chargé');
+            } else {
+                updateStatus('devStatus', 'error', '❌ Non chargé');
+            }
+
+            // Test conso.js
+            if (typeof window.initClaraverseProcessor !== 'undefined') {
+                updateStatus('consoStatus', 'success', '✅ Chargé');
+            } else {
+                updateStatus('consoStatus', 'error', '❌ Non chargé');
+            }
+
+            // Test menu.js
+            if (typeof window.initContextualMenu !== 'undefined') {
+                updateStatus('menuStatus', 'success', '✅ Chargé');
+            } else {
+                updateStatus('menuStatus', 'error', '❌ Non chargé');
+            }
+        }
+
+        // Initialisation au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Page de diagnostic chargée');
+
+            setTimeout(() => {
+                checkComponents();
+                testLocalStorage();
+            }, 2000);
+
+            setTimeout(() => {
+                log('🔄 Test automatique de scan...');
+                scanTables();
+            }, 4000);
+        });
+
+        // Écouter les événements ClaraVerse
+        document.addEventListener('claraverse:save:complete', function(event) {
+            log(`💾 Sauvegarde détectée: ${event.detail.savedCells} cellules`);
+        });
+
+        document.addEventListener('claraverse:table:updated', function(event) {
+            log(`📝 Table modifiée: ${event.detail.tableId} (${event.detail.source})`);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Force Correction</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .test-table th,
+        .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+
+        .prose {
+            max-width: none;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button.success {
+            background: #28a745;
+        }
+
+        button.danger {
+            background: #dc3545;
+        }
+
+        .logs-container {
+            background: #1e1e1e;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .log-success {
+            color: #4CAF50;
+        }
+
+        .log-error {
+            color: #f44336;
+        }
+
+        .log-warning {
+            color: #ff9800;
+        }
+
+        .log-info {
+            color: #2196F3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔧 Test Force Correction</h1>
+        <p>Test qui applique directement la correction de restauration</p>
+
+        <div class="container">
+            <h2>🎯 Tests de Force</h2>
+            <button onclick="testManualCorrection()">🔧 Correction Manuelle</button>
+            <button onclick="testInterceptMethod()">🕵️ Intercepter Méthode</button>
+            <button onclick="testDirectHTML()">📝 HTML Direct</button>
+            <button class="danger" onclick="clearLogs()">🧹 Effacer</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="test-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Original</td>
+                            <td>Data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Logs</h2>
+            <div id="logs-display" class="logs-container">
+                <div class="log-entry log-info">[INIT] Test de force correction chargé</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+
+            const logsContainer = document.getElementById('logs-display');
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('logs-display').innerHTML = '';
+            log('Logs effacés', 'info');
+        }
+
+        // Fonction de correction manuelle qui applique directement ma logique
+        function applyManualCorrection(table, savedHTML) {
+            log('🔧 Application de la correction manuelle...', 'info');
+
+            try {
+                // Parser le HTML sauvegardé
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(savedHTML, 'text/html');
+                const parsedTable = doc.querySelector('table');
+
+                if (!parsedTable) {
+                    log('❌ Impossible de parser le HTML sauvegardé', 'error');
+                    return false;
+                }
+
+                log('✅ HTML parsé avec succès', 'success');
+
+                // Préserver les classes et styles
+                const currentClasses = table.className;
+                const currentStyles = table.style.cssText;
+
+                // Restaurer la structure
+                table.innerHTML = parsedTable.innerHTML;
+                log('📋 Structure HTML restaurée', 'info');
+
+                // MA CORRECTION: Copier cellule par cellule
+                const originalCells = table.querySelectorAll('td, th');
+                const restoredCells = parsedTable.querySelectorAll('td, th');
+
+                log(`🔧 Correction: ${originalCells.length} cellules originales, ${restoredCells.length} cellules restaurées`, 'info');
+
+                for (let i = 0; i < Math.min(originalCells.length, restoredCells.length); i++) {
+                    const originalContent = originalCells[i].textContent;
+                    const restoredContent = restoredCells[i].textContent;
+                    originalCells[i].textContent = restoredContent;
+                    log(`🔧 Cellule ${i}: "${originalContent}" → "${restoredContent}"`, 'info');
+                }
+
+                // Restaurer classes et styles
+                table.className = currentClasses;
+                table.style.cssText = currentStyles;
+
+                log('✅ Correction manuelle appliquée avec succès', 'success');
+                return true;
+
+            } catch (error) {
+                log(`❌ Erreur correction manuelle: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testManualCorrection() {
+            log('🔧 === TEST CORRECTION MANUELLE ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'MANUAL_CORRECTION_' + Date.now();
+
+                // Nettoyer et définir contenu
+                table.removeAttribute('data-robust-table-id');
+                firstCell.textContent = testContent;
+                log(`📝 Contenu défini: "${testContent}"`, 'info');
+
+                // Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`, saveResult ? 'success' : 'error');
+
+                if (saveResult) {
+                    // Récupérer l'ID et les données sauvegardées
+                    const tableId = table.getAttribute('data-robust-table-id');
+                    log(`🔑 ID de table: ${tableId ? tableId.substring(0, 30) + '...' : 'AUCUN'}`, 'info');
+
+                    if (tableId) {
+                        const savedDataStr = localStorage.getItem(tableId);
+                        if (savedDataStr) {
+                            const savedData = JSON.parse(savedDataStr);
+                            log(`📊 Données trouvées: ${savedData.html ? 'OUI' : 'NON'}`, savedData.html ? 'success' : 'error');
+
+                            // Modifier temporairement
+                            firstCell.textContent = 'TEMP_MANUAL';
+                            log(`📝 Contenu modifié: "${firstCell.textContent}"`, 'info');
+
+                            // Appliquer ma correction manuelle
+                            const correctionResult = applyManualCorrection(table, savedData.html);
+
+                            if (correctionResult) {
+                                // Vérifier le résultat
+                                const finalContent = firstCell.textContent;
+                                log(`📋 Contenu final: "${finalContent}"`, 'info');
+
+                                if (finalContent === testContent) {
+                                    log('✅ CORRECTION MANUELLE RÉUSSIE !', 'success');
+                                } else {
+                                    log(`❌ CORRECTION MANUELLE ÉCHOUÉE`, 'error');
+                                    log(`   Attendu: "${testContent}"`, 'error');
+                                    log(`   Obtenu:  "${finalContent}"`, 'error');
+                                }
+                            }
+                        } else {
+                            log('❌ Données non trouvées dans localStorage', 'error');
+                        }
+                    } else {
+                        log('❌ Aucun ID de table trouvé', 'error');
+                    }
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testInterceptMethod() {
+            log('🕵️ === TEST INTERCEPTION MÉTHODE ===', 'info');
+
+            try {
+                // Sauvegarder la méthode originale
+                const originalRestore = window.claraverseStorageAPI.restoreTable;
+                log('📋 Méthode originale sauvegardée', 'info');
+
+                // Créer une version interceptée
+                window.claraverseStorageAPI.restoreTable = function (table) {
+                    log('🕵️ INTERCEPTION: restoreTable appelée !', 'warning');
+
+                    // Appeler la méthode originale
+                    const result = originalRestore.call(this, table);
+                    log(`🕵️ Résultat méthode originale: ${result}`, result ? 'success' : 'error');
+
+                    // Si la méthode originale échoue, appliquer ma correction
+                    if (result) {
+                        log('🕵️ Méthode originale réussie, vérification du contenu...', 'info');
+
+                        // Vérifier si le contenu a vraiment été restauré
+                        const firstCell = table.querySelector('td');
+                        if (firstCell && firstCell.textContent.startsWith('TEMP_')) {
+                            log('🕵️ Contenu non restauré, application de la correction...', 'warning');
+
+                            // Récupérer les données et appliquer ma correction
+                            const tableId = table.getAttribute('data-robust-table-id');
+                            if (tableId) {
+                                const savedDataStr = localStorage.getItem(tableId);
+                                if (savedDataStr) {
+                                    const savedData = JSON.parse(savedDataStr);
+                                    applyManualCorrection(table, savedData.html);
+                                }
+                            }
+                        }
+                    }
+
+                    return result;
+                };
+
+                log('🕵️ Méthode interceptée installée', 'success');
+
+                // Tester avec la méthode interceptée
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'INTERCEPT_' + Date.now();
+
+                table.removeAttribute('data-robust-table-id');
+                firstCell.textContent = testContent;
+                log(`📝 Contenu défini: "${testContent}"`, 'info');
+
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                if (saveResult) {
+                    firstCell.textContent = 'TEMP_INTERCEPT';
+                    log(`📝 Contenu modifié: "${firstCell.textContent}"`, 'info');
+
+                    const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                    log(`🔄 Restauration interceptée: ${restoreResult}`, restoreResult ? 'success' : 'error');
+
+                    const finalContent = firstCell.textContent;
+                    log(`📋 Contenu final: "${finalContent}"`, 'info');
+
+                    if (finalContent === testContent) {
+                        log('✅ INTERCEPTION RÉUSSIE !', 'success');
+                    } else {
+                        log(`❌ INTERCEPTION ÉCHOUÉE`, 'error');
+                    }
+                }
+
+                // Restaurer la méthode originale
+                window.claraverseStorageAPI.restoreTable = originalRestore;
+                log('🕵️ Méthode originale restaurée', 'info');
+
+            } catch (error) {
+                log(`❌ ERREUR INTERCEPTION: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDirectHTML() {
+            log('📝 === TEST HTML DIRECT ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'DIRECT_HTML_' + Date.now();
+
+                // Test simple: modifier directement le HTML
+                firstCell.textContent = testContent;
+                log(`📝 Contenu défini directement: "${testContent}"`, 'info');
+
+                // Sauvegarder le HTML actuel
+                const currentHTML = table.innerHTML;
+                log('💾 HTML actuel sauvegardé', 'info');
+
+                // Modifier temporairement
+                firstCell.textContent = 'TEMP_DIRECT_HTML';
+                log(`📝 Contenu modifié: "${firstCell.textContent}"`, 'info');
+
+                // Restaurer directement le HTML
+                table.innerHTML = currentHTML;
+                log('🔄 HTML restauré directement', 'info');
+
+                // Vérifier
+                const finalContent = table.querySelector('td').textContent;
+                log(`📋 Contenu final: "${finalContent}"`, 'info');
+
+                if (finalContent === testContent) {
+                    log('✅ HTML DIRECT RÉUSSI !', 'success');
+                } else {
+                    log(`❌ HTML DIRECT ÉCHOUÉ`, 'error');
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR HTML DIRECT: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function () {
+            log('🔧 Test de force correction chargé', 'success');
+            log('💡 Ces tests appliquent directement les corrections', 'info');
+        });
+    </script>
+</body>
+
+</html>

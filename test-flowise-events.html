@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowise Event Emission Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .event-log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .event-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #4CAF50;
+            padding-left: 10px;
+        }
+
+        .event-entry.error {
+            border-left-color: #f44336;
+        }
+
+        .event-entry.cached {
+            border-left-color: #2196F3;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Flowise Event Emission Test</h1>
+
+    <div class="test-section">
+        <h2>Event Listener Status</h2>
+        <p id="listener-status">Initializing...</p>
+        <button onclick="clearLog()">Clear Log</button>
+        <button onclick="showStats()">Show Statistics</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Event Statistics</h2>
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="total-events">0</div>
+                <div class="stat-label">Total Events</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="n8n-events">0</div>
+                <div class="stat-label">N8N Tables</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="cached-events">0</div>
+                <div class="stat-label">Cached Tables</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="error-events">0</div>
+                <div class="stat-label">Error Messages</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Event Log</h2>
+        <div class="event-log" id="event-log">
+            <div style="color: #888;">Waiting for events...</div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>DOM Inspection</h2>
+        <button onclick="inspectDOM()">Inspect Current DOM</button>
+        <div class="event-log" id="dom-inspection"></div>
+    </div>
+
+    <script>
+        // Event tracking
+        const eventStats = {
+            total: 0,
+            n8n: 0,
+            cached: 0,
+            error: 0
+        };
+
+        const eventLog = [];
+
+        // Initialize event listener
+        function initializeEventListener() {
+            document.addEventListener('flowise:table:integrated', handleFlowiseEvent);
+            document.getElementById('listener-status').innerHTML =
+                '✅ <strong>Event listener active</strong> - Listening for flowise:table:integrated events';
+            console.log('🎧 Flowise event listener initialized');
+        }
+
+        // Handle Flowise events
+        function handleFlowiseEvent(event) {
+            console.log('📡 Flowise event received:', event.detail);
+
+            const detail = event.detail;
+            const timestamp = new Date(detail.timestamp).toLocaleTimeString();
+
+            // Update statistics
+            eventStats.total++;
+            if (detail.source === 'n8n') eventStats.n8n++;
+            else if (detail.source === 'cached') eventStats.cached++;
+            else if (detail.source === 'error') eventStats.error++;
+
+            updateStats();
+
+            // Log event
+            const logEntry = {
+                timestamp: detail.timestamp,
+                source: detail.source,
+                keyword: detail.keyword,
+                containerId: detail.containerId,
+                position: detail.position,
+                error: detail.error || null
+            };
+
+            eventLog.push(logEntry);
+
+            // Display in log
+            const logDiv = document.getElementById('event-log');
+            const entryDiv = document.createElement('div');
+            entryDiv.className = `event-entry ${detail.source}`;
+
+            let logText = `[${timestamp}] `;
+            logText += `<strong>${detail.source.toUpperCase()}</strong> `;
+            logText += `Keyword: "${detail.keyword}" `;
+            logText += `Container: ${detail.containerId} `;
+            logText += `Position: ${detail.position}`;
+
+            if (detail.error) {
+                logText += `<br>Error: ${detail.error}`;
+            }
+
+            entryDiv.innerHTML = logText;
+            logDiv.appendChild(entryDiv);
+
+            // Auto-scroll to bottom
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Update statistics display
+        function updateStats() {
+            document.getElementById('total-events').textContent = eventStats.total;
+            document.getElementById('n8n-events').textContent = eventStats.n8n;
+            document.getElementById('cached-events').textContent = eventStats.cached;
+            document.getElementById('error-events').textContent = eventStats.error;
+        }
+
+        // Clear log
+        function clearLog() {
+            document.getElementById('event-log').innerHTML =
+                '<div style="color: #888;">Log cleared. Waiting for events...</div>';
+            eventLog.length = 0;
+            console.log('🧹 Event log cleared');
+        }
+
+        // Show statistics
+        function showStats() {
+            console.log('📊 Event Statistics:', eventStats);
+            console.log('📋 Event Log:', eventLog);
+            alert(`Event Statistics:\n\nTotal: ${eventStats.total}\nN8N: ${eventStats.n8n}\nCached: ${eventStats.cached}\nErrors: ${eventStats.error}`);
+        }
+
+        // Inspect DOM for Flowise elements
+        function inspectDOM() {
+            const inspection = {
+                n8nTables: document.querySelectorAll('[data-n8n-table="true"]').length,
+                cachedTables: document.querySelectorAll('[data-n8n-cached="true"]').length,
+                errorMessages: document.querySelectorAll('[data-n8n-error="true"]').length,
+                containers: document.querySelectorAll('[data-container-id]').length,
+                keywords: []
+            };
+
+            // Collect unique keywords
+            const keywordElements = document.querySelectorAll('[data-n8n-keyword]');
+            const keywordSet = new Set();
+            keywordElements.forEach(el => {
+                const keyword = el.getAttribute('data-n8n-keyword');
+                if (keyword) keywordSet.add(keyword);
+            });
+            inspection.keywords = Array.from(keywordSet);
+
+            // Display inspection results
+            const inspectionDiv = document.getElementById('dom-inspection');
+            inspectionDiv.innerHTML = `
+                <div style="color: #4CAF50;">DOM Inspection Results:</div>
+                <div style="margin-top: 10px;">
+                    <div>📊 N8N Tables: ${inspection.n8nTables}</div>
+                    <div>💾 Cached Tables: ${inspection.cachedTables}</div>
+                    <div>❌ Error Messages: ${inspection.errorMessages}</div>
+                    <div>📦 Containers: ${inspection.containers}</div>
+                    <div>🔑 Keywords: ${inspection.keywords.join(', ') || 'None'}</div>
+                </div>
+            `;
+
+            console.log('🔍 DOM Inspection:', inspection);
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeEventListener();
+            console.log('✅ Test page loaded and ready');
+        });
+
+        // Expose test utilities
+        window.FlowiseEventTest = {
+            getStats: () => eventStats,
+            getLog: () => eventLog,
+            clearLog,
+            inspectDOM
+        };
+    </script>
+</body>
+
+</html>

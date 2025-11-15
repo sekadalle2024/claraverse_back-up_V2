@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Synchronisation ClaraVerse - Version Simple</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .button-secondary {
+            background: #6c757d;
+        }
+
+        .button-secondary:hover {
+            background: #545b62;
+        }
+
+        .button-success {
+            background: #28a745;
+        }
+
+        .button-success:hover {
+            background: #218838;
+        }
+
+        .console-output {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+            white-space: pre-wrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .min-w-full.border.border-gray-200.dark\:border-gray-700.rounded-lg {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .claraverse-conso-table {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .claraverse-conso-table th {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .claraverse-conso-table td {
+            padding: 15px;
+            background: #f8f9fa;
+            min-height: 50px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-green { background: #28a745; }
+        .status-red { background: #dc3545; }
+        .status-yellow { background: #ffc107; }
+
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .log-success { color: #00ff00; }
+        .log-error { color: #ff6b6b; }
+        .log-warning { color: #ffd43b; }
+        .log-info { color: #74c0fc; }
+
+        .alert {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 Test de Synchronisation ClaraVerse</h1>
+        <p>Tests de communication entre dev.js et conso.js - Version Simple</p>
+    </div>
+
+    <div class="section">
+        <h2>🔧 État des Scripts</h2>
+        <div id="script-status">
+            <div class="alert alert-warning">
+                <strong>⏳ Chargement des scripts...</strong> Veuillez patienter.
+            </div>
+        </div>
+
+        <div class="test-controls">
+            <button onclick="checkScripts()" class="button-secondary">🔍 Vérifier Scripts</button>
+            <button onclick="testBasicFunctions()">🧪 Test Basique</button>
+            <button onclick="testSynchronization()" class="button-success">🔄 Test Synchronisation</button>
+            <button onclick="clearConsole()" class="button-secondary">🗑️ Vider Console</button>
+        </div>
+
+        <div class="console-output" id="console-output">Initialisation de la console de test...
+
+</div>
+    </div>
+
+    <div class="section">
+        <h2>📊 Instructions Rapides</h2>
+        <ol>
+            <li><strong>Vérifier Scripts :</strong> Cliquez sur "🔍 Vérifier Scripts" pour voir l'état des scripts</li>
+            <li><strong>Test Basique :</strong> Cliquez sur "🧪 Test Basique" pour tester les fonctions principales</li>
+            <li><strong>Test Synchronisation :</strong> Cliquez sur "🔄 Test Synchronisation" pour tester la communication</li>
+            <li><strong>Console :</strong> Surveillez la console ci-dessus pour les messages détaillés</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Table de Test de Pointage</h2>
+        <p>Cette table simule une table de pointage ClaraVerse :</p>
+
+        <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg" data-table-id="table_test_pointage">
+            <thead>
+                <tr>
+                    <th>Assertion</th>
+                    <th>Ecart</th>
+                    <th>CTR1</th>
+                    <th>CTR2</th>
+                    <th>CTR3</th>
+                    <th>Conclusion</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td contenteditable="true">Test de synchronisation</td>
+                    <td contenteditable="true">100€</td>
+                    <td contenteditable="true">Contrôle 1</td>
+                    <td contenteditable="true">Contrôle 2</td>
+                    <td contenteditable="true">Contrôle 3</td>
+                    <td contenteditable="true">OK</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">Vérification persistance</td>
+                    <td contenteditable="true">50€</td>
+                    <td contenteditable="true">Test A</td>
+                    <td contenteditable="true">Test B</td>
+                    <td contenteditable="true">Test C</td>
+                    <td contenteditable="true">OK</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>📋 Table de Résultat</h2>
+        <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg" data-table-id="table_test_resultat">
+            <thead>
+                <tr>
+                    <th>Resultats</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td contenteditable="true">En attente de consolidation...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Scripts ClaraVerse - VERSION SIMPLE SANS MODULES -->
+    <script src="./dev.js"></script>
+    <script src="./conso.js"></script>
+
+    <script>
+        let consoleElement;
+        let scriptsLoaded = {
+            dev: false,
+            conso: false,
+            sync: false
+        };
+
+        function initTestPage() {
+            consoleElement = document.getElementById('console-output');
+            addToConsole('🚀 Page de test initialisée', 'info');
+
+            // Vérifier les scripts périodiquement
+            setTimeout(checkScripts, 1000);
+            setInterval(checkScripts, 5000);
+        }
+
+        function addToConsole(message, type = 'info') {
+            if (!consoleElement) return;
+
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `${timestamp} - ${message}\n`;
+
+            consoleElement.textContent += logEntry;
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+        }
+
+        function clearConsole() {
+            if (consoleElement) {
+                consoleElement.textContent = '🗑️ Console vidée\n';
+            }
+        }
+
+        function updateScriptStatus() {
+            const statusDiv = document.getElementById('script-status');
+            let statusHTML = '';
+
+            // Vérifier dev.js
+            if (window.cp) {
+                scriptsLoaded.dev = true;
+                statusHTML += '<div class="alert alert-success">✅ <strong>Dev.js :</strong> Chargé et fonctionnel</div>';
+            } else {
+                statusHTML += '<div class="alert alert-danger">❌ <strong>Dev.js :</strong> Non chargé ou erreur</div>';
+            }
+
+            // Vérifier conso.js
+            if (window.claraverseProcessor) {
+                scriptsLoaded.conso = true;
+                statusHTML += '<div class="alert alert-success">✅ <strong>Conso.js :</strong> Chargé et fonctionnel</div>';
+            } else {
+                statusHTML += '<div class="alert alert-danger">❌ <strong>Conso.js :</strong> Non chargé ou erreur</div>';
+            }
+
+            // Vérifier API Sync
+            if (window.claraverseSyncAPI) {
+                scriptsLoaded.sync = true;
+                statusHTML += '<div class="alert alert-success">✅ <strong>API Sync :</strong> Disponible</div>';
+            } else {
+                statusHTML += '<div class="alert alert-warning">⚠️ <strong>API Sync :</strong> Non disponible</div>';
+            }
+
+            statusDiv.innerHTML = statusHTML;
+        }
+
+        function checkScripts() {
+            addToConsole('🔍 Vérification des scripts...', 'info');
+
+            updateScriptStatus();
+
+            // Test dev.js
+            if (window.cp) {
+                addToConsole('✅ Dev.js détecté', 'success');
+                try {
+                    const status = window.cp.status();
+                    addToConsole(`📊 Dev.js Status: ${status.tables} tables, ${status.editableCells} cellules`, 'info');
+                } catch (error) {
+                    addToConsole(`❌ Erreur dev.js: ${error.message}`, 'error');
+                }
+            } else {
+                addToConsole('❌ Dev.js non trouvé', 'error');
+            }
+
+            // Test conso.js
+            if (window.claraverseProcessor) {
+                addToConsole('✅ Conso.js détecté', 'success');
+            } else {
+                addToConsole('❌ Conso.js non trouvé', 'error');
+            }
+
+            // Test API Sync
+            if (window.claraverseSyncAPI) {
+                addToConsole('✅ API Sync disponible', 'success');
+            } else {
+                addToConsole('⚠️ API Sync non disponible', 'warning');
+            }
+
+            addToConsole('--- Vérification terminée ---', 'info');
+        }
+
+        function testBasicFunctions() {
+            addToConsole('🧪 === TESTS BASIQUES ===', 'info');
+
+            // Test dev.js
+            if (window.cp) {
+                try {
+                    addToConsole('Test dev.js - Scan des tables...', 'info');
+                    const scanResult = window.cp.scan();
+                    addToConsole(`✅ Scan terminé: ${scanResult || 0} tables trouvées`, 'success');
+
+                    const status = window.cp.status();
+                    addToConsole(`📊 Status: ${status.tables} tables, ${status.storedCells} cellules sauvées`, 'info');
+                } catch (error) {
+                    addToConsole(`❌ Erreur test dev.js: ${error.message}`, 'error');
+                }
+            } else {
+                addToConsole('❌ Impossible de tester dev.js - non chargé', 'error');
+            }
+
+            // Test conso.js
+            if (window.claraverseProcessor) {
+                try {
+                    addToConsole('Test conso.js - Traitement des tables...', 'info');
+                    window.claraverseProcessor.processAllTables();
+                    addToConsole('✅ Conso.js traitement OK', 'success');
+                } catch (error) {
+                    addToConsole(`❌ Erreur test conso.js: ${error.message}`, 'error');
+                }
+            } else {
+                addToConsole('❌ Impossible de tester conso.js - non chargé', 'error');
+            }
+
+            // Test localStorage
+            try {
+                localStorage.setItem('test_claraverse', 'test');
+                localStorage.removeItem('test_claraverse');
+                addToConsole('✅ LocalStorage fonctionnel', 'success');
+            } catch (error) {
+                addToConsole('❌ LocalStorage non disponible', 'error');
+            }
+
+            addToConsole('=== TESTS BASIQUES TERMINÉS ===', 'info');
+        }
+
+        function testSynchronization() {
+            addToConsole('🔄 === TEST SYNCHRONISATION ===', 'info');
+
+            if (!window.claraverseSyncAPI) {
+                addToConsole('❌ API Sync non disponible - synchronisation impossible', 'error');
+                return;
+            }
+
+            // Test événements
+            let eventReceived = false;
+            const eventHandler = (event) => {
+                eventReceived = true;
+                addToConsole(`📡 Événement reçu: ${event.type}`, 'success');
+                addToConsole(`   Source: ${event.detail.source || 'unknown'}`, 'info');
+            };
+
+            // Écouter les événements
+            document.addEventListener('claraverse:table:updated', eventHandler);
+
+            // Test notification
+            try {
+                const testTable = document.querySelector('table');
+                if (testTable) {
+                    window.claraverseSyncAPI.notifyTableUpdate('test-sync', testTable, 'test');
+                    addToConsole('📤 Événement test envoyé', 'info');
+
+                    // Vérifier réception après délai
+                    setTimeout(() => {
+                        if (eventReceived) {
+                            addToConsole('✅ Événements fonctionnels', 'success');
+                        } else {
+                            addToConsole('⚠️ Événement non reçu', 'warning');
+                        }
+                        document.removeEventListener('claraverse:table:updated', eventHandler);
+                    }, 500);
+                } else {
+                    addToConsole('❌ Aucune table trouvée pour le test', 'error');
+                }
+            } catch (error) {
+                addToConsole(`❌ Erreur test événement: ${error.message}`, 'error');
+            }
+
+            // Test sauvegarde forcée
+            try {
+                window.claraverseSyncAPI.saveAllTables();
+                addToConsole('✅ Sauvegarde forcée exécutée', 'success');
+            } catch (error) {
+                addToConsole(`❌ Erreur sauvegarde forcée: ${error.message}`, 'error');
+            }
+
+            addToConsole('=== TEST SYNCHRONISATION TERMINÉ ===', 'info');
+        }
+
+        // Écouter les événements de synchronisation
+        document.addEventListener('claraverse:table:updated', (event) => {
+            addToConsole(`🔔 Table Updated: ${event.detail.source} - ${event.detail.updateType || 'update'}`, 'success');
+        });
+
+        document.addEventListener('claraverse:consolidation:complete', (event) => {
+            addToConsole(`🎯 Consolidation Complete: ${event.detail.consolidationTables?.length || 0} tables`, 'success');
+        });
+
+        document.addEventListener('claraverse:table:created', (event) => {
+            addToConsole(`🆕 Table Created by: ${event.detail.source}`, 'success');
+        });
+
+        // Initialiser au chargement
+        document.addEventListener('DOMContentLoaded', initTestPage);
+
+        // Message d'aide
+        addToConsole('💡 Utilisez les boutons ci-dessus pour tester la synchronisation', 'info');
+        addToConsole('📖 Consultez la console du navigateur (F12) pour plus de détails', 'info');
+    </script>
+</body>
+</html>

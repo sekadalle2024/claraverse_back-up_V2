@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Correction Différée</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .test-table th,
+        .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+
+        .prose {
+            max-width: none;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button.success {
+            background: #28a745;
+        }
+
+        .logs-container {
+            background: #1e1e1e;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .log-success {
+            color: #4CAF50;
+        }
+
+        .log-error {
+            color: #f44336;
+        }
+
+        .log-warning {
+            color: #ff9800;
+        }
+
+        .log-info {
+            color: #2196F3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>⏰ Test Correction Différée</h1>
+        <p>Test avec correction appliquée après un délai pour éviter les interférences</p>
+
+        <div class="container">
+            <h2>🎯 Tests Temporisés</h2>
+            <button onclick="testDelayedCorrection()">⏰ Correction Différée</button>
+            <button onclick="testMultipleDelays()">🔄 Délais Multiples</button>
+            <button onclick="testPersistentCorrection()">🔒 Correction Persistante</button>
+            <button onclick="clearLogs()">🧹 Effacer</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="test-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Original</td>
+                            <td>Data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Logs</h2>
+            <div id="logs-display" class="logs-container">
+                <div class="log-entry log-info">[INIT] Test de correction différée chargé</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+
+            const logsContainer = document.getElementById('logs-display');
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('logs-display').innerHTML = '';
+            log('Logs effacés', 'info');
+        }
+
+        // Fonction de correction avec délai
+        function applyDelayedCorrection(table, savedHTML, delay = 100) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    log(`⏰ Application correction après ${delay}ms...`, 'warning');
+
+                    try {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(savedHTML, 'text/html');
+                        const parsedTable = doc.querySelector('table');
+
+                        if (parsedTable) {
+                            // Copier cellule par cellule avec force
+                            const originalCells = table.querySelectorAll('td, th');
+                            const restoredCells = parsedTable.querySelectorAll('td, th');
+
+                            for (let i = 0; i < Math.min(originalCells.length, restoredCells.length); i++) {
+                                const restoredContent = restoredCells[i].textContent;
+                                originalCells[i].textContent = restoredContent;
+                                log(`⏰ Cellule ${i} forcée: "${restoredContent}"`, 'warning');
+                            }
+
+                            log('✅ Correction différée appliquée', 'success');
+                            resolve(true);
+                        } else {
+                            log('❌ Erreur parsing HTML différé', 'error');
+                            resolve(false);
+                        }
+                    } catch (error) {
+                        log(`❌ Erreur correction différée: ${error.message}`, 'error');
+                        resolve(false);
+                    }
+                }, delay);
+            });
+        }
+
+        async function testDelayedCorrection() {
+            log('⏰ === TEST CORRECTION DIFFÉRÉE ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'DELAYED_' + Date.now();
+
+                // Nettoyer et définir contenu
+                table.removeAttribute('data-robust-table-id');
+                firstCell.textContent = testContent;
+                log(`📝 Contenu défini: "${testContent}"`, 'info');
+
+                // Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`, saveResult ? 'success' : 'error');
+
+                if (saveResult) {
+                    const tableId = table.getAttribute('data-robust-table-id');
+                    const savedDataStr = localStorage.getItem(tableId);
+
+                    if (savedDataStr) {
+                        const savedData = JSON.parse(savedDataStr);
+
+                        // Modifier temporairement
+                        firstCell.textContent = 'TEMP_DELAYED';
+                        log(`📝 Contenu modifié: "${firstCell.textContent}"`, 'info');
+
+                        // Appliquer correction avec délai
+                        log('⏰ Programmation correction dans 100ms...', 'info');
+                        await applyDelayedCorrection(table, savedData.html, 100);
+
+                        // Vérifier immédiatement
+                        const immediateContent = firstCell.textContent;
+                        log(`📋 Contenu immédiat: "${immediateContent}"`, 'info');
+
+                        // Vérifier après un autre délai
+                        setTimeout(() => {
+                            const finalContent = firstCell.textContent;
+                            log(`📋 Contenu final (après 200ms): "${finalContent}"`, 'info');
+
+                            if (finalContent === testContent) {
+                                log('✅ CORRECTION DIFFÉRÉE RÉUSSIE !', 'success');
+                            } else {
+                                log(`❌ CORRECTION DIFFÉRÉE ÉCHOUÉE`, 'error');
+                                log(`   Attendu: "${testContent}"`, 'error');
+                                log(`   Obtenu:  "${finalContent}"`, 'error');
+                            }
+                        }, 200);
+                    }
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testMultipleDelays() {
+            log('🔄 === TEST DÉLAIS MULTIPLES ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'MULTIPLE_DELAYS_' + Date.now();
+
+                table.removeAttribute('data-robust-table-id');
+                firstCell.textContent = testContent;
+                log(`📝 Contenu défini: "${testContent}"`, 'info');
+
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                if (saveResult) {
+                    const tableId = table.getAttribute('data-robust-table-id');
+                    const savedDataStr = localStorage.getItem(tableId);
+
+                    if (savedDataStr) {
+                        const savedData = JSON.parse(savedDataStr);
+
+                        firstCell.textContent = 'TEMP_MULTIPLE';
+                        log(`📝 Contenu modifié: "${firstCell.textContent}"`, 'info');
+
+                        // Essayer plusieurs délais
+                        const delays = [50, 100, 200, 500];
+
+                        for (const delay of delays) {
+                            log(`🔄 Tentative avec délai ${delay}ms...`, 'info');
+                            await applyDelayedCorrection(table, savedData.html, delay);
+
+                            // Vérifier après chaque tentative
+                            await new Promise(resolve => setTimeout(resolve, delay + 50));
+                            const content = firstCell.textContent;
+                            log(`📋 Contenu après ${delay}ms: "${content}"`, content === testContent ? 'success' : 'warning');
+
+                            if (content === testContent) {
+                                log(`✅ SUCCÈS avec délai ${delay}ms !`, 'success');
+                                break;
+                            }
+                        }
+                    }
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPersistentCorrection() {
+            log('🔒 === TEST CORRECTION PERSISTANTE ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'PERSISTENT_' + Date.now();
+
+                table.removeAttribute('data-robust-table-id');
+                firstCell.textContent = testContent;
+                log(`📝 Contenu défini: "${testContent}"`, 'info');
+
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                if (saveResult) {
+                    const tableId = table.getAttribute('data-robust-table-id');
+                    const savedDataStr = localStorage.getItem(tableId);
+
+                    if (savedDataStr) {
+                        const savedData = JSON.parse(savedDataStr);
+
+                        firstCell.textContent = 'TEMP_PERSISTENT';
+                        log(`📝 Contenu modifié: "${firstCell.textContent}"`, 'info');
+
+                        // Correction persistante avec vérifications répétées
+                        let attempts = 0;
+                        const maxAttempts = 10;
+
+                        const persistentCorrection = () => {
+                            attempts++;
+                            log(`🔒 Tentative persistante ${attempts}/${maxAttempts}...`, 'warning');
+
+                            const currentContent = firstCell.textContent;
+                            if (currentContent !== testContent && attempts <= maxAttempts) {
+                                // Appliquer la correction
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(savedData.html, 'text/html');
+                                const parsedTable = doc.querySelector('table');
+
+                                if (parsedTable) {
+                                    const restoredCells = parsedTable.querySelectorAll('td, th');
+                                    const originalCells = table.querySelectorAll('td, th');
+
+                                    for (let i = 0; i < Math.min(originalCells.length, restoredCells.length); i++) {
+                                        originalCells[i].textContent = restoredCells[i].textContent;
+                                    }
+
+                                    log(`🔒 Correction appliquée (tentative ${attempts})`, 'warning');
+                                }
+
+                                // Programmer la prochaine vérification
+                                setTimeout(persistentCorrection, 100);
+                            } else if (currentContent === testContent) {
+                                log(`✅ CORRECTION PERSISTANTE RÉUSSIE après ${attempts} tentatives !`, 'success');
+                            } else {
+                                log(`❌ CORRECTION PERSISTANTE ÉCHOUÉE après ${maxAttempts} tentatives`, 'error');
+                            }
+                        };
+
+                        // Démarrer la correction persistante
+                        setTimeout(persistentCorrection, 100);
+                    }
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function () {
+            log('⏰ Test de correction différée chargé', 'success');
+            log('💡 Ces tests appliquent la correction avec des délais', 'info');
+        });
+    </script>
+</body>
+
+</html>

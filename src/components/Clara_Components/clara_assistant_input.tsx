@@ -92,6 +92,9 @@ import { claraTTSService } from '../../services/claraTTSService';
 // Import notification service
 import { addErrorNotification, addInfoNotification } from '../../services/notificationService';
 
+// Import attachment service
+import { claraAttachmentService } from '../../services/claraAttachmentService';
+
 // Import image generation widget
 import ChatImageGenWidget from './ChatImageGenWidget';
 
@@ -2831,6 +2834,16 @@ const ClaraAssistantInput: React.FC<ClaraInputProps> = ({
       if (['.json'].some(ext => file.name.endsWith(ext))) return 'json';
       if (['.csv'].some(ext => file.name.endsWith(ext))) return 'csv';
       if (['.md', '.txt', '.markdown'].some(ext => file.name.endsWith(ext))) return 'text';
+      // Excel files
+      if (['.xlsx', '.xls'].some(ext => file.name.toLowerCase().endsWith(ext)) || 
+          ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'].includes(file.type)) {
+        return 'excel';
+      }
+      // Word files
+      if (['.docx', '.doc'].some(ext => file.name.toLowerCase().endsWith(ext)) || 
+          ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'].includes(file.type)) {
+        return 'word';
+      }
       return 'document';
     };
 
@@ -2989,7 +3002,7 @@ const ClaraAssistantInput: React.FC<ClaraInputProps> = ({
             }
           }
         } else {
-          // For other document types, read as base64
+          // For other document types (including Excel and Word), read as base64
           base64 = await readFileAsBase64(file);
         }
 
@@ -3033,7 +3046,20 @@ const ClaraAssistantInput: React.FC<ClaraInputProps> = ({
       }
     }
     
-    return attachments;
+    // Process attachments with our extraction service for Excel and Word files
+    const processedAttachments = await claraAttachmentService.processFileAttachments(attachments);
+    
+    // Show extraction confirmation if any files were processed
+    const hasDocuments = processedAttachments.some(att => 
+      (att.type === 'excel' || att.type === 'word' || att.type === 'document') 
+      && att.processed && att.processingResult?.success
+    );
+    
+    if (hasDocuments) {
+      claraAttachmentService.showExtractionAlert(processedAttachments);
+    }
+    
+    return processedAttachments;
   }, []);
 
   // Provider health check function
@@ -3251,7 +3277,15 @@ const ClaraAssistantInput: React.FC<ClaraInputProps> = ({
     
     // Send enhanced prompt to AI for processing, but original input for display
     // Store the original input and display attachments in the enhanced prompt metadata
+    let n8nData = null;
+    let flowiseData = null;
     if (displayAttachments.length > 0) {
+      // Get extracted data for n8n endpoint
+      n8nData = claraAttachmentService.getExtractedDataForN8N(displayAttachments);
+      
+      // Get extracted data formatted for Flowise endpoint
+      flowiseData = claraAttachmentService.getExtractedDataForFlowise(displayAttachments);
+      
       // Create a special metadata comment that can be parsed later for display
       const displayInfo = `[DISPLAY_META:${JSON.stringify({
         originalMessage: input,
@@ -3261,7 +3295,9 @@ const ClaraAssistantInput: React.FC<ClaraInputProps> = ({
           type: att.type,
           size: att.size,
           processed: att.processed
-        }))
+        })),
+        n8nExtractedData: n8nData, // Include extracted data for n8n
+        flowiseExtractedData: flowiseData // Include extracted data for Flowise
       })}]`;
       enhancedPrompt = `${displayInfo}\n\n${enhancedPrompt}`;
     }

@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚑 Récupération d'Urgence - ClaraVerse</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .emergency-header {
+            background: linear-gradient(135deg, #dc3545, #bd2130);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .recovery-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #007bff;
+        }
+
+        .critical-section {
+            border-left-color: #dc3545;
+            background: #f8f9fa;
+        }
+
+        .success-section {
+            border-left-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .warning-section {
+            border-left-color: #ffc107;
+            background: #fffdf5;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        button:hover { background: #0056b3; transform: translateY(-1px); }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-warning:hover { background: #e0a800; }
+
+        .console {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin: 15px 0;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-ok { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+
+        .recovery-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <div class="emergency-header">
+        <h1>🚑 Centre de Récupération d'Urgence ClaraVerse</h1>
+        <p>Diagnostic et réparation des données corrompues</p>
+    </div>
+
+    <div class="recovery-section critical-section">
+        <h2>🩺 Diagnostic Rapide</h2>
+        <div id="quick-diagnosis">
+            <p></p>⏳ Diagnostic en cours...</p>
+        </div>
+        <button onclick="runQuickDiagnosis()">🔍 Diagnostic Complet</button>
+    </div>
+
+    <div class="recovery-section">
+        <h2>📊 Statistiques de Récupération</h2>
+        <div class="recovery-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-entries">-</div>
+                <div>Entrées Totales</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="corrupted-entries">-</div>
+                <div>Données Corrompues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="healthy-entries">-</div>
+                <div>Données Saines</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="recovery-score">-</div>
+                <div>Score de Santé (%)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="recovery-section">
+        <h2>🔧 Actions de Récupération</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <button onclick="cleanCorruptedData()" class="btn-warning">🧹 Nettoyer Données Corrompues</button>
+            <button onclick="repairAllData()" class="btn-success">🔧 Réparation Complète</button>
+            <button onclick="backupHealthyData()" class="btn-success">💾 Sauvegarder Données Saines</button>
+            <button onclick="resetAllData()" class="btn-danger" id="reset-btn">🗑️ Reset Complet (DANGER)</button>
+        </div>
+
+        <div class="progress-bar" id="recovery-progress" style="display: none;">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div id="recovery-status"></div>
+    </div>
+
+    <div class="recovery-section">
+        <h2>💻 Console de Récupération</h2>
+        <div class="console" id="recovery-console">🚑 Console de récupération initialisée - En attente d'analyse...\n</div>
+        <button onclick="clearConsole()">🗑️ Vider Console</button>
+        <button onclick="exportLogs()">📤 Exporter Logs</button>
+    </div>
+
+    <div class="recovery-section">
+        <h2>🛡️ Mesures Préventives</h2>
+        <div class="alert alert-info">
+            <strong>Pour éviter les corruptions futures :</strong>
+            <ul>
+                <li>Ne pas fermer l'onglet pendant une consolidation</li>
+                <li>Attendre la fin des sauvegardes avant actualisation</li>
+                <li>Effectuer des sauvegardes régulières avec cp.export()</li>
+                <li>Surveiller l'indicateur 💾 sur les tables</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Chargement des scripts ClaraVerse -->
+    <script src="./dev.js"></script>
+    <script src="./conso.js"></script>
+
+    <script>
+        let recoveryConsole;
+        let recoveryLogs = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                'info': '#74c0fc',
+                'success': '#40c057',
+                'error': '#ff6b6b',
+                'warning': '#ffd43b',
+                'critical': '#ff0000'
+            };
+
+            const logEntry = `${timestamp} - ${message}`;
+            recoveryLogs.push({ timestamp, message, type });
+
+            if (recoveryConsole) {
+                const color = colors[type] || colors.info;
+                recoveryConsole.innerHTML += `<span style="color:${color}">${logEntry}</span>\n`;
+                recoveryConsole.scrollTop = recoveryConsole.scrollHeight;
+            }
+
+            console.log(`[Recovery] ${logEntry}`);
+        }
+
+        function clearConsole() {
+            if (recoveryConsole) {
+                recoveryConsole.innerHTML = '🧹 Console vidée\n';
+                recoveryLogs = [];
+            }
+        }
+
+        function exportLogs() {
+            const logData = {
+                timestamp: new Date().toISOString(),
+                logs: recoveryLogs,
+                systemInfo: getSystemInfo()
+            };
+
+            const blob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `claraverse-recovery-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            log('📤 Logs exportés avec succès', 'success');
+        }
+
+        function getSystemInfo() {
+            return {
+                userAgent: navigator.userAgent,
+                localStorage: {
+                    available: typeof(Storage) !== 'undefined',
+                    quota: navigator.storage ? 'available' : 'unknown'
+                },
+                claraverse: {
+                    devJS: !!window.cp,
+                    consoJS: !!window.claraverseProcessor,
+                    syncAPI: !!window.claraverseSyncAPI
+                }
+            };
+        }
+
+        function updateProgress(percentage) {
+            const progressBar = document.getElementById('progress-fill');
+            if (progressBar) {
+                progressBar.style.width = percentage + '%';
+            }
+        }
+
+        function showProgress() {
+            const progressContainer = document.getElementById('recovery-progress');
+            if (progressContainer) {
+                progressContainer.style.display = 'block';
+                updateProgress(0);
+            }
+        }
+
+        function hideProgress() {
+            const progressContainer = document.getElementById('recovery-progress');
+            if (progressContainer) {
+                progressContainer.style.display = 'none';
+            }
+        }
+
+        function runQuickDiagnosis() {
+            log('🩺 === DIAGNOSTIC RAPIDE DÉMARRÉ ===', 'info');
+
+            const diagnosisDiv = document.getElementById('quick-diagnosis');
+            let diagnosisHTML = '';
+            let issues = [];
+
+            // Test 1: Scripts ClaraVerse
+            if (!window.cp) {
+                issues.push('Dev.js non chargé');
+                diagnosisHTML += '<p><span class="status-indicator status-error"></span>❌ Dev.js non disponible</p>';
+                log('❌ Dev.js manquant', 'error');
+            } else {
+                diagnosisHTML += '<p><span class="status-indicator status-ok"></span>✅ Dev.js opérationnel</p>';
+                log('✅ Dev.js détecté', 'success');
+            }
+
+            if (!window.claraverseProcessor) {
+                issues.push('Conso.js non chargé');
+                diagnosisHTML += '<p><span class="status-indicator status-error"></span>❌ Conso.js non disponible</p>';
+                log('❌ Conso.js manquant', 'error');
+            } else {
+                diagnosisHTML += '<p><span class="status-indicator status-ok"></span>✅ Conso.js opérationnel</p>';
+                log('✅ Conso.js détecté', 'success');
+            }
+
+            // Test 2: LocalStorage
+            try {
+                localStorage.setItem('recovery_test', 'test');
+                localStorage.removeItem('recovery_test');
+                diagnosisHTML += '<p><span class="status-indicator status-ok"></span>✅ LocalStorage accessible</p>';
+                log('✅ LocalStorage fonctionnel', 'success');
+            } catch (error) {
+                issues.push('LocalStorage bloqué');
+                diagnosisHTML += '<p><span class="status-indicator status-error"></span>❌ LocalStorage inaccessible</p>';
+                log('❌ LocalStorage bloqué: ' + error.message, 'error');
+            }
+
+            // Analyse des données
+            analyzeStorageData();
+
+            if (issues.length === 0) {
+                diagnosisHTML += '<div class="alert alert-success">🎉 Système en bon état général</div>';
+            } else {
+                diagnosisHTML += `<div class="alert alert-danger">⚠️ ${issues.length} problème(s) détecté(s)</div>`;
+            }
+
+            diagnosisDiv.innerHTML = diagnosisHTML;
+            log('🩺 Diagnostic rapide terminé', 'info');
+        }
+
+        function analyzeStorageData() {
+            log('📊 Analyse des données localStorage...', 'info');
+
+            let totalEntries = 0;
+            let corruptedEntries = 0;
+            let healthyEntries = 0;
+
+            try {
+                // Parcourir toutes les entrées ClaraVerse
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('claraverse_cell_') || key.startsWith('claraverse_')) {
+                        totalEntries++;
+
+                        try {
+                            const data = JSON.parse(localStorage.getItem(key));
+
+                            // Vérifier corruption
+                            if (!data ||
+                                data.content === 'undefined' ||
+                                data.text === 'undefined' ||
+                                data.html === 'undefined' ||
+                                (data.content === '' && data.text === '' && data.html === '')) {
+                                corruptedEntries++;
+                                log(`🔍 Données corrompues détectées: ${key}`, 'warning');
+                            } else {
+                                healthyEntries++;
+                            }
+                        } catch (parseError) {
+                            corruptedEntries++;
+                            log(`🔍 Erreur parsing: ${key}`, 'warning');
+                        }
+                    }
+                });
+
+                // Mise à jour des statistiques
+                document.getElementById('total-entries').textContent = totalEntries;
+                document.getElementById('corrupted-entries').textContent = corruptedEntries;
+                document.getElementById('healthy-entries').textContent = healthyEntries;
+
+                const healthScore = totalEntries > 0 ? Math.round((healthyEntries / totalEntries) * 100) : 100;
+                document.getElementById('recovery-score').textContent = healthScore;
+
+                // Coloration selon le score
+                const scoreElement = document.getElementById('recovery-score');
+                if (healthScore >= 90) {
+                    scoreElement.style.color = '#28a745';
+                } else if (healthScore >= 70) {
+                    scoreElement.style.color = '#ffc107';
+                } else {
+                    scoreElement.style.color = '#dc3545';
+                }
+
+                log(`📊 Analyse terminée: ${totalEntries} total, ${corruptedEntries} corrompues, ${healthyEntries} saines`, 'info');
+
+            } catch (error) {
+                log(`❌ Erreur analyse données: ${error.message}`, 'error');
+            }
+        }
+
+        function cleanCorruptedData() {
+            log('🧹 === NETTOYAGE DES DONNÉES CORROMPUES ===', 'info');
+            showProgress();
+
+            let cleanedCount = 0;
+            let totalChecked = 0;
+            const keysToRemove = [];
+
+            try {
+                const keys = Object.keys(localStorage).filter(key =>
+                    key.startsWith('claraverse_cell_') || key.startsWith('claraverse_')
+                );
+
+                keys.forEach((key, index) => {
+                    totalChecked++;
+                    updateProgress((index / keys.length) * 100);
+
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+
+                        if (!data ||
+                            data.content === 'undefined' ||
+                            data.text === 'undefined' ||
+                            data.html === 'undefined' ||
+                            (data.content === '' && data.text === '' && data.html === '')) {
+                            keysToRemove.push(key);
+                            cleanedCount++;
+                            log(`🗑️ Marqué pour suppression: ${key}`, 'warning');
+                        }
+                    } catch (parseError) {
+                        keysToRemove.push(key);
+                        cleanedCount++;
+                        log(`🗑️ Donnée non parsable supprimée: ${key}`, 'warning');
+                    }
+                });
+
+                // Suppression effective
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+
+                updateProgress(100);
+                setTimeout(() => hideProgress(), 1000);
+
+                const statusDiv = document.getElementById('recovery-status');
+                if (cleanedCount > 0) {
+                    statusDiv.innerHTML = `<div class="alert alert-success">✅ Nettoyage terminé: ${cleanedCount} entrées corrompues supprimées sur ${totalChecked} vérifiées</div>`;
+                    log(`✅ Nettoyage réussi: ${cleanedCount} entrées supprimées`, 'success');
+                } else {
+                    statusDiv.innerHTML = `<div class="alert alert-info">ℹ️ Aucune donnée corrompue trouvée (${totalChecked} entrées vérifiées)</div>`;
+                    log('ℹ️ Aucune corruption détectée', 'info');
+                }
+
+                // Rafraîchir les statistiques
+                setTimeout(analyzeStorageData, 500);
+
+            } catch (error) {
+                hideProgress();
+                const statusDiv = document.getElementById('recovery-status');
+                statusDiv.innerHTML = `<div class="alert alert-danger">❌ Erreur pendant le nettoyage: ${error.message}</div>`;
+                log(`❌ Erreur nettoyage: ${error.message}`, 'error');
+            }
+        }
+
+        function repairAllData() {
+            log('🔧 === RÉPARATION COMPLÈTE DÉMARRÉE ===', 'critical');
+            showProgress();
+
+            const steps = [
+                'Nettoyage données corrompues',
+                'Scan des tables',
+                'Restauration des données saines',
+                'Vérification finale'
+            ];
+
+            let currentStep = 0;
+
+            function executeStep() {
+                if (currentStep >= steps.length) {
+                    updateProgress(100);
+                    setTimeout(() => {
+                        hideProgress();
+                        const statusDiv = document.getElementById('recovery-status');
+                        statusDiv.innerHTML = `<div class="alert alert-success">🎉 Réparation complète terminée avec succès !</div>`;
+                        log('🎉 Réparation complète réussie', 'success');
+                        analyzeStorageData();
+                    }, 1000);
+                    return;
+                }
+
+                const step = steps[currentStep];
+                log(`🔧 Étape ${currentStep + 1}/${steps.length}: ${step}`, 'info');
+                updateProgress((currentStep / steps.length) * 100);
+
+                switch (currentStep) {
+                    case 0: // Nettoyage
+                        if (window.cp && window.cp.clean) {
+                            window.cp.clean();
+                        }
+                        break;
+                    case 1: // Scan
+                        if (window.cp && window.cp.scan) {
+                            window.cp.scan();
+                        }
+                        break;
+                    case 2: // Restauration
+                        if (window.cp && window.cp.repair) {
+                            window.cp.repair();
+                        }
+                        break;
+                    case 3: // Vérification
+                        runQuickDiagnosis();
+                        break;
+                }
+
+                currentStep++;
+                setTimeout(executeStep, 1000);
+            }
+
+            executeStep();
+        }
+
+        function backupHealthyData() {
+            log('💾 Création sauvegarde des données saines...', 'info');
+
+            try {
+                const healthyData = {};
+                let healthyCount = 0;
+
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('claraverse_cell_') || key.startsWith('claraverse_')) {
+                        try {
+                            const data = JSON.parse(localStorage.getItem(key));
+
+                            if (data &&
+                                data.content !== 'undefined' &&
+                                data.text !== 'undefined' &&
+                                data.html !== 'undefined' &&
+                                !(data.content === '' && data.text === '' && data.html === '')) {
+                                healthyData[key] = data;
+                                healthyCount++;
+                            }
+                        } catch (error) {
+                            // Ignorer les données non parsables
+                        }
+                    }
+                });
+
+                const backupData = {
+                    timestamp: new Date().toISOString(),
+                    version: '1.0',
+                    systemInfo: getSystemInfo(),
+                    healthyEntries: healthyCount,
+                    data: healthyData
+                };
+
+                const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `claraverse-backup-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                const statusDiv = document.getElementById('recovery-status');
+                statusDiv.innerHTML = `<div class="alert alert-success">💾 Sauvegarde créée: ${healthyCount} entrées saines exportées</div>`;
+                log(`💾 Sauvegarde créée avec ${healthyCount} entrées`, 'success');
+
+            } catch (error) {
+                const statusDiv = document.getElementById('recovery-status');
+                statusDiv.innerHTML = `<div class="alert alert-danger">❌ Erreur sauvegarde: ${error.message}</div>`;
+                log(`❌ Erreur sauvegarde: ${error.message}`, 'error');
+            }
+        }
+
+        function resetAllData() {
+            const confirmed = confirm(
+                '⚠️ ATTENTION: Cette action va SUPPRIMER DÉFINITIVEMENT toutes les données ClaraVerse.\n\n' +
+                'Cette action est IRRÉVERSIBLE.\n\n' +
+                'Êtes-vous absolument certain de vouloir continuer ?'
+            );
+
+            if (!confirmed) {
+                log('🚫 Reset annulé par l\'utilisateur', 'info');
+                return;
+            }
+
+            const doubleConfirmed = confirm(
+                '🚨 DERNIÈRE CHANCE 🚨\n\n' +
+                'Tapez "RESET" dans la console pour confirmer définitivement, ou annulez ici.'
+            );
+
+            if (!doubleConfirmed) {
+                log('🚫 Reset annulé au double contrôle', 'info');
+                return;
+            }
+
+            log('🚨 === RESET COMPLET EN COURS ===', 'critical');
+            showProgress();
+
+            try {
+                const keysToRemove = Object.keys(localStorage).filter(key =>
+                    key.startsWith('claraverse_') || key.startsWith('claraverse_cell_')
+                );
+
+                let removedCount = 0;
+                keysToRemove.forEach((key, index) => {
+                    localStorage.removeItem(key);
+                    removedCount++;
+                    updateProgress((index / keysToRemove.length) * 100);
+                });
+
+                updateProgress(100);
+                setTimeout(() => {
+                    hideProgress();
+                    const statusDiv = document.getElementById('recovery-status');
+                    statusDiv.innerHTML = `<div class="alert alert-warning">🚨 Reset complet effectué: ${removedCount} entrées supprimées</div>`;
+                    log(`🚨 Reset complet: ${removedCount} entrées supprimées`, 'critical');
+                    analyzeStorageData();
+                }, 1000);
+
+            } catch (error) {
+                hideProgress();
+                const statusDiv = document.getElementById('recovery-status');
+                statusDiv.innerHTML = `<div class="alert alert-danger">❌ Erreur pendant le reset: ${error.message}</div>`;
+                log(`❌ Erreur reset: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialisation
+        function init() {
+            recoveryConsole = document.getElementById('recovery-console');
+            log('🚑 Centre de récupération initialisé', 'info');
+
+            // Diagnostic automatique au démarrage
+            setTimeout(() => {
+                runQuickDiagnosis();
+            }, 1000);
+
+            // Sécurité pour le reset
+            let resetClicks = 0;
+            const resetBtn = document.getElementById('reset-btn');
+            resetBtn.addEventListener('click', () => {
+                resetClicks++;
+                if (resetClicks >= 3) {
+                    resetBtn.style.background = '#dc3545';
+                    resetBtn.textContent = '🚨 RESET ACTIVÉ - DANGER';
+                }
+            });
+        }
+
+        // Démarrage
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

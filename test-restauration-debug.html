@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Restauration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .test-table th, .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+        .prose {
+            max-width: none;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug Restauration</h1>
+        <p>Test spécifique pour déboguer le problème de restauration</p>
+        
+        <div class="container">
+            <h2>🎯 Test Simple</h2>
+            <button onclick="testSimpleRestore()">Test Restauration Simple</button>
+            <button onclick="testDetailedRestore()">Test Restauration Détaillé</button>
+            <button onclick="clearLog()">Effacer Log</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="test-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Original</td>
+                            <td>Data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Log de Debug</h2>
+            <div id="test-log" class="log">
+                Cliquez sur un bouton pour commencer...
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        let logDiv = document.getElementById('test-log');
+
+        function logMessage(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            let className = '';
+            let icon = '';
+            
+            switch(type) {
+                case 'error':
+                    className = 'error';
+                    icon = '❌';
+                    break;
+                case 'warn':
+                    className = 'warning';
+                    icon = '⚠️';
+                    break;
+                case 'success':
+                    className = 'success';
+                    icon = '✅';
+                    break;
+                default:
+                    icon = 'ℹ️';
+            }
+            
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${icon} ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function testSimpleRestore() {
+            logMessage('🧪 Test restauration simple...', 'log');
+            
+            try {
+                const table = document.getElementById('test-table');
+                if (!table) {
+                    logMessage('❌ Table non trouvée', 'error');
+                    return;
+                }
+
+                // Étape 1: État initial
+                const firstCell = table.querySelector('td');
+                const originalContent = firstCell ? firstCell.textContent : '';
+                logMessage(`📋 Contenu initial: "${originalContent}"`, 'log');
+
+                // Étape 2: Modifier et sauvegarder
+                const testContent = 'CONTENU_TEST_SIMPLE';
+                if (firstCell) {
+                    firstCell.textContent = testContent;
+                }
+                logMessage(`📝 Contenu modifié: "${testContent}"`, 'log');
+
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                logMessage(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`, saveResult ? 'success' : 'error');
+
+                // Étape 3: Vérifier l'ID stocké
+                const storedId = table.getAttribute('data-robust-table-id');
+                logMessage(`🔑 ID stocké sur table: ${storedId ? storedId.substring(0, 50) + '...' : 'AUCUN'}`, storedId ? 'success' : 'warn');
+
+                // Étape 4: Modifier temporairement
+                if (firstCell) {
+                    firstCell.textContent = 'CONTENU_TEMPORAIRE';
+                }
+                logMessage(`📝 Contenu temporaire: "CONTENU_TEMPORAIRE"`, 'log');
+
+                // Étape 5: Restaurer
+                const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                logMessage(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'}`, restoreResult ? 'success' : 'error');
+
+                // Étape 6: Vérifier le résultat
+                const finalContent = firstCell ? firstCell.textContent : '';
+                logMessage(`📋 Contenu final: "${finalContent}"`, 'log');
+
+                if (finalContent === testContent) {
+                    logMessage('✅ RESTAURATION RÉUSSIE!', 'success');
+                } else {
+                    logMessage(`❌ RESTAURATION ÉCHOUÉE - Attendu: "${testContent}", Obtenu: "${finalContent}"`, 'error');
+                }
+
+            } catch (error) {
+                logMessage(`❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDetailedRestore() {
+            logMessage('🧪 Test restauration détaillé...', 'log');
+            
+            try {
+                const table = document.getElementById('test-table');
+                if (!table) {
+                    logMessage('❌ Table non trouvée', 'error');
+                    return;
+                }
+
+                // Nettoyer les attributs existants
+                table.removeAttribute('data-robust-table-id');
+                table.removeAttribute('data-menu-table-id');
+                logMessage('🧹 Attributs nettoyés', 'log');
+
+                // Étape 1: Générer ID initial
+                const initialId = window.claraverseStorageAPI.generateRobustTableId(table);
+                logMessage(`🔑 ID initial généré: ${initialId ? initialId.substring(0, 50) + '...' : 'AUCUN'}`, 'log');
+
+                // Étape 2: Modifier contenu et sauvegarder
+                const firstCell = table.querySelector('td');
+                const testContent = 'CONTENU_DETAILLE_TEST';
+                if (firstCell) {
+                    firstCell.textContent = testContent;
+                }
+                logMessage(`📝 Contenu modifié: "${testContent}"`, 'log');
+
+                // Générer nouvel ID après modification
+                table.removeAttribute('data-robust-table-id'); // Forcer régénération
+                const modifiedId = window.claraverseStorageAPI.generateRobustTableId(table);
+                logMessage(`🔑 ID après modification: ${modifiedId ? modifiedId.substring(0, 50) + '...' : 'AUCUN'}`, 'log');
+
+                // Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                logMessage(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`, saveResult ? 'success' : 'error');
+
+                // Vérifier l'ID final stocké
+                const finalStoredId = table.getAttribute('data-robust-table-id');
+                logMessage(`🔑 ID final stocké: ${finalStoredId ? finalStoredId.substring(0, 50) + '...' : 'AUCUN'}`, 'log');
+
+                // Vérifier les données dans localStorage
+                if (finalStoredId) {
+                    const storedData = localStorage.getItem(finalStoredId);
+                    if (storedData) {
+                        try {
+                            const parsedData = JSON.parse(storedData);
+                            logMessage(`💾 Données trouvées dans localStorage`, 'success');
+                            logMessage(`📊 Version: ${parsedData.metadata?.version || 'N/A'}`, 'log');
+                            logMessage(`📊 Taille HTML: ${parsedData.html ? parsedData.html.length : 0} chars`, 'log');
+                        } catch (e) {
+                            logMessage(`⚠️ Données corrompues dans localStorage`, 'warn');
+                        }
+                    } else {
+                        logMessage(`❌ Aucune donnée trouvée dans localStorage pour cet ID`, 'error');
+                    }
+                }
+
+                // Étape 3: Modifier temporairement
+                if (firstCell) {
+                    firstCell.textContent = 'TEMP_DETAILED';
+                }
+                logMessage(`📝 Contenu temporaire: "TEMP_DETAILED"`, 'log');
+
+                // Étape 4: Restaurer
+                logMessage('🔄 Tentative de restauration...', 'log');
+                const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                logMessage(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'}`, restoreResult ? 'success' : 'error');
+
+                // Étape 5: Vérifier le résultat
+                const finalContent = firstCell ? firstCell.textContent : '';
+                logMessage(`📋 Contenu final: "${finalContent}"`, 'log');
+
+                if (finalContent === testContent) {
+                    logMessage('✅ RESTAURATION DÉTAILLÉE RÉUSSIE!', 'success');
+                } else {
+                    logMessage(`❌ RESTAURATION DÉTAILLÉE ÉCHOUÉE`, 'error');
+                    logMessage(`   Attendu: "${testContent}"`, 'error');
+                    logMessage(`   Obtenu: "${finalContent}"`, 'error');
+                }
+
+            } catch (error) {
+                logMessage(`❌ Erreur détaillée: ${error.message}`, 'error');
+                console.error('Erreur complète:', error);
+            }
+        }
+
+        function clearLog() {
+            logDiv.innerHTML = 'Log effacé...\n';
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            logMessage('🚀 Interface de debug restauration chargée', 'log');
+            
+            setTimeout(() => {
+                if (typeof window.claraverseStorageAPI !== 'undefined') {
+                    logMessage('✅ API claraverseStorageAPI disponible', 'success');
+                } else {
+                    logMessage('❌ API claraverseStorageAPI non disponible', 'error');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

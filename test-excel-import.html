@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Import Excel - ClaraVerse</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .instructions {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: #0066cc;
+        }
+
+        .instructions ul {
+            margin-bottom: 0;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        /* Styles pour reproduire l'environnement ClaraVerse */
+        .prose {
+            max-width: none;
+        }
+
+        .prose-base {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .dark\:prose-invert {
+            /* Style pour mode sombre si nécessaire */
+        }
+
+        .max-w-none {
+            max-width: none;
+        }
+
+        .min-w-full {
+            min-width: 100%;
+        }
+
+        .border {
+            border-width: 1px;
+        }
+
+        .border-gray-200 {
+            border-color: #e5e7eb;
+        }
+
+        .dark\:border-gray-700 {
+            border-color: #374151;
+        }
+
+        .rounded-lg {
+            border-radius: 8px;
+        }
+
+        /* Styles de table */
+        table.min-w-full.border.border-gray-200.rounded-lg {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            background: white;
+        }
+
+        table.min-w-full.border.border-gray-200.rounded-lg th,
+        table.min-w-full.border.border-gray-200.rounded-lg td {
+            border: 1px solid #d1d5db;
+            padding: 12px;
+            text-align: left;
+        }
+
+        table.min-w-full.border.border-gray-200.rounded-lg th {
+            background-color: #f9fafb;
+            font-weight: bold;
+        }
+
+        table.min-w-full.border.border-gray-200.rounded-lg tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        table.min-w-full.border.border-gray-200.rounded-lg tr:hover {
+            background-color: #e3f2fd;
+        }
+
+        /* Style pour les cellules éditables */
+        [contenteditable="true"] {
+            background-color: #fff3cd;
+            outline: 2px solid #ffc107;
+        }
+
+        [contenteditable="true"]:focus {
+            background-color: #ffffff;
+            outline: 2px solid #007bff;
+        }
+
+        .sample-file {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .sample-file h4 {
+            margin-top: 0;
+            color: #495057;
+        }
+
+        .sample-file pre {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .error {
+            background: #dc3545 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Import Excel - ClaraVerse</h1>
+
+        <div class="instructions</h1>">
+            <h3>📋 Instructions de test</h3>
+            <ul>
+                <li><strong>Survolez une table</strong> pour faire apparaître le menu contextuel</li>
+                <li><strong>Cliquez sur "Import Excel"</strong> pour remplacer le contenu de la table</li>
+                <li><strong>Formats supportés :</strong> .xlsx, .xls, .csv</li>
+                <li><strong>La première ligne</strong> du fichier Excel sera utilisée comme en-têtes</li>
+                <li><strong>Les cellules importées</strong> seront automatiquement éditables</li>
+                <li><strong>Test des autres fonctions :</strong> Insérer ligne/colonne, Rapprochement</li>
+            </ul>
+        </div>
+
+        <div class="sample-file">
+            <h4>📄 Structure de fichier Excel de test recommandée :</h4>
+            <pre>
+Nom         Âge    Ville           Salaire
+Alice       28     Paris           45000
+Bob         34     Lyon            52000
+Claire      29     Marseille       48000
+David       42     Toulouse        55000
+            </pre>
+        </div>
+
+        <h2>Table de test #1 - Table de pointage</h2>
+        <div class="prose prose-base dark:prose-invert max-w-none">
+            <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg">
+                <thead>
+                    <tr>
+                        <th>Assertion</th>
+                        <th>CTR1</th>
+                        <th>CTR2</th>
+                        <th>Ecart</th>
+                        <th>Conclusion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Test 1</td>
+                        <td>1000</td>
+                        <td>950</td>
+                        <td>50</td>
+                        <td>Conforme</td>
+                    </tr>
+                    <tr>
+                        <td>Test 2</td>
+                        <td>2500</td>
+                        <td>2300</td>
+                        <td>200</td>
+                        <td>Écart significatif</td>
+                    </tr>
+                    <tr>
+                        <td>Test 3</td>
+                        <td>750</td>
+                        <td>750</td>
+                        <td>0</td>
+                        <td>Parfait</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Table de test #2 - Table simple</h2>
+        <div class="prose prose-base dark:prose-invert max-w-none">
+            <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg">
+                <thead>
+                    <tr>
+                        <th>Produit</th>
+                        <th>Quantité</th>
+                        <th>Prix unitaire</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Ordinateur</td>
+                        <td>5</td>
+                        <td>800</td>
+                        <td>4000</td>
+                    </tr>
+                    <tr>
+                        <td>Souris</td>
+                        <td>10</td>
+                        <td>25</td>
+                        <td>250</td>
+                    </tr>
+                    <tr>
+                        <td>Clavier</td>
+                        <td>8</td>
+                        <td>60</td>
+                        <td>480</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Table de test #3 - Table vide (pour import)</h2>
+        <div class="prose prose-base dark:prose-invert max-w-none">
+            <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg">
+                <thead>
+                    <tr>
+                        <th>Colonne A</th>
+                        <th>Colonne B</th>
+                        <th>Colonne C</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Données d'exemple</td>
+                        <td>À remplacer</td>
+                        <td>Par import Excel</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sample-file">
+            <h4></h4>🔧 État des scripts :</h4>
+            <p id="script-status">Chargement des scripts...</p>
+        </div>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <!-- Chargement des scripts -->
+    <script src="dev.js"></script>
+    <script src="menu.js"></script>
+
+    <script>
+        // Script de test et monitoring
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusElement = document.getElementById('script-status');
+            const statusDiv = document.getElementById('status');
+
+            // Vérifier que les scripts sont chargés
+            setTimeout(() => {
+                let status = [];
+
+                if (typeof ContextualMenuManager !== 'undefined') {
+                    status.push('✅ menu.js chargé');
+                } else {
+                    status.push('❌ menu.js non chargé');
+                }
+
+                if (typeof initialize !== 'undefined' || window.claraverseSyncAPI) {
+                    status.push('✅ dev.js chargé');
+                } else {
+                    status.push('⚠️ dev.js partiellement chargé');
+                }
+
+                if (typeof XLSX !== 'undefined') {
+                    status.push('✅ SheetJS disponible');
+                } else {
+                    status.push('⚠️ SheetJS sera chargé à la demande');
+                }
+
+                statusElement.innerHTML = status.join('<br>');
+
+                // Initialiser le gestionnaire de menu
+                if (typeof ContextualMenuManager !== 'undefined') {
+                    try {
+                        window.menuManager = new ContextualMenuManager();
+                        window.menuManager.init();
+                        showStatus('✅ Menu contextuel initialisé', false);
+                    } catch (error) {
+                        showStatus('❌ Erreur initialisation menu: ' + error.message, true);
+                    }
+                }
+            }, 500);
+
+            // Écouter les événements personnalisés
+            document.addEventListener('claraverse:table:updated', function(event) {
+                const detail = event.detail;
+                showStatus(`📊 Table mise à jour: ${detail.action} (source: ${detail.source})`, false);
+            });
+
+            function showStatus(message, isError) {
+                statusDiv.textContent = message;
+                statusDiv.className = 'status' + (isError ? ' error' : '');
+                statusDiv.style.display = 'block';
+
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            }
+        });
+
+        // Tests automatiques
+        function testMenuFunctionality() {
+            console.log('🧪 Début des tests automatiques');
+
+            // Test 1: Vérification de l'existence du menu
+            const tables = document.querySelectorAll('table.min-w-full');
+            console.log(`📊 ${tables.length} tables détectées`);
+
+            if (tables.length > 0 && window.menuManager) {
+                // Simuler un survol de table
+                const firstTable = tables[0];
+                const event = new MouseEvent('mouseenter', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true
+                });
+
+                firstTable.dispatchEvent(event);
+                console.log('✅ Test de survol effectué sur la première table');
+            }
+        }
+
+        // Lancer les tests après le chargement
+        window.addEventListener('load', () => {
+            setTimeout(testMenuFunctionality, 1000);
+        });
+    </script>
+</body>
+</html>

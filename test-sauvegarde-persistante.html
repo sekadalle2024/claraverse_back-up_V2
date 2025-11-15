@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sauvegarde Persistante</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .test-table th,
+        .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+
+        .prose {
+            max-width: none;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button.success {
+            background: #28a745;
+        }
+
+        button.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .logs-container {
+            background: #1e1e1e;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .log-success {
+            color: #4CAF50;
+        }
+
+        .log-error {
+            color: #f44336;
+        }
+
+        .log-warning {
+            color: #ff9800;
+        }
+
+        .log-info {
+            color: #2196F3;
+        }
+
+        .editable {
+            background: #fff3cd;
+            border: 2px dashed #ffc107;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>💾 Test Sauvegarde Persistante</h1>
+        <p>Test pour diagnostiquer pourquoi les modifications des anciennes tables ne sont pas sauvegardées</p>
+
+        <div class="container">
+            <h2>🎯 Tests de Sauvegarde</h2>
+            <button onclick="testSauvegardeAncienneTable()">🏛️ Test Ancienne Table</button>
+            <button onclick="testSauvegardeNouvelleTable()">🆕 Test Nouvelle Table</button>
+            <button onclick="testModificationPersistante()">✏️ Test Modification</button>
+            <button onclick="simulerRechargemet()">🔄 Simuler Rechargement</button>
+            <button class="warning" onclick="forceAllSaves()">💾 Forcer Sauvegardes</button>
+            <button onclick="clearLogs()">🧹 Effacer</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Tables de Test</h2>
+
+            <h3>🏛️ Ancienne Table (style conso.js)</h3>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="table_ancien_test" data-menu-table-id="table_ancien_test" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Ancienne</th>
+                            <th>Valeur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td contenteditable="true" class="editable">Modifiez-moi !</td>
+                            <td contenteditable="true" class="editable">Ancienne donnée</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>🆕 Nouvelle Table (style menu_storage.js)</h3>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="table_nouveau_test" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Nouvelle</th>
+                            <th>Valeur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td contenteditable="true" class="editable">Modifiez-moi aussi !</td>
+                            <td contenteditable="true" class="editable">Nouvelle donnée</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Logs</h2>
+            <div id="logs-display" class="logs-container">
+                <div class="log-entry log-info">[INIT] Test sauvegarde persistante chargé</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger les scripts -->
+    <script src="menu_storage.js"></script>
+    <script src="correction-universelle.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+
+            const logsContainer = document.getElementById('logs-display');
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('logs-display').innerHTML = '';
+            log('Logs effacés', 'info');
+        }
+
+        function getStorageKeys() {
+            const keys = Object.keys(localStorage);
+            return {
+                ancien: keys.filter(key => key.startsWith('table_') || key.includes('claraverse_consolidated')),
+                nouveau: keys.filter(key => key.startsWith('claraverse_table_temp_')),
+                total: keys.filter(key => key.includes('claraverse') || key.startsWith('table_'))
+            };
+        }
+
+        async function testSauvegardeAncienneTable() {
+            log('🏛️ === TEST SAUVEGARDE ANCIENNE TABLE ===', 'info');
+
+            try {
+                const table = document.getElementById('table_ancien_test');
+                const firstCell = table.querySelector('td');
+                const testContent = 'ANCIEN_MODIFIE_' + Date.now();
+
+                log('📊 État initial du localStorage:', 'info');
+                const initialKeys = getStorageKeys();
+                log(`  Ancien système: ${initialKeys.ancien.length} clés`, 'info');
+                log(`  Nouveau système: ${initialKeys.nouveau.length} clés`, 'info');
+
+                // Modifier le contenu
+                firstCell.textContent = testContent;
+                log(`📝 Contenu modifié: "${testContent}"`, 'info');
+
+                // Essayer différentes méthodes de sauvegarde
+                log('💾 Tentatives de sauvegarde...', 'info');
+
+                // 1. Nouveau système
+                if (window.claraverseStorageAPI) {
+                    const newSave = window.claraverseStorageAPI.saveTable(table);
+                    log(`  Nouveau système: ${newSave ? 'SUCCÈS' : 'ÉCHEC'}`, newSave ? 'success' : 'error');
+                }
+
+                // 2. Ancien système (si disponible)
+                if (window.saveTableHTMLNow) {
+                    const oldSave = window.saveTableHTMLNow(table);
+                    log(`  Ancien système: ${oldSave ? 'SUCCÈS' : 'ÉCHEC'}`, oldSave ? 'success' : 'error');
+                }
+
+                // 3. Système consolidé (si disponible)
+                if (window.claraverseSyncAPI && window.claraverseSyncAPI.saveTable) {
+                    const syncSave = window.claraverseSyncAPI.saveTable(table);
+                    log(`  Système sync: ${syncSave ? 'SUCCÈS' : 'ÉCHEC'}`, syncSave ? 'success' : 'error');
+                }
+
+                // Vérifier les changements dans localStorage
+                setTimeout(() => {
+                    const finalKeys = getStorageKeys();
+                    log('📊 État final du localStorage:', 'info');
+                    log(`  Ancien système: ${finalKeys.ancien.length} clés (+${finalKeys.ancien.length - initialKeys.ancien.length})`, 'info');
+                    log(`  Nouveau système: ${finalKeys.nouveau.length} clés (+${finalKeys.nouveau.length - initialKeys.nouveau.length})`, 'info');
+
+                    // Chercher les données de cette table
+                    const tableId = table.getAttribute('data-menu-table-id') || table.id;
+                    log(`🔍 Recherche données pour ID: ${tableId}`, 'info');
+
+                    let found = false;
+                    finalKeys.total.forEach(key => {
+                        if (key.includes(tableId)) {
+                            const data = localStorage.getItem(key);
+                            if (data && data.includes(testContent)) {
+                                log(`✅ Données trouvées dans: ${key}`, 'success');
+                                found = true;
+                            }
+                        }
+                    });
+
+                    if (!found) {
+                        log('❌ Aucune donnée persistante trouvée pour cette table', 'error');
+                    }
+                }, 100);
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSauvegardeNouvelleTable() {
+            log('🆕 === TEST SAUVEGARDE NOUVELLE TABLE ===', 'info');
+
+            try {
+                const table = document.getElementById('table_nouveau_test');
+                const firstCell = table.querySelector('td');
+                const testContent = 'NOUVEAU_MODIFIE_' + Date.now();
+
+                // Nettoyer les anciens IDs
+                table.removeAttribute('data-robust-table-id');
+                table.removeAttribute('data-menu-table-id');
+
+                firstCell.textContent = testContent;
+                log(`📝 Contenu modifié: "${testContent}"`, 'info');
+
+                // Sauvegarder avec le nouveau système
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde nouveau système: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`, saveResult ? 'success' : 'error');
+
+                if (saveResult) {
+                    const tableId = table.getAttribute('data-robust-table-id');
+                    log(`🔑 ID généré: ${tableId ? tableId.substring(0, 30) + '...' : 'AUCUN'}`, 'info');
+
+                    if (tableId) {
+                        const savedData = localStorage.getItem(tableId);
+                        if (savedData && savedData.includes(testContent)) {
+                            log('✅ Données persistantes confirmées', 'success');
+                        } else {
+                            log('❌ Données non persistantes', 'error');
+                        }
+                    }
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testModificationPersistante() {
+            log('✏️ === TEST MODIFICATION PERSISTANTE ===', 'info');
+
+            try {
+                const table = document.getElementById('table_ancien_test');
+                const firstCell = table.querySelector('td');
+                const originalContent = firstCell.textContent;
+                const modifiedContent = 'MODIFICATION_PERSISTANTE_' + Date.now();
+
+                log(`📋 Contenu original: "${originalContent}"`, 'info');
+
+                // Modifier
+                firstCell.textContent = modifiedContent;
+                log(`📝 Contenu modifié: "${modifiedContent}"`, 'info');
+
+                // Forcer la sauvegarde avec tous les systèmes disponibles
+                log('💾 Forçage sauvegarde avec tous les systèmes...', 'info');
+
+                let saveSuccess = false;
+
+                // Essayer tous les systèmes de sauvegarde
+                const saveMethods = [
+                    { name: 'claraverseStorageAPI.saveTable', fn: window.claraverseStorageAPI?.saveTable },
+                    { name: 'saveTableHTMLNow', fn: window.saveTableHTMLNow },
+                    { name: 'claraverseSyncAPI.saveTable', fn: window.claraverseSyncAPI?.saveTable }
+                ];
+
+                for (const method of saveMethods) {
+                    if (method.fn) {
+                        try {
+                            const result = method.fn(table);
+                            log(`  ${method.name}: ${result ? 'SUCCÈS' : 'ÉCHEC'}`, result ? 'success' : 'error');
+                            if (result) saveSuccess = true;
+                        } catch (e) {
+                            log(`  ${method.name}: ERREUR (${e.message})`, 'error');
+                        }
+                    } else {
+                        log(`  ${method.name}: NON DISPONIBLE`, 'warning');
+                    }
+                }
+
+                if (saveSuccess) {
+                    log('✅ Au moins une sauvegarde a réussi', 'success');
+
+                    // Simuler un rechargement en modifiant temporairement puis restaurant
+                    setTimeout(() => {
+                        log('🔄 Simulation rechargement...', 'info');
+                        firstCell.textContent = 'TEMP_SIMULATION_RECHARGEMENT';
+
+                        // Essayer de restaurer
+                        setTimeout(() => {
+                            if (window.testCorrectionUniverselle) {
+                                window.testCorrectionUniverselle();
+                            }
+
+                            setTimeout(() => {
+                                const finalContent = table.querySelector('td').textContent;
+                                log(`📋 Contenu après simulation: "${finalContent}"`, 'info');
+
+                                if (finalContent === modifiedContent) {
+                                    log('✅ MODIFICATION PERSISTANTE RÉUSSIE !', 'success');
+                                } else {
+                                    log('❌ MODIFICATION NON PERSISTANTE', 'error');
+                                    log(`   Attendu: "${modifiedContent}"`, 'error');
+                                    log(`   Obtenu:  "${finalContent}"`, 'error');
+                                }
+                            }, 200);
+                        }, 100);
+                    }, 500);
+                } else {
+                    log('❌ Aucune sauvegarde n\'a réussi', 'error');
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`, 'error');
+            }
+        }
+
+        function forceAllSaves() {
+            log('💾 === FORÇAGE TOUTES LES SAUVEGARDES ===', 'warning');
+
+            const tables = document.querySelectorAll('table');
+            log(`📊 ${tables.length} tables trouvées`, 'info');
+
+            tables.forEach((table, index) => {
+                const tableId = table.id || table.getAttribute('data-menu-table-id') || `table_${index}`;
+                log(`💾 Forçage sauvegarde table: ${tableId}`, 'info');
+
+                // Essayer tous les systèmes
+                if (window.claraverseStorageAPI) {
+                    const result = window.claraverseStorageAPI.saveTable(table);
+                    log(`  Nouveau système: ${result ? 'SUCCÈS' : 'ÉCHEC'}`, result ? 'success' : 'error');
+                }
+
+                if (window.saveTableHTMLNow) {
+                    const result = window.saveTableHTMLNow(table);
+                    log(`  Ancien système: ${result ? 'SUCCÈS' : 'ÉCHEC'}`, result ? 'success' : 'error');
+                }
+            });
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function () {
+            log('💾 Test sauvegarde persistante chargé', 'success');
+            log('💡 Modifiez les cellules jaunes et testez la persistance', 'info');
+
+            // Ajouter des listeners sur les cellules éditables
+            const editableCells = document.querySelectorAll('.editable');
+            editableCells.forEach((cell, index) => {
+                cell.addEventListener('input', function () {
+                    log(`✏️ Cellule ${index + 1} modifiée: "${this.textContent}"`, 'warning');
+
+                    // Auto-sauvegarde après modification
+                    setTimeout(() => {
+                        const table = this.closest('table');
+                        if (table) {
+                            log('💾 Auto-sauvegarde après modification...', 'info');
+
+                            if (window.claraverseStorageAPI) {
+                                const result = window.claraverseStorageAPI.saveTable(table);
+                                log(`💾 Auto-sauvegarde: ${result ? 'SUCCÈS' : 'ÉCHEC'}`, result ? 'success' : 'error');
+                            }
+                        }
+                    }, 500);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

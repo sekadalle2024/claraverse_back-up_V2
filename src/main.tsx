@@ -6,6 +6,8 @@ import { setupGlobalErrorHandlers } from './utils/globalErrorHandler.ts';
 import './utils/errorTestHelpers.ts'; // Import to make console helpers available
 import './index.css';
 import './styles/animations.css'; // Import animations
+import './services/menuIntegration'; // Import menu integration service
+import './services/autoRestore'; // Import auto-restore service
 
 // Set initial theme to light mode by default
 document.documentElement.classList.remove('dark');

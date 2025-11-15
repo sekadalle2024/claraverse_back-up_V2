@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Ultime</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .test-table th,
+        .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+
+        .prose {
+            max-width: none;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button.danger {
+            background: #dc3545;
+        }
+
+        .logs-container {
+            background: #1e1e1e;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.3;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .log-entry {
+            margin: 1px 0;
+            padding: 1px 0;
+        }
+
+        .log-success {
+            color: #4CAF50;
+        }
+
+        .log-error {
+            color: #f44336;
+        }
+
+        .log-warning {
+            color: #ff9800;
+        }
+
+        .log-info {
+            color: #2196F3;
+        }
+
+        .log-debug {
+            color: #9C27B0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔬 Diagnostic Ultime</h1>
+        <p>Analyse complète du système pour identifier le problème exact</p>
+
+        <div class="container">
+            <h2>🎯 Diagnostic Complet</h2>
+            <button onclick="runUltimateDiagnostic()">🔬 Diagnostic Ultime</button>
+            <button onclick="testRawHTML()">📝 Test HTML Brut</button>
+            <button onclick="testStepByStep()">👣 Test Étape par Étape</button>
+            <button class="danger" onclick="clearLogs()">🧹 Effacer</button>
+        </div>
+
+        <div class="grid">
+            <div class="container">
+                <h2>📋 Table de Test</h2>
+                <div class="prose prose-base dark:prose-invert max-w-none">
+                    <table id="test-table" class="test-table min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Test</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Original</td>
+                                <td>Data</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="container">
+                <h2>📊 Logs Détaillés</h2>
+                <div id="logs-display" class="logs-container">
+                    <div class="log-entry log-info">[INIT] Diagnostic ultime prêt</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+
+            const logsContainer = document.getElementById('logs-display');
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('logs-display').innerHTML = '';
+            log('Logs effacés', 'info');
+        }
+
+        // Fonction pour examiner en détail l'état du système
+        function examineSystem() {
+            log('🔬 === EXAMEN DU SYSTÈME ===', 'debug');
+
+            // Vérifier les APIs disponibles
+            log(`claraverseStorageAPI: ${typeof window.claraverseStorageAPI}`, 'debug');
+            if (window.claraverseStorageAPI) {
+                log(`  - saveTable: ${typeof window.claraverseStorageAPI.saveTable}`, 'debug');
+                log(`  - restoreTable: ${typeof window.claraverseStorageAPI.restoreTable}`, 'debug');
+            }
+
+            log(`restoreTableHTML: ${typeof window.restoreTableHTML}`, 'debug');
+            log(`storageManager: ${typeof window.storageManager}`, 'debug');
+
+            // Vérifier localStorage
+            const keys = Object.keys(localStorage);
+            const claraverseKeys = keys.filter(key => key.startsWith('claraverse_table_'));
+            log(`localStorage: ${claraverseKeys.length} clés claraverse`, 'debug');
+
+            return {
+                hasAPI: typeof window.claraverseStorageAPI !== 'undefined',
+                hasLegacy: typeof window.restoreTableHTML !== 'undefined',
+                storageKeys: claraverseKeys.length
+            };
+        }
+
+        // Fonction pour examiner une table en détail
+        function examineTable(table) {
+            log('🔬 === EXAMEN DE LA TABLE ===', 'debug');
+
+            const robustId = table.getAttribute('data-robust-table-id');
+            const menuId = table.getAttribute('data-menu-table-id');
+            const cells = table.querySelectorAll('td, th');
+
+            log(`ID robuste: ${robustId || 'AUCUN'}`, 'debug');
+            log(`ID menu: ${menuId || 'AUCUN'}`, 'debug');
+            log(`Nombre de cellules: ${cells.length}`, 'debug');
+
+            cells.forEach((cell, index) => {
+                log(`  Cellule ${index}: "${cell.textContent}"`, 'debug');
+            });
+
+            // Vérifier les données dans localStorage
+            if (robustId) {
+                const savedData = localStorage.getItem(robustId);
+                if (savedData) {
+                    try {
+                        const parsed = JSON.parse(savedData);
+                        log(`Données sauvegardées trouvées:`, 'debug');
+                        log(`  - Version: ${parsed.version || 'AUCUNE'}`, 'debug');
+                        log(`  - HTML: ${parsed.html ? 'PRÉSENT' : 'ABSENT'}`, 'debug');
+                        log(`  - Taille HTML: ${parsed.html ? parsed.html.length : 0} chars`, 'debug');
+
+                        if (parsed.html) {
+                            // Parser le HTML pour voir le contenu
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(parsed.html, 'text/html');
+                            const savedCells = doc.querySelectorAll('td, th');
+                            log(`  - Cellules sauvegardées: ${savedCells.length}`, 'debug');
+                            savedCells.forEach((cell, index) => {
+                                log(`    Cellule sauvegardée ${index}: "${cell.textContent}"`, 'debug');
+                            });
+                        }
+                    } catch (error) {
+                        log(`Erreur parsing données: ${error.message}`, 'error');
+                    }
+                } else {
+                    log(`Aucune donnée trouvée pour ID: ${robustId}`, 'warning');
+                }
+            }
+        }
+
+        async function runUltimateDiagnostic() {
+            log('🔬 === DIAGNOSTIC ULTIME ===', 'info');
+
+            try {
+                // 1. Examiner le système
+                const systemState = examineSystem();
+
+                if (!systemState.hasAPI) {
+                    log('❌ API non disponible, arrêt du diagnostic', 'error');
+                    return;
+                }
+
+                // 2. Préparer la table
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'DIAGNOSTIC_ULTIME_' + Date.now();
+
+                log('🔬 === PHASE 1: PRÉPARATION ===', 'info');
+                table.removeAttribute('data-robust-table-id');
+                table.removeAttribute('data-menu-table-id');
+                firstCell.textContent = testContent;
+                log(`Contenu défini: "${testContent}"`, 'info');
+
+                examineTable(table);
+
+                // 3. Sauvegarder
+                log('🔬 === PHASE 2: SAUVEGARDE ===', 'info');
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`Résultat sauvegarde: ${saveResult}`, saveResult ? 'success' : 'error');
+
+                examineTable(table);
+
+                // 4. Modifier
+                log('🔬 === PHASE 3: MODIFICATION ===', 'info');
+                firstCell.textContent = 'CONTENU_TEMPORAIRE_DIAGNOSTIC';
+                log(`Contenu modifié: "${firstCell.textContent}"`, 'info');
+
+                examineTable(table);
+
+                // 5. Restaurer avec surveillance
+                log('🔬 === PHASE 4: RESTAURATION SURVEILLÉE ===', 'info');
+
+                // Observer les changements DOM
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'childList' || mutation.type === 'characterData') {
+                            log(`🔬 DOM modifié: ${mutation.type} sur ${mutation.target.tagName || 'TEXT'}`, 'debug');
+                            if (mutation.target.textContent) {
+                                log(`  Nouveau contenu: "${mutation.target.textContent}"`, 'debug');
+                            }
+                        }
+                    });
+                });
+
+                observer.observe(table, {
+                    childList: true,
+                    subtree: true,
+                    characterData: true,
+                    characterDataOldValue: true
+                });
+
+                // Restaurer
+                const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                log(`Résultat restauration: ${restoreResult}`, restoreResult ? 'success' : 'error');
+
+                // Examiner immédiatement après
+                log('🔬 === EXAMEN IMMÉDIAT POST-RESTAURATION ===', 'debug');
+                examineTable(table);
+
+                // Attendre et examiner à nouveau
+                setTimeout(() => {
+                    log('🔬 === EXAMEN APRÈS 100ms ===', 'debug');
+                    examineTable(table);
+
+                    const finalContent = firstCell.textContent;
+                    if (finalContent === testContent) {
+                        log('✅ DIAGNOSTIC: Restauration réussie', 'success');
+                    } else {
+                        log(`❌ DIAGNOSTIC: Restauration échouée`, 'error');
+                        log(`  Attendu: "${testContent}"`, 'error');
+                        log(`  Obtenu: "${finalContent}"`, 'error');
+                    }
+
+                    observer.disconnect();
+                }, 100);
+
+                setTimeout(() => {
+                    log('🔬 === EXAMEN APRÈS 500ms ===', 'debug');
+                    examineTable(table);
+                    observer.disconnect();
+                }, 500);
+
+            } catch (error) {
+                log(`❌ ERREUR DIAGNOSTIC: ${error.message}`, 'error');
+                console.error('Erreur complète:', error);
+            }
+        }
+
+        async function testRawHTML() {
+            log('📝 === TEST HTML BRUT ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'RAW_HTML_' + Date.now();
+
+                // Test 1: Modification directe
+                firstCell.textContent = testContent;
+                log(`Test 1 - Contenu défini: "${firstCell.textContent}"`, 'info');
+
+                // Test 2: innerHTML
+                const originalHTML = table.innerHTML;
+                table.innerHTML = '<tbody><tr><td>INNERHTML_TEST</td><td>Data</td></tr></tbody>';
+                log(`Test 2 - innerHTML: "${table.querySelector('td').textContent}"`, 'info');
+
+                // Test 3: Restaurer HTML original
+                table.innerHTML = originalHTML;
+                log(`Test 3 - HTML restauré: "${table.querySelector('td').textContent}"`, 'info');
+
+                // Test 4: textContent direct
+                table.querySelector('td').textContent = testContent;
+                log(`Test 4 - textContent final: "${table.querySelector('td').textContent}"`, 'info');
+
+            } catch (error) {
+                log(`❌ ERREUR HTML BRUT: ${error.message}`, 'error');
+            }
+        }
+
+        async function testStepByStep() {
+            log('👣 === TEST ÉTAPE PAR ÉTAPE ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'STEP_BY_STEP_' + Date.now();
+
+                // Étape 1
+                log('👣 Étape 1: Nettoyage', 'info');
+                table.removeAttribute('data-robust-table-id');
+                log(`  Attributs supprimés`, 'debug');
+
+                // Étape 2
+                log('👣 Étape 2: Définition contenu', 'info');
+                firstCell.textContent = testContent;
+                log(`  Contenu: "${firstCell.textContent}"`, 'debug');
+
+                // Étape 3
+                log('👣 Étape 3: Sauvegarde', 'info');
+                const saveStart = performance.now();
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                const saveEnd = performance.now();
+                log(`  Résultat: ${saveResult} en ${(saveEnd - saveStart).toFixed(2)}ms`, 'debug');
+
+                // Étape 4
+                log('👣 Étape 4: Vérification ID', 'info');
+                const tableId = table.getAttribute('data-robust-table-id');
+                log(`  ID généré: ${tableId ? tableId.substring(0, 30) + '...' : 'AUCUN'}`, 'debug');
+
+                // Étape 5
+                log('👣 Étape 5: Modification temporaire', 'info');
+                firstCell.textContent = 'TEMP_STEP';
+                log(`  Nouveau contenu: "${firstCell.textContent}"`, 'debug');
+
+                // Étape 6
+                log('👣 Étape 6: Restauration', 'info');
+                const restoreStart = performance.now();
+                const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                const restoreEnd = performance.now();
+                log(`  Résultat: ${restoreResult} en ${(restoreEnd - restoreStart).toFixed(2)}ms`, 'debug');
+
+                // Étape 7
+                log('👣 Étape 7: Vérification immédiate', 'info');
+                const immediateContent = firstCell.textContent;
+                log(`  Contenu immédiat: "${immediateContent}"`, 'debug');
+
+                // Étape 8
+                setTimeout(() => {
+                    log('👣 Étape 8: Vérification différée', 'info');
+                    const finalContent = firstCell.textContent;
+                    log(`  Contenu final: "${finalContent}"`, 'debug');
+
+                    if (finalContent === testContent) {
+                        log('✅ TEST ÉTAPE PAR ÉTAPE RÉUSSI', 'success');
+                    } else {
+                        log('❌ TEST ÉTAPE PAR ÉTAPE ÉCHOUÉ', 'error');
+                    }
+                }, 200);
+
+            } catch (error) {
+                log(`❌ ERREUR ÉTAPE PAR ÉTAPE: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function () {
+            log('🔬 Diagnostic ultime chargé', 'success');
+            log('💡 Cliquez sur "Diagnostic Ultime" pour une analyse complète', 'info');
+        });
+    </script>
+</body>
+
+</html>

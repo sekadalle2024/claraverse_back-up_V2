@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test E2E Persistance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #007acc;
+        }
+
+        .step h3 {
+            margin-top: 0;
+            color: #007acc;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #005a9e;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: #4ec9b0;
+        }
+
+        .error {
+            color: #f48771;
+        }
+
+        .warning {
+            color: #dcdcaa;
+        }
+
+        .info {
+            color: #9cdcfe;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        table th,
+        table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background: #007acc;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧪 Test End-to-End Persistance</h1>
+        <p>Ce test valide toute la chaîne de persistance : sauvegarde → rechargement → restauration</p>
+
+        <div class="step">
+            <h3>Étape 1: Créer et Sauvegarder une Table</h3>
+            <button onclick="step1()">Créer Table</button>
+            <div id="table-container"></div>
+            <div class="log" id="log1"></div>
+        </div>
+
+        <div class="step">
+            <h3>Étape 2: Modifier la Table</h3>
+            <button onclick="step2()" id="btn2" disabled>Supprimer Ligne 2</button>
+            <div class="log" id="log2"></div>
+        </div>
+
+        <div class="step">
+            <h3>Étape 3: Vérifier Sauvegarde</h3>
+            <button onclick="step3()" id="btn3" disabled>Vérifier IndexedDB</button>
+            <div class="log" id="log3"></div>
+        </div>
+
+        <div class="step">
+            <h3>Étape 4: Simuler Rechargement</h3>
+            <button onclick="step4()" id="btn4" disabled>Recharger (F5)</button>
+            <p style="color: #666; font-size: 14px;">
+                ⚠️ Cette étape va recharger la page. Après rechargement, cliquez sur "Vérifier Restauration" ci-dessous.
+            </p>
+        </div>
+
+        <div class="step">
+            <h3>Étape 5: Vérifier Restauration</h3>
+            <button onclick="step5()">Vérifier Restauration</button>
+            <div class="log" id="log5"></div>
+        </div>
+    </div>
+
+    <script type="module">        l
+et sessionId = null;
+        let tableId = null;
+        let flowiseTableService = null;
+
+        function log(id, msg, type = 'info') {
+            const el = document.getElementById(id);
+            const span = document.createElement('div');
+            span.className = type;
+            span.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            el.appendChild(span);
+            el.scrollTop = el.scrollHeight;
+        }
+
+        // Charger les services
+        (async () => {
+            try {
+                const module = await import('/src/services/flowiseTableService.ts');
+                flowiseTableService = module.flowiseTableService;
+                console.log('✅ Services chargés');
+            } catch (error) {
+                console.error('❌ Erreur chargement services:', error);
+            }
+        })();
+
+        // Étape 1: Créer table
+        window.step1 = async () => {
+            const log1 = document.getElementById('log1');
+            log1.innerHTML = '';
+
+            try {
+                log('log1', '🔄 Création de la table...', 'info');
+
+                // Créer session stable
+                sessionId = `test_e2e_${Date.now()}`;
+                sessionStorage.setItem('claraverse_stable_session', sessionId);
+                log('log1', `📋 Session: ${sessionId}`, 'info');
+
+                // Créer table
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr><th>Nom</th><th>Age</th><th>Ville</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Alice</td><td>30</td><td>Paris</td></tr>
+                        <tr><td>Bob</td><td>25</td><td>Lyon</td></tr>
+                        <tr><td>Charlie</td><td>35</td><td>Marseille</td></tr>
+                    </tbody>
+                `;
+
+                // Afficher
+                document.getElementById('table-container').innerHTML = '';
+                document.getElementById('table-container').appendChild(table);
+
+                // Sauvegarder
+                tableId = await flowiseTableService.saveGeneratedTable(
+                    sessionId, table, 'TestE2E', 'n8n'
+                );
+
+                log('log1', `✅ Table créée et sauvegardée: ${tableId}`, 'success');
+                log('log1', '📊 3 lignes de données', 'info');
+
+                document.getElementById('btn2').disabled = false;
+
+            } catch (error) {
+                log('log1', `❌ Erreur: ${error.message}`, 'error');
+                console.error(error);
+            }
+        };
+
+        // Étape 2: Modifier
+        window.step2 = async () => {
+            const log2 = document.getElementById('log2');
+            log2.innerHTML = '';
+
+            try {
+                log('log2', '🔄 Suppression ligne 2...', 'info');
+
+                const table = document.querySelector('#table-container table');
+                const row = table.querySelector('tbody tr:nth-child(2)');
+                row.remove();
+
+                log('log2', '✅ Ligne supprimée du DOM', 'success');
+
+                // Sauvegarder avec forceUpdate
+                await flowiseTableService.saveGeneratedTable(
+                    sessionId, table, 'TestE2E', 'n8n', undefined, true
+                );
+
+                log('log2', '✅ Modification sauvegardée (forceUpdate)', 'success');
+                log('log2', '📊 2 lignes restantes', 'info');
+
+                document.getElementById('btn3').disabled = false;
+
+            } catch (error) {
+                log('log2', `❌ Erreur: ${error.message}`, 'error');
+            }
+        };
+
+        // Étape 3: Vérifier IndexedDB
+        window.step3 = async () => {
+            const log3 = document.getElementById('log3');
+            log3.innerHTML = '';
+
+            try {
+                log('log3', '🔍 Vérification IndexedDB...', 'info');
+
+                const tables = await flowiseTableService.restoreSessionTables(sessionId);
+
+                log('log3', `📊 ${tables.length} table(s) trouvée(s)`, 'success');
+
+                tables.forEach(t => {
+                    const rows = t.tableElement.querySelectorAll('tbody tr').length;
+                    log('log3', `  - ID: ${t.id}`, 'info');
+                    log('log3', `    Keyword: ${t.keyword}`, 'info');
+                    log('log3', `    Rows: ${rows}`, rows === 2 ? 'success' : 'error');
+                });
+
+                if (tables.length > 0 && tables[0].tableElement.querySelectorAll('tbody tr').length === 2) {
+                    log('log3', '✅ Modification bien sauvegardée!', 'success');
+                    document.getElementById('btn4').disabled = false;
+                } else {
+                    log('log3', '❌ Problème de sauvegarde', 'error');
+                }
+
+            } catch (error) {
+                log('log3', `❌ Erreur: ${error.message}`, 'error');
+            }
+        };
+
+        // Étape 4: Recharger
+        window.step4 = () => {
+            log('log3', '🔄 Rechargement de la page...', 'warning');
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        };
+
+        // Étape 5: Vérifier restauration
+        window.step5 = async () => {
+            const log5 = document.getElementById('log5');
+            log5.innerHTML = '';
+
+            try {
+                log('log5', '🔍 Vérification après rechargement...', 'info');
+
+                // Récupérer session
+                const session = sessionStorage.getItem('claraverse_stable_session');
+                if (!session) {
+                    log('log5', '❌ Session perdue!', 'error');
+                    return;
+                }
+
+                log('log5', `📋 Session: ${session}`, 'success');
+
+                // Attendre restauration
+                if (window.claraverseRestore) {
+                    log('log5', '⏳ Attente restauration...', 'warning');
+                    const restored = await window.claraverseRestore.waitForRestore();
+
+                    if (restored) {
+                        log('log5', '✅ Restauration terminée', 'success');
+                    } else {
+                        log('log5', '⚠️ Timeout restauration', 'warning');
+                    }
+                }
+
+                // Vérifier DOM
+                const tables = document.querySelectorAll('table');
+                log('log5', `📊 ${tables.length} table(s) dans le DOM`, 'info');
+
+                if (tables.length > 0) {
+                    const rows = tables[0].querySelectorAll('tbody tr').length;
+                    log('log5', `📊 ${rows} ligne(s) de données`, rows === 2 ? 'success' : 'error');
+
+                    if (rows === 2) {
+                        log('log5', '✅ TEST RÉUSSI: Persistance fonctionne!', 'success');
+                    } else {
+                        log('log5', '❌ TEST ÉCHOUÉ: Mauvais nombre de lignes', 'error');
+                    }
+                } else {
+                    log('log5', '❌ Aucune table restaurée', 'error');
+                }
+
+            } catch (error) {
+                log('log5', `❌ Erreur: ${error.message}`, 'error');
+            }
+        };
+
+        // Auto-check si on revient après rechargement
+        window.addEventListener('load', () => {
+            const session = sessionStorage.getItem('claraverse_stable_session');
+            if (session && session.startsWith('test_e2e_')) {
+                setTimeout(() => {
+                    const log5 = document.getElementById('log5');
+                    if (log5.children.length === 0) {
+                        log('log5', '🔄 Rechargement détecté, vérification auto...', 'info');
+                        step5();
+                    }
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+
+</html>

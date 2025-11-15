@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Rapide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .test-table th,
+        .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+
+        .prose {
+            max-width: none;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 Diagnostic Rapide</h1>
+        <p>Test rapide pour identifier pourquoi la restauration ne fonctionne pas</p>
+
+        <div id="status" class="status warning">
+            🔄 Chargement du diagnostic...
+        </div>
+
+        <div class="container">
+            <h2>🎯 Test Immédiat</h2>
+            <button onclick="testRestauration()">🧪 Test Restauration</button>
+            <button onclick="checkSystem()">🔍 Vérifier Système</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="test-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Original</td>
+                            <td>Data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Logs</h2>
+            <div id="logs"
+                style="background: #1e1e1e; color: white; padding: 15px; border-radius: 4px; font-family: monospace; max-height: 300px; overflow-y: auto;">
+                [INIT] Diagnostic rapide chargé
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger les scripts dans le bon ordre -->
+    <script src="menu_storage.js"></script>
+    <script src="correction-definitive.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('logs');
+            const colors = {
+                info: '#2196F3',
+                success: '#4CAF50',
+                error: '#f44336',
+                warning: '#ff9800'
+            };
+
+            logDiv.innerHTML += `\n<span style="color: ${colors[type]}">[${timestamp}] ${message}</span>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+        }
+
+        function checkSystem() {
+            log('🔍 === VÉRIFICATION SYSTÈME ===', 'info');
+
+            // Vérifier les APIs
+            const checks = [
+                { name: 'claraverseStorageAPI', obj: window.claraverseStorageAPI },
+                { name: 'claraverseStorageAPI.saveTable', obj: window.claraverseStorageAPI?.saveTable },
+                { name: 'claraverseStorageAPI.restoreTable', obj: window.claraverseStorageAPI?.restoreTable },
+                { name: 'restoreTableHTML', obj: window.restoreTableHTML },
+                { name: 'testCorrectionDefinitive', obj: window.testCorrectionDefinitive }
+            ];
+
+            let allGood = true;
+            checks.forEach(check => {
+                const status = typeof check.obj !== 'undefined' ? 'DISPONIBLE' : 'MANQUANT';
+                const type = typeof check.obj !== 'undefined' ? 'success' : 'error';
+                log(`${check.name}: ${status}`, type);
+                if (typeof check.obj === 'undefined') allGood = false;
+            });
+
+            // Vérifier localStorage
+            const keys = Object.keys(localStorage);
+            const claraverseKeys = keys.filter(key => key.startsWith('claraverse_table_'));
+            log(`localStorage: ${claraverseKeys.length} clés claraverse`, 'info');
+
+            if (allGood) {
+                updateStatus('✅ Système complet détecté', 'success');
+                log('✅ Tous les composants sont disponibles', 'success');
+            } else {
+                updateStatus('❌ Composants manquants détectés', 'error');
+                log('❌ Certains composants sont manquants', 'error');
+            }
+        }
+
+        async function testRestauration() {
+            log('🧪 === TEST RESTAURATION ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                const testContent = 'DIAGNOSTIC_RAPIDE_' + Date.now();
+
+                // Vérifier que l'API existe
+                if (!window.claraverseStorageAPI) {
+                    log('❌ claraverseStorageAPI non disponible', 'error');
+                    updateStatus('❌ API non chargée', 'error');
+                    return;
+                }
+
+                // Nettoyer et définir contenu
+                table.removeAttribute('data-robust-table-id');
+                table.querySelector('td').textContent = testContent;
+                log(`📝 Contenu défini: "${testContent}"`, 'info');
+
+                // Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`, saveResult ? 'success' : 'error');
+
+                if (saveResult) {
+                    // Modifier temporairement
+                    table.querySelector('td').textContent = 'TEMP_DIAGNOSTIC';
+                    log(`📝 Contenu modifié: "TEMP_DIAGNOSTIC"`, 'info');
+
+                    // Restaurer
+                    const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                    log(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'}`, restoreResult ? 'success' : 'error');
+
+                    // Vérifier avec délai et re-sélection
+                    setTimeout(() => {
+                        const finalContent = document.getElementById('test-table').querySelector('td').textContent;
+                        log(`📋 Contenu final: "${finalContent}"`, 'info');
+
+                        if (finalContent === testContent) {
+                            log('✅ RESTAURATION RÉUSSIE !', 'success');
+                            updateStatus('✅ Restauration fonctionne', 'success');
+                        } else {
+                            log(`❌ RESTAURATION ÉCHOUÉE`, 'error');
+                            log(`   Attendu: "${testContent}"`, 'error');
+                            log(`   Obtenu:  "${finalContent}"`, 'error');
+                            updateStatus('❌ Restauration échoue', 'error');
+
+                            // Test avec correction manuelle
+                            log('🔧 Test correction manuelle...', 'warning');
+                            if (window.testCorrectionDefinitive) {
+                                window.testCorrectionDefinitive();
+                            } else {
+                                log('❌ Correction définitive non disponible', 'error');
+                            }
+                        }
+                    }, 100);
+                } else {
+                    updateStatus('❌ Sauvegarde échoue', 'error');
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`, 'error');
+                updateStatus('❌ Erreur lors du test', 'error');
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function () {
+            log('🔍 Diagnostic rapide chargé', 'success');
+
+            setTimeout(() => {
+                checkSystem();
+            }, 500);
+        });
+    </script>
+</body>
+
+</html>

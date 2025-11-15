@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Appel Direct</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .test-table th,
+        .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+
+        .prose {
+            max-width: none;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎯 Test Appel Direct</h1>
+        <p>Test en appelant directement les méthodes internes</p>
+
+        <div class="container">
+            <h2>🔧 Tests Directs</h2>
+            <button onclick="testDirectCall()">Test Appel Direct</button>
+            <button onclick="testAPICall()">Test API</button>
+            <button onclick="testLegacyCall()">Test Legacy</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="test-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Original</td>
+                            <td>Data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        async function testDirectCall() {
+            console.log('🎯 === TEST APPEL DIRECT ===');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'DIRECT_CALL_' + Date.now();
+
+                // Nettoyer
+                table.removeAttribute('data-robust-table-id');
+                firstCell.textContent = testContent;
+                console.log(`📝 Contenu défini: "${testContent}"`);
+
+                // Sauvegarder avec API
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                console.log(`💾 Sauvegarde API: ${saveResult}`);
+
+                if (saveResult) {
+                    // Modifier temporairement
+                    firstCell.textContent = 'TEMP_DIRECT';
+                    console.log(`📝 Contenu modifié: "${firstCell.textContent}"`);
+
+                    // APPEL DIRECT à la méthode interne
+                    console.log('🎯 Tentative d\'appel direct...');
+
+                    // Essayer d'accéder au storageManager directement
+                    if (window.storageManager && window.storageManager.restoreTableFromStorage) {
+                        console.log('🎯 Appel direct au storageManager...');
+                        const directResult = window.storageManager.restoreTableFromStorage(table);
+                        console.log(`🔄 Résultat appel direct: ${directResult}`);
+                    } else {
+                        console.log('❌ storageManager non accessible');
+                    }
+
+                    // Vérifier le résultat
+                    const finalContent = firstCell.textContent;
+                    console.log(`📋 Contenu final: "${finalContent}"`);
+
+                    if (finalContent === testContent) {
+                        console.log('✅ APPEL DIRECT RÉUSSI !');
+                    } else {
+                        console.log(`❌ APPEL DIRECT ÉCHOUÉ: Attendu "${testContent}", obtenu "${finalContent}"`);
+                    }
+                }
+
+            } catch (error) {
+                console.error(`❌ ERREUR: ${error.message}`, error);
+            }
+        }
+
+        async function testAPICall() {
+            console.log('🔌 === TEST API CALL ===');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'API_CALL_' + Date.now();
+
+                // Nettoyer
+                table.removeAttribute('data-robust-table-id');
+                firstCell.textContent = testContent;
+                console.log(`📝 Contenu défini: "${testContent}"`);
+
+                // Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                console.log(`💾 Sauvegarde: ${saveResult}`);
+
+                if (saveResult) {
+                    // Modifier temporairement
+                    firstCell.textContent = 'TEMP_API';
+                    console.log(`📝 Contenu modifié: "${firstCell.textContent}"`);
+
+                    // Appel API
+                    console.log('🔌 Appel via API...');
+                    const apiResult = window.claraverseStorageAPI.restoreTable(table);
+                    console.log(`🔄 Résultat API: ${apiResult}`);
+
+                    // Vérifier
+                    const finalContent = firstCell.textContent;
+                    console.log(`📋 Contenu final: "${finalContent}"`);
+
+                    if (finalContent === testContent) {
+                        console.log('✅ API CALL RÉUSSI !');
+                    } else {
+                        console.log(`❌ API CALL ÉCHOUÉ: Attendu "${testContent}", obtenu "${finalContent}"`);
+                    }
+                }
+
+            } catch (error) {
+                console.error(`❌ ERREUR: ${error.message}`, error);
+            }
+        }
+
+        async function testLegacyCall() {
+            console.log('🏛️ === TEST LEGACY CALL ===');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'LEGACY_CALL_' + Date.now();
+
+                // Nettoyer
+                table.removeAttribute('data-robust-table-id');
+                firstCell.textContent = testContent;
+                console.log(`📝 Contenu défini: "${testContent}"`);
+
+                // Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                console.log(`💾 Sauvegarde: ${saveResult}`);
+
+                if (saveResult) {
+                    // Modifier temporairement
+                    firstCell.textContent = 'TEMP_LEGACY';
+                    console.log(`📝 Contenu modifié: "${firstCell.textContent}"`);
+
+                    // Appel Legacy
+                    console.log('🏛️ Appel via Legacy...');
+                    if (typeof window.restoreTableHTML === 'function') {
+                        const legacyResult = window.restoreTableHTML(table);
+                        console.log(`🔄 Résultat Legacy: ${legacyResult}`);
+                    } else {
+                        console.log('❌ restoreTableHTML non disponible');
+                    }
+
+                    // Vérifier
+                    const finalContent = firstCell.textContent;
+                    console.log(`📋 Contenu final: "${finalContent}"`);
+
+                    if (finalContent === testContent) {
+                        console.log('✅ LEGACY CALL RÉUSSI !');
+                    } else {
+                        console.log(`❌ LEGACY CALL ÉCHOUÉ: Attendu "${testContent}", obtenu "${finalContent}"`);
+                    }
+                }
+
+            } catch (error) {
+                console.error(`❌ ERREUR: ${error.message}`, error);
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🎯 Test appel direct chargé');
+            console.log('🔍 Vérification des méthodes disponibles:');
+            console.log('  - window.claraverseStorageAPI:', typeof window.claraverseStorageAPI);
+            console.log('  - window.storageManager:', typeof window.storageManager);
+            console.log('  - window.restoreTableHTML:', typeof window.restoreTableHTML);
+
+            if (window.claraverseStorageAPI) {
+                console.log('  - claraverseStorageAPI.restoreTable:', typeof window.claraverseStorageAPI.restoreTable);
+            }
+        });
+    </script>
+</body>
+
+</html>

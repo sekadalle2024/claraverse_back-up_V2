@@ -241,6 +241,8 @@ export class ClaraDatabaseService {
 
   /**
    * Delete a session and all its messages and files
+   * Also cascades to delete all generated tables for this session
+   * Requirements: 9.4
    */
   async deleteSession(sessionId: string): Promise<void> {
     // Delete all messages for this session
@@ -255,8 +257,27 @@ export class ClaraDatabaseService {
       await indexedDBService.delete(this.FILES_STORE, file.id);
     }
 
+    // Delete all generated tables for this session (cascade delete)
+    // Requirements: 9.4
+    await this.deleteSessionTables(sessionId);
+
     // Delete the session itself
     await indexedDBService.delete(this.SESSIONS_STORE, sessionId);
+  }
+
+  /**
+   * Delete all generated tables for a specific session
+   * Requirements: 9.4
+   */
+  async deleteSessionTables(sessionId: string): Promise<number> {
+    try {
+      const deletedCount = await indexedDBService.deleteGeneratedTablesBySession(sessionId);
+      console.log(`🗑️ Deleted ${deletedCount} generated table(s) for session ${sessionId}`);
+      return deletedCount;
+    } catch (error) {
+      console.error('❌ Error deleting session tables:', error);
+      throw error;
+    }
   }
 
   /**
@@ -391,17 +412,24 @@ export class ClaraDatabaseService {
 
   /**
    * Debug method to check for orphaned data and integrity issues
+   * Now includes orphaned generated tables check
+   * Requirements: 9.4, 9.5
    */
   async debugDataIntegrity(): Promise<{
     sessions: number;
     messages: number;
     files: number;
+    generatedTables: number;
     orphanedMessages: number;
     orphanedFiles: number;
+    orphanedTables: number;
   }> {
     const sessions = await indexedDBService.getAll<ClaraChatSessionRecord>(this.SESSIONS_STORE);
     const messages = await indexedDBService.getAll<ClaraMessageRecord>(this.MESSAGES_STORE);
     const files = await indexedDBService.getAll<ClaraFileRecord>(this.FILES_STORE);
+    
+    // Get all generated tables
+    const generatedTables = await indexedDBService.getAllGeneratedTables<any>();
 
     const sessionIds = new Set(sessions.map(s => s.id));
     const messageIds = new Set(messages.map(m => m.id));
@@ -414,30 +442,41 @@ export class ClaraDatabaseService {
       !sessionIds.has(f.sessionId) || !messageIds.has(f.messageId)
     );
 
+    // Find orphaned tables (tables without valid sessions)
+    // Requirements: 9.5
+    const orphanedTables = generatedTables.filter(t => !sessionIds.has(t.sessionId));
+
     console.log('Data integrity check:', {
       sessions: sessions.length,
       messages: messages.length,
       files: files.length,
+      generatedTables: generatedTables.length,
       orphanedMessages: orphanedMessages.length,
-      orphanedFiles: orphanedFiles.length
+      orphanedFiles: orphanedFiles.length,
+      orphanedTables: orphanedTables.length
     });
 
     return {
       sessions: sessions.length,
       messages: messages.length,
       files: files.length,
+      generatedTables: generatedTables.length,
       orphanedMessages: orphanedMessages.length,
-      orphanedFiles: orphanedFiles.length
+      orphanedFiles: orphanedFiles.length,
+      orphanedTables: orphanedTables.length
     };
   }
 
   /**
    * Clean up orphaned data
+   * Now includes orphaned generated tables cleanup
+   * Requirements: 9.4, 9.5
    */
   async cleanupOrphanedData(): Promise<void> {
     const sessions = await indexedDBService.getAll<ClaraChatSessionRecord>(this.SESSIONS_STORE);
     const messages = await indexedDBService.getAll<ClaraMessageRecord>(this.MESSAGES_STORE);
     const files = await indexedDBService.getAll<ClaraFileRecord>(this.FILES_STORE);
+    const generatedTables = await indexedDBService.getAllGeneratedTables<any>();
 
     const sessionIds = new Set(sessions.map(s => s.id));
     const messageIds = new Set(messages.map(m => m.id));
@@ -458,7 +497,15 @@ export class ClaraDatabaseService {
       console.log('Deleted orphaned file:', file.id);
     }
 
-    console.log(`Cleaned up ${orphanedMessages.length} orphaned messages and ${orphanedFiles.length} orphaned files`);
+    // Clean up orphaned tables (tables without valid sessions)
+    // Requirements: 9.5
+    const orphanedTables = generatedTables.filter(t => !sessionIds.has(t.sessionId));
+    for (const table of orphanedTables) {
+      await indexedDBService.deleteGeneratedTable(table.id);
+      console.log('Deleted orphaned generated table:', table.id);
+    }
+
+    console.log(`Cleaned up ${orphanedMessages.length} orphaned messages, ${orphanedFiles.length} orphaned files, and ${orphanedTables.length} orphaned tables`);
   }
 
   /**

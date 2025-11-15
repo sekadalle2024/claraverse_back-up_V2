@@ -18,6 +18,13 @@ temp/
 *.tmp
 *.temp
 
+# Debug screenshots (optionnel - décommenter si tu veux les exclure)
+# *.jpg
+# *.png
+
+# Fichiers problématiques
+nul
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

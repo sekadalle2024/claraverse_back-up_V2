@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Solution Complète Sauvegarde</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-title {
+            color: #2563eb;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+            transition: box-shadow 0.3s ease;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        td[contenteditable="true"] {
+            background-color: #fff9c4;
+            cursor: text;
+        }
+
+        td[contenteditable="true"]:hover {
+            background-color: #fef3c7;
+        }
+
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8fafc;
+            border-radius: 6px;
+        }
+
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #2563eb;
+        }
+
+        button.danger {
+            background-color: #ef4444;
+        }
+
+        button.danger:hover {
+            background-color: #dc2626;
+        }
+
+        button.success {
+            background-color: #10b981;
+        }
+
+        button.success:hover {
+            background-color: #059669;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .status.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .status.info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .log-container {
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .instructions {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .instructions h3 {
+            color: #1e40af;
+            margin-top: 0;
+        }
+
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔧 Test Solution Complète Sauvegarde et Restauration</h1>
+
+    <div class="instructions">
+        <h3>📋 Instructions de Test</h3>
+        <ol>
+            <li><strong>Modifiez les cellules</strong> des tables ci-dessous (cliquez et tapez)</li>
+            <li><strong>Observez les indicateurs visuels</strong> :
+                <ul>
+                    <li>🟡 Jaune = Modification en cours</li>
+                    <li>🟢 Vert = Sauvegarde réussie</li>
+                    <li>🔵 Bleu = Restauration effectuée</li>
+                    <li>🔴 Rouge = Erreur</li>
+                </ul>
+            </li>
+            <li><strong>Actualisez la page</strong> (F5) pour tester la persistance</li>
+            <li><strong>Vérifiez les logs</strong> dans la console et ci-dessous</li>
+        </ol>
+    </div>
+
+    <div class="controls">
+        <button onclick="testSolutionComplete()" class="success">🧪 Test Solution</button>
+        <button onclick="saveAllTablesComplete()">💾 Sauvegarder Tout</button>
+        <button onclick="restoreAllTablesComplete()" class="info">🔄 Restaurer Tout</button>
+        <button onclick="clearAllData()" class="danger">🗑️ Effacer Données</button>
+        <button onclick="showStorageInfo()">📊 Info Stockage</button>
+        <button onclick="clearLogs()">🧹 Effacer Logs</button>
+    </div>
+
+    <div id="status" class="status info">
+        ℹ️ Chargement de la solution complète...
+    </div>
+
+    <!-- Test 1: Table avec ancien système (data-menu-table-id) -->
+    <div class="test-container">
+        <h2 class="test-title">🔄 Test 1: Table Ancien Système</h2>
+        <p>Cette table simule une ancienne table du chat avec <code>data-menu-table-id</code></p>
+
+        <table data-menu-table-id="table_ancien_test_123">
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Prix</th>
+                    <th>Quantité</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td contenteditable="true">Ordinateur</td>
+                    <td contenteditable="true">800€</td>
+                    <td contenteditable="true">2</td>
+                    <td contenteditable="true">1600€</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">Souris</td>
+                    <td contenteditable="true">25€</td>
+                    <td contenteditable="true">5</td>
+                    <td contenteditable="true">125€</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">Clavier</td>
+                    <td contenteditable="true">75€</td>
+                    <td contenteditable="true">3</td>
+                    <td contenteditable="true">225€</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Test 2: Table avec nouveau système (data-robust-table-id) -->
+    <div class="test-container">
+        <h2 class="test-title">🆕 Test 2: Table Nouveau Système</h2>
+        <p>Cette table simule une nouvelle table avec <code>data-robust-table-id</code></p>
+
+        <table data-robust-table-id="table_robust_test_456">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td contenteditable="true">Jean Dupont</td>
+                    <td contenteditable="true">jean@example.com</td>
+                    <td contenteditable="true">01 23 45 67 89</td>
+                    <td contenteditable="true">Actif</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">Marie Martin</td>
+                    <td contenteditable="true">marie@example.com</td>
+                    <td contenteditable="true">01 98 76 54 32</td>
+                    <td contenteditable="true">Inactif</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Test 3: Table sans ID (génération automatique) -->
+    <div class="test-container">
+        <h2 class="test-title">🔧 Test 3: Table Sans ID (Auto-génération)</h2>
+        <p>Cette table n'a pas d'ID initial, le système doit en générer un automatiquement</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Tâche</th>
+                    <th>Priorité</th>
+                    <th>Échéance</th>
+                    <th>Assigné à</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td contenteditable="true">Développer API</td>
+                    <td contenteditable="true">Haute</td>
+                    <td contenteditable="true">2024-01-15</td>
+                    <td contenteditable="true">Développeur A</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">Tests unitaires</td>
+                    <td contenteditable="true">Moyenne</td>
+                    <td contenteditable="true">2024-01-20</td>
+                    <td contenteditable="true">Développeur B</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Test 4: Table dans un contexte de message (simule le chat) -->
+    <div class="test-container">
+        <h2 class="test-title">💬 Test 4: Table dans Message Chat</h2>
+        <p>Cette table simule une table dans un message de chat</p>
+
+        <div data-message-id="msg_123456" class="prose">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mois</th>
+                        <th>Revenus</th>
+                        <th>Dépenses</th>
+                        <th>Bénéfice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td contenteditable="true">Janvier</td>
+                        <td contenteditable="true">5000€</td>
+                        <td contenteditable="true">3000€</td>
+                        <td contenteditable="true">2000€</td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true">Février</td>
+                        <td contenteditable="true">5500€</td>
+                        <td contenteditable="true">3200€</td>
+                        <td contenteditable="true">2300€</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="log-container" id="logContainer">
+        <strong>📋 Logs en temps réel :</strong><br>
+        <div id="logs"></div>
+    </div>
+
+    <!-- Charger la solution complète -->
+    <script src="solution-sauvegarde-complete.js"></script>
+
+    <script>
+        // Interface de test
+        let logCount = 0;
+        const maxLogs = 100;
+
+        // Intercepter les logs console
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+
+        function addLog(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logClass = type === 'error' ? 'color: #ef4444' :
+                type === 'warn' ? 'color: #f59e0b' :
+                    type === 'success' ? 'color: #10b981' : 'color: #6b7280';
+
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="${logClass}">[${timestamp}] ${message}</span>`;
+            logsDiv.appendChild(logEntry);
+
+            // Limiter le nombre de logs
+            if (logCount++ > maxLogs) {
+                logsDiv.removeChild(logsDiv.firstChild);
+            }
+
+            // Auto-scroll
+            document.getElementById('logContainer').scrollTop = document.getElementById('logContainer').scrollHeight;
+        }
+
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '), 'info');
+        };
+
+        console.warn = function (...args) {
+            originalWarn.apply(console, args);
+            addLog(args.join(' '), 'warn');
+        };
+
+        console.error = function (...args) {
+            originalError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+
+        // Fonctions de test
+        function clearAllData() {
+            if (confirm('Êtes-vous sûr de vouloir effacer toutes les données sauvegardées ?')) {
+                const keys = Object.keys(localStorage);
+                let deletedCount = 0;
+
+                keys.forEach(key => {
+                    if (key.includes('claraverse') || key.includes('table_')) {
+                        localStorage.removeItem(key);
+                        deletedCount++;
+                    }
+                });
+
+                updateStatus(`🗑️ ${deletedCount} entrées supprimées du stockage`, 'success');
+                addLog(`Données effacées: ${deletedCount} entrées`, 'success');
+            }
+        }
+
+        function showStorageInfo() {
+            const keys = Object.keys(localStorage);
+            const claraverseKeys = keys.filter(key =>
+                key.includes('claraverse') || key.includes('table_')
+            );
+
+            let totalSize = 0;
+            const info = claraverseKeys.map(key => {
+                const value = localStorage.getItem(key);
+                const size = new Blob([value]).size;
+                totalSize += size;
+                return `${key}: ${(size / 1024).toFixed(2)} KB`;
+            });
+
+            const message = `📊 Stockage ClaraVerse:\n${claraverseKeys.length} entrées\nTaille totale: ${(totalSize / 1024).toFixed(2)} KB\n\n${info.join('\n')}`;
+            alert(message);
+            addLog(`Info stockage: ${claraverseKeys.length} entrées, ${(totalSize / 1024).toFixed(2)} KB`, 'info');
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            logCount = 0;
+            addLog('Logs effacés', 'info');
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // Vérifier le chargement de la solution
+        setTimeout(() => {
+            if (typeof window.testSolutionComplete === 'function') {
+                updateStatus('✅ Solution complète chargée et prête !', 'success');
+                addLog('Solution complète initialisée avec succès', 'success');
+            } else {
+                updateStatus('❌ Erreur: Solution complète non chargée', 'error');
+                addLog('Erreur: Solution complète non disponible', 'error');
+            }
+        }, 2000);
+
+        // Test automatique au chargement
+        setTimeout(() => {
+            if (typeof window.testSolutionComplete === 'function') {
+                addLog('Lancement du test automatique...', 'info');
+                window.testSolutionComplete();
+            }
+        }, 3000);
+    </script>
+</body>
+
+</html>

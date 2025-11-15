@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test - Claraverse Table Data Manager</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 30px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 32px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+
+    .status {
+      background: #f8f9fa;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      margin-bottom: 30px;
+      border-radius: 5px;
+    }
+
+    .status.error {
+      border-left-color: #dc3545;
+      background: #fff5f5;
+    }
+
+    .status h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .control-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+    }
+
+    .btn.success { background: #28a745; }
+    .btn.danger { background: #dc3545; }
+    .btn.warning { background: #ffc107; color: #333; }
+    .btn.info { background: #17a2b8; }
+    .btn.secondary { background: #6c757d; }
+
+    .tables-section {
+      margin-top: 30px;
+    }
+
+    .table-wrapper {
+      margin-bottom: 30px;
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+
+    .table-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #495057;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    table.min-w-full {
+      border: 1px solid #dee2e6;
+    }
+
+    table.claraverse-conso-table {
+      border: 2px solid #007bff;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #dee2e6;
+    }
+
+    th {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+      font-weight: 600;
+    }
+
+    td[contenteditable="true"] {
+      cursor: text;
+      transition: background 0.2s;
+    }
+
+    td[contenteditable="true"]:hover {
+      background: #f0f8ff;
+    }
+
+    td[contenteditable="true"]:focus {
+      outline: 2px solid #007bff;
+      background: #fff9e6;
+    }
+
+    .log-console {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 30px;
+    }
+
+    .log-console .log-entry {
+      margin-bottom: 5px;
+      padding: 5px;
+      border-left: 3px solid transparent;
+    }
+
+    .log-console .log-entry.info { border-left-color: #17a2b8; }
+    .log-console .log-entry.success { border-left-color: #28a745; }
+    .log-console .log-entry.error { border-left-color: #dc3545; }
+    .log-console .log-entry.warning { border-left-color: #ffc107; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    select {
+      padding: 8px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .highlight-green { background-color: #c8e6c9 !important; }
+    .highlight-red { background-color: #ffcdd2 !important; }
+    .highlight-yellow { background-color: #fff9c4 !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Test - Claraverse Table Data Manager</h1>
+    <p class="subtitle">Système de persistance DOM native pour les tables HTML</p>
+
+    <!-- Status -->
+    <div id="status" class="status">
+      <h3>⏳ Initialisation...</h3>
+      <p id="status-text">Chargement du Table Data Manager...</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats" id="stats">
+      <div class="stat-card">
+        <div class="stat-number" id="stat-tables">0</div>
+        <div class="stat-label">Tables gérées</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-cells">0</div>
+        <div class="stat-label">Cellules indexées</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-events">0</div>
+        <div class="stat-label">Événements détectés</div>
+      </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="control-panel">
+      <button class="btn success" onclick="saveAllTables()">💾 Sauvegarder tout</button>
+      <button class="btn info" onclick="restoreAllTables()">🔄 Restaurer tout</button>
+      <button class="btn warning" onclick="exportData()">📤 Exporter JSON</button>
+      <button class="btn secondary" onclick="showTableInfo()">ℹ️ Infos tables</button>
+      <button class="btn danger" onclick="clearAllData()">🗑️ Effacer données</button>
+      <button class="btn" onclick="triggerConsolidation()">🔬 Consolider</button>
+    </div>
+
+    <!-- Tables Section -->
+    <div class="tables-section">
+      <!-- Table Résultat -->
+      <div class="table-wrapper">
+        <div class="table-title">📊 Table Résultat</div>
+        <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg" data-table-type="resultat">
+          <thead>
+            <tr>
+              <th contenteditable="true">Resultats</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td contenteditable="true">⏳ En attente de consolidation...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table Conso -->
+      <div class="table-wrapper">
+        <div class="table-title">📋 Table de Consolidation</div>
+        <table class="claraverse-conso-table" data-table-type="conso">
+          <thead>
+            <tr>
+              <th>📊 Table de Consolidation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="conso-content" contenteditable="true">⏳ En attente de consolidation...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table de Pointage -->
+      <div class="table-wrapper">
+        <div class="table-title">🔬 Table de Pointage (Modélisée)</div>
+        <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg" data-table-type="pointage">
+          <thead>
+            <tr>
+              <th>Assertion</th>
+              <th>Ecart</th>
+              <th>CTR1</th>
+              <th>CTR2</th>
+              <th>CTR3</th>
+              <th>Conclusion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td contenteditable="true">Test 1</td>
+              <td contenteditable="true">100</td>
+              <td contenteditable="true">50</td>
+              <td contenteditable="true">50</td>
+              <td contenteditable="true">0</td>
+              <td contenteditable="true">
+                <select onchange="updateConclusion(this)">
+                  <option value="">Sélectionner...</option>
+                  <option value="OK">OK</option>
+                  <option value="KO">KO</option>
+                  <option value="En cours">En cours</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td contenteditable="true">Test 2</td>
+              <td contenteditable="true">200</td>
+              <td contenteditable="true">100</td>
+              <td contenteditable="true">100</td>
+              <td contenteditable="true">0</td>
+              <td contenteditable="true">
+                <select onchange="updateConclusion(this)">
+                  <option value="">Sélectionner...</option>
+                  <option value="OK">OK</option>
+                  <option value="KO">KO</option>
+                  <option value="En cours">En cours</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td contenteditable="true">Test 3</td>
+              <td contenteditable="true">150</td>
+              <td contenteditable="true">75</td>
+              <td contenteditable="true">75</td>
+              <td contenteditable="true">0</td>
+              <td contenteditable="true">
+                <select onchange="updateConclusion(this)">
+                  <option value="">Sélectionner...</option>
+                  <option value="OK">OK</option>
+                  <option value="KO">KO</option>
+                  <option value="En cours">En cours</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table Standard -->
+      <div class="table-wrapper">
+        <div class="table-title">📄 Table Standard</div>
+        <table class="min-w-full" data-table-type="standard">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Valeur</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td contenteditable="true">Item 1</td>
+              <td contenteditable="true">123.45</td>
+              <td contenteditable="true">Actif</td>
+            </tr>
+            <tr>
+              <td contenteditable="true">Item 2</td>
+              <td contenteditable="true">678.90</td>
+              <td contenteditable="true">En attente</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Log Console -->
+    <div class="log-console" id="logConsole">
+      <div class="log-entry info">📋 Console de logs - Initialisation...</div>
+    </div>
+  </div>
+
+  <!-- Charger le script Table Data Manager -->
+  <script src="table_data.js"></script>
+
+  <!-- Script de test -->
+  <script>
+    let eventCount = 0;
+
+    // Attendre que le manager soit prêt
+    function waitForManager(callback) {
+      if (window.ClaraverseTableDataManager) {
+        callback();
+      } else {
+        setTimeout(() => waitForManager(callback), 100);
+      }
+    }
+
+    waitForManager(() => {
+      updateStatus('success', '✅ Table Data Manager chargé', 'Système opérationnel');
+      updateStats();
+      addLog('success', '✅ Manager initialisé avec succès');
+      setupEventListeners();
+    });
+
+    function updateStatus(type, title, text) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.className = 'status ' + (type === 'error' ? 'error' : '');
+      statusDiv.querySelector('h3').textContent = title;
+      document.getElementById('status-text').textContent = text;
+    }
+
+    function updateStats() {
+      const tables = window.ClaraverseTableData.getAllTables();
+      document.getElementById('stat-tables').textContent = tables.length;
+
+      let totalCells = 0;
+      tables.forEach(table => {
+        totalCells += table.querySelectorAll('td').length;
+      });
+      document.getElementById('stat-cells').textContent = totalCells;
+      document.getElementById('stat-events').textContent = eventCount;
+    }
+
+    function setupEventListeners() {
+      // Écouter les changements de tables
+      document.addEventListener('claraverse:table:changed', (e) => {
+        eventCount++;
+        updateStats();
+        addLog('info', `📊 Table modifiée: ${e.detail.tableId}`);
+
+        // Highlight temporaire
+        const table = e.detail.table;
+        table.style.transition = 'all 0.3s';
+        table.style.boxShadow = '0 0 20px rgba(0, 123, 255, 0.5)';
+        setTimeout(() => {
+          table.style.boxShadow = '';
+        }, 1000);
+      });
+    }
+
+    function saveAllTables() {
+      const tables = window.ClaraverseTableData.getAllTables();
+      let count = 0;
+      tables.forEach(table => {
+        if (window.ClaraverseTableData.saveTable(table)) {
+          count++;
+        }
+      });
+      addLog('success', `💾 ${count} table(s) sauvegardée(s)`);
+      updateStats();
+    }
+
+    function restoreAllTables() {
+      const tables = window.ClaraverseTableData.getAllTables();
+      let count = 0;
+      tables.forEach(table => {
+        if (window.ClaraverseTableData.restoreTable(table)) {
+          count++;
+        }
+      });
+      addLog('success', `🔄 ${count} table(s) restaurée(s)`);
+      updateStats();
+    }
+
+    function exportData() {
+      const data = window.ClaraverseTableData.exportAll();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `claraverse_test_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      addLog('success', '📤 Données exportées en JSON');
+    }
+
+    function showTableInfo() {
+      const tables = window.ClaraverseTableData.getAllTables();
+      addLog('info', `📊 ${tables.length} table(s) gérée(s):`);
+      tables.forEach(table => {
+        const info = window.ClaraverseTableData.getTableInfo(table.dataset.tableId);
+        addLog('info', `  - ${info.type}: ${info.rowCount} lignes, ${info.cellCount} cellules`);
+      });
+    }
+
+    function clearAllData() {
+      if (confirm('⚠️ Effacer toutes les données ?')) {
+        const tables = window.ClaraverseTableData.getAllTables();
+        tables.forEach(table => {
+          window.ClaraverseTableData.clearTable(table.dataset.tableId);
+        });
+        addLog('warning', '🗑️ Toutes les données ont été effacées');
+        updateStats();
+      }
+    }
+
+    function triggerConsolidation() {
+      const pointageTable = document.querySelector('[data-table-type="pointage"]');
+      if (!pointageTable) return;
+
+      // Extraire les données
+      const rows = pointageTable.querySelectorAll('tbody tr');
+      let results = [];
+      let totalEcart = 0;
+
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const assertion = cells[0]?.textContent.trim();
+        const ecart = parseFloat(cells[1]?.textContent.trim()) || 0;
+        const conclusion = cells[5]?.querySelector('select')?.value || cells[5]?.textContent.trim();
+
+        if (assertion) {
+          results.push({ assertion, ecart, conclusion });
+          totalEcart += ecart;
+        }
+      });
+
+      // Générer le contenu consolidé
+      const fullContent = `
+        <strong>📊 Résumé de la consolidation</strong><br><br>
+        <strong>Total de tests:</strong> ${results.length}<br>
+        <strong>Écart total:</strong> ${totalEcart.toFixed(2)}<br>
+        <strong>Tests OK:</strong> ${results.filter(r => r.conclusion === 'OK').length}<br>
+        <strong>Tests KO:</strong> ${results.filter(r => r.conclusion === 'KO').length}<br><br>
+        <em>Généré le ${new Date().toLocaleString('fr-FR')}</em>
+      `;
+
+      const simpleContent = `
+        ✅ ${results.filter(r => r.conclusion === 'OK').length} tests OK |
+        ❌ ${results.filter(r => r.conclusion === 'KO').length} tests KO |
+        📊 Écart total: ${totalEcart.toFixed(2)}
+      `;
+
+      // Mettre à jour les tables
+      const resultatTable = document.querySelector('[data-table-type="resultat"]');
+      if (resultatTable) {
+        const cell = resultatTable.querySelector('tbody td');
+        if (cell) {
+          cell.innerHTML = fullContent;
+          window.ClaraverseTableData.saveTable(resultatTable);
+        }
+      }
+
+      const consoTable = document.querySelector('[data-table-type="conso"]');
+      if (consoTable) {
+        const cell = consoTable.querySelector('#conso-content');
+        if (cell) {
+          cell.innerHTML = simpleContent;
+          window.ClaraverseTableData.saveTable(consoTable);
+        }
+      }
+
+      // Sauvegarder la consolidation
+      window.ClaraverseTableData.saveConsolidation(pointageTable, simpleContent, fullContent);
+
+      addLog('success', '🔬 Consolidation effectuée et sauvegardée');
+    }
+
+    function updateConclusion(select) {
+      const value = select.value;
+      const cell = select.parentElement;
+
+      // Changer la couleur selon la conclusion
+      if (value === 'OK') {
+        cell.className = 'highlight-green';
+      } else if (value === 'KO') {
+        cell.className = 'highlight-red';
+      } else {
+        cell.className = 'highlight-yellow';
+      }
+
+      // Déclencher un événement de changement
+      const event = new Event('blur', { bubbles: true });
+      cell.dispatchEvent(event);
+    }
+
+    function addLog(type, message) {
+      const logConsole = document.getElementById('logConsole');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry ' + type;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logConsole.appendChild(entry);
+      logConsole.scrollTop = logConsole.scrollHeight;
+    }
+
+    // Ajouter des logs pour les interactions
+    document.addEventListener('DOMContentLoaded', () => {
+      const cells = document.querySelectorAll('td[contenteditable="true"]');
+      cells.forEach(cell => {
+        cell.addEventListener('focus', () => {
+          addLog('info', `✏️ Édition cellule...`);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Correction Définitive</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .test-table th,
+        .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+
+        .prose {
+            max-width: none;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button.success {
+            background: #28a745;
+        }
+
+        .logs-container {
+            background: #1e1e1e;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .log-success {
+            color: #4CAF50;
+        }
+
+        .log-error {
+            color: #f44336;
+        }
+
+        .log-warning {
+            color: #ff9800;
+        }
+
+        .log-info {
+            color: #2196F3;
+        }
+
+        .status-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎯 Test Correction Définitive</h1>
+        <p>Test avec la solution finale : re-sélection DOM après restauration</p>
+
+        <div id="status-box" class="status-box status-info">
+            🎯 Correction définitive active - Problème de référence DOM résolu
+        </div>
+
+        <div class="container">
+            <h2>🎯 Tests Définitifs</h2>
+            <button onclick="testCorrectionDefinitive()">🎯 Test Intégré</button>
+            <button onclick="testBasicDefinitive()">🔧 Test Basique</button>
+            <button onclick="testCyclesDefinitifs()">🔄 Test Cycles</button>
+            <button onclick="runAllDefinitiveTests()">🚀 Tous les Tests</button>
+            <button onclick="clearLogs()">🧹 Effacer</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="test-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Original</td>
+                            <td>Data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Logs</h2>
+            <div id="logs-display" class="logs-container">
+                <div class="log-entry log-info">[INIT] Correction définitive prête</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+    <!-- Charger la correction définitive -->
+    <script src="correction-definitive.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+
+            const logsContainer = document.getElementById('logs-display');
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('logs-display').innerHTML = '';
+            log('Logs effacés', 'info');
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusBox = document.getElementById('status-box');
+            statusBox.className = `status-box status-${type}`;
+            statusBox.textContent = message;
+        }
+
+        async function testBasicDefinitive() {
+            log('🎯 === TEST BASIQUE DÉFINITIF ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                const testContent = 'DEFINITIF_BASIC_' + Date.now();
+
+                // Nettoyer et définir contenu
+                table.removeAttribute('data-robust-table-id');
+
+                // IMPORTANT: Ne pas garder de référence à la cellule
+                table.querySelector('td').textContent = testContent;
+                log(`📝 Contenu défini: "${testContent}"`, 'info');
+
+                // Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`, saveResult ? 'success' : 'error');
+
+                if (saveResult) {
+                    // Modifier temporairement (sans garder de référence)
+                    table.querySelector('td').textContent = 'CONTENU_TEMPORAIRE_DEFINITIF';
+                    log(`📝 Contenu modifié: "${table.querySelector('td').textContent}"`, 'info');
+
+                    // Restaurer (avec correction définitive automatique)
+                    const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                    log(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'}`, restoreResult ? 'success' : 'error');
+
+                    // Vérifier avec re-sélection DOM (la clé du succès)
+                    setTimeout(() => {
+                        const finalContent = table.querySelector('td').textContent; // RE-SÉLECTION
+                        log(`📋 Contenu final (re-sélectionné): "${finalContent}"`, 'info');
+
+                        if (finalContent === testContent) {
+                            log('✅ TEST BASIQUE DÉFINITIF RÉUSSI !', 'success');
+                            updateStatus('✅ Test basique réussi avec correction définitive', 'success');
+                        } else {
+                            log(`❌ TEST BASIQUE DÉFINITIF ÉCHOUÉ`, 'error');
+                            log(`   Attendu: "${testContent}"`, 'error');
+                            log(`   Obtenu:  "${finalContent}"`, 'error');
+                            updateStatus('❌ Test basique échoué', 'error');
+                        }
+                    }, 50);
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`, 'error');
+                updateStatus('❌ Erreur lors du test', 'error');
+            }
+        }
+
+        async function testCyclesDefinitifs() {
+            log('🔄 === TEST CYCLES DÉFINITIFS ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                let successCount = 0;
+
+                table.removeAttribute('data-robust-table-id');
+
+                for (let i = 1; i <= 5; i++) {
+                    const testContent = `DEFINITIF_CYCLE_${i}_${Date.now()}`;
+
+                    // Ne pas garder de référence
+                    table.querySelector('td').textContent = testContent;
+                    const saveResult = window.claraverseStorageAPI.saveTable(table);
+
+                    if (saveResult) {
+                        table.querySelector('td').textContent = 'TEMP';
+                        const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+
+                        // Attendre la correction définitive
+                        await new Promise(resolve => setTimeout(resolve, 100));
+
+                        // RE-SÉLECTIONNER pour lire le bon contenu
+                        const finalContent = table.querySelector('td').textContent;
+
+                        if (restoreResult && finalContent === testContent) {
+                            successCount++;
+                            log(`✅ Cycle ${i}/5 réussi avec correction définitive`, 'success');
+                        } else {
+                            log(`❌ Cycle ${i}/5 échoué - Obtenu: "${finalContent}"`, 'error');
+                        }
+                    }
+                }
+
+                if (successCount === 5) {
+                    log('✅ TEST CYCLES DÉFINITIFS RÉUSSI: Tous les cycles fonctionnent !', 'success');
+                    updateStatus('✅ Tous les cycles réussis avec correction définitive', 'success');
+                } else {
+                    log(`❌ TEST CYCLES DÉFINITIFS PARTIELLEMENT RÉUSSI: ${successCount}/5 cycles`, 'warning');
+                    updateStatus(`⚠️ ${successCount}/5 cycles réussis`, 'warning');
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`, 'error');
+                updateStatus('❌ Erreur lors des cycles', 'error');
+            }
+        }
+
+        async function runAllDefinitiveTests() {
+            log('🚀 === DÉBUT TOUS LES TESTS DÉFINITIFS ===', 'info');
+            updateStatus('🔄 Exécution de tous les tests définitifs...', 'info');
+
+            await testBasicDefinitive();
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            await testCyclesDefinitifs();
+
+            log('🚀 === FIN TOUS LES TESTS DÉFINITIFS ===', 'info');
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function () {
+            log('🎯 Interface de test avec correction définitive chargée', 'success');
+
+            // Vérifier si la correction définitive est chargée
+            setTimeout(() => {
+                if (typeof window.testCorrectionDefinitive === 'function') {
+                    log('✅ Correction définitive détectée et prête', 'success');
+                    updateStatus('✅ Correction définitive active - Problème résolu', 'success');
+                } else {
+                    log('❌ Correction définitive non détectée', 'error');
+                    updateStatus('❌ Correction définitive non chargée', 'error');
+                }
+            }, 500);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Excel Simple</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <h1>Test Excel Simple</h1>
+    <button onclick="createSimpleExcel()">Créer fichier Excel simple</button>
+    
+    <script>
+        function createSimpleExcel() {
+            // Créer un classeur simple
+            const wb = XLSX.utils.book_new();
+            
+            // Données simples pour test
+            const data = [
+                ['Etape', 'reference'],
+                ['Programme', 'Programme-001']
+            ];
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+            
+            // Télécharger
+            XLSX.writeFile(wb, 'test-simple.xlsx');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Après Rechargement</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+
+        h1 {
+            color: #4ec9b0;
+        }
+
+        .instruction {
+            background: #252526;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #007acc;
+        }
+
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: #1e1e1e;
+        }
+
+        .success {
+            color: #4ec9b0;
+        }
+
+        .error {
+            color: #f48771;
+        }
+
+        .warning {
+            color: #dcdcaa;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #0e639c;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        pre {
+            background: #000;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Test Après Rechargement</h1>
+
+    <div class="instruction">
+        <h2>Instructions</h2>
+        <ol>
+            <li>Ouvrez votre application principale (index.html)</li>
+            <li>Modifiez une table via menu.js (supprimez une ligne)</li>
+            <li>Vérifiez dans la console : "✅ Table sauvegardée avec succès"</li>
+            <li>Rechargez la page (F5)</li>
+            <li>Revenez sur cette page</li>
+            <li>Cliquez sur "Vérifier Restauration" ci-dessous</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h3>Étape 1: Vérifier Session</h3>
+        <button onclick="checkSession()">Vérifier Session</button>
+        <pre id="session-result"></pre>
+    </div>
+
+    <div class="step">
+        <h3>Étape 2: Vérifier IndexedDB</h3>
+        <button onclick="checkIndexedDB()">Vérifier IndexedDB</button>
+        <pre id="indexeddb-result"></pre>
+    </div>
+
+    <div class="step">
+        <h3>Étape 3: Comparer Avant/Après</h3>
+        <p class="warning">Cette étape nécessite que vous ayez noté le nombre de lignes AVANT rechargement</p>
+        <button onclick="compareData()">Comparer</button>
+        <pre id="compare-result"></pre>
+    </div>
+
+    <script>
+        function log(id, msg, type = 'info') {
+            const el = document.getElementById(id);
+            const span = document.createElement('div');
+            span.className = type;
+            span.textContent = msg;
+            el.appendChild(span);
+        }
+
+        window.checkSession = () => {
+            const result = document.getElementById('session-result');
+            result.innerHTML = '';
+
+            const session = sessionStorage.getItem('claraverse_stable_session');
+            if (session) {
+                log('session-result', `✅ Session trouvée: ${session}`, 'success');
+                log('session-result', `   Créée le: ${new Date(parseInt(session.split('_')[2])).toLocaleString()}`, 'info');
+            } else {
+                log('session-result', '❌ Aucune session stable trouvée', 'error');
+                log('session-result', '   → Créez une table d\'abord dans l\'application', 'warning');
+            }
+        };
+
+        window.checkIndexedDB = async () => {
+            const result = document.getElementById('indexeddb-result');
+            result.innerHTML = '';
+
+            try {
+                const session = sessionStorage.getItem('claraverse_stable_session');
+                if (!session) {
+                    log('indexeddb-result', '❌ Pas de session', 'error');
+                    return;
+                }
+
+                log('indexeddb-result', '🔍 Ouverture IndexedDB...', 'info');
+
+                const db = await new Promise((resolve, reject) => {
+                    const request = indexedDB.open('clara_db', 12);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+
+                log('indexeddb-result', '✅ IndexedDB ouverte', 'success');
+
+                const tables = await new Promise((resolve, reject) => {
+                    const tx = db.transaction('clara_generated_tables', 'readonly');
+                    const store = tx.objectStore('clara_generated_tables');
+                    const index = store.index('sessionId');
+                    const request = index.getAll(session);
+
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+
+                log('indexeddb-result', `📊 ${tables.length} table(s) trouvée(s)`, 'success');
+
+                tables.forEach((table, i) => {
+                    const div = document.createElement('div');
+                    div.innerHTML = table.tableHTML;
+                    const rows = div.querySelectorAll('tbody tr').length;
+
+                    log('indexeddb-result', `\n  Table ${i + 1}:`, 'info');
+                    log('indexeddb-result', `    ID: ${table.id}`, 'info');
+                    log('indexeddb-result', `    Keyword: ${table.keyword}`, 'info');
+                    log('indexeddb-result', `    Lignes: ${rows}`, 'success');
+                    log('indexeddb-result', `    Sauvegardée: ${new Date(table.timestamp).toLocaleString()}`, 'info');
+                    log('indexeddb-result', `    Fingerprint: ${table.fingerprint.substring(0, 8)}...`, 'info');
+                });
+
+                if (tables.length > 0) {
+                    log('indexeddb-result', '\n✅ Les tables SONT dans IndexedDB', 'success');
+                    log('indexeddb-result', '   → Si elles n\'apparaissent pas dans l\'app, c\'est un problème de RESTAURATION', 'warning');
+                } else {
+                    log('indexeddb-result', '\n❌ Aucune table sauvegardée', 'error');
+                    log('indexeddb-result', '   → Le problème est dans la SAUVEGARDE', 'warning');
+                }
+
+            } catch (error) {
+                log('indexeddb-result', `❌ Erreur: ${error.message}`, 'error');
+                console.error(error);
+            }
+        };
+
+        window.compareData = async () => {
+            const result = document.getElementById('compare-result');
+            result.innerHTML = '';
+
+            const rowsBefore = prompt('Combien de lignes AVANT la suppression ?', '3');
+            if (!rowsBefore) return;
+
+            try {
+                const session = sessionStorage.getItem('claraverse_stable_session');
+                const db = await new Promise((resolve, reject) => {
+                    const request = indexedDB.open('clara_db', 12);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+
+                const tables = await new Promise((resolve, reject) => {
+                    const tx = db.transaction('clara_generated_tables', 'readonly');
+                    const store = tx.objectStore('clara_generated_tables');
+                    const index = store.index('sessionId');
+                    const request = index.getAll(session);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+
+                if (tables.length === 0) {
+                    log('compare-result', '❌ Aucune table trouvée', 'error');
+                    return;
+                }
+
+                const div = document.createElement('div');
+                div.innerHTML = tables[0].tableHTML;
+                const rowsAfter = div.querySelectorAll('tbody tr').length;
+
+                log('compare-result', `📊 Avant: ${rowsBefore} lignes`, 'info');
+                log('compare-result', `📊 Après: ${rowsAfter} lignes`, 'info');
+                log('compare-result', `📊 Différence: ${rowsBefore - rowsAfter} ligne(s)`, 'info');
+
+                if (rowsAfter < rowsBefore) {
+                    log('compare-result', '\n✅ LA MODIFICATION EST SAUVEGARDÉE !', 'success');
+                    log('compare-result', '   → Si elle n\'apparaît pas dans l\'app, le problème est la RESTAURATION', 'warning');
+                } else if (rowsAfter == rowsBefore) {
+                    log('compare-result', '\n❌ LA MODIFICATION N\'EST PAS SAUVEGARDÉE', 'error');
+                    log('compare-result', '   → Le problème est dans la SAUVEGARDE', 'warning');
+                } else {
+                    log('compare-result', '\n⚠️ Données incohérentes', 'warning');
+                }
+
+            } catch (error) {
+                log('compare-result', `❌ Erreur: ${error.message}`, 'error');
+            }
+        };
+
+        // Auto-check au chargement
+        setTimeout(() => {
+            checkSession();
+            checkIndexedDB();
+        }, 500);
+    </script>
+</body>
+
+</html>

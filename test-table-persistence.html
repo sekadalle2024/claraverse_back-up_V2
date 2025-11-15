@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test ClaraVerse Table Persistence</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .test-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-info { background: #6366f1; color: white; }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .status-panel {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Styles pour simuler ClaraVerse */
+        .markdown {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .prose {
+            max-width: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        table.min-w-full {
+            min-width: 100%;
+        }
+
+        table.border {
+            border: 1px solid #d1d5db;
+        }
+
+        table.border-gray-200 {
+            border-color: #e5e7eb;
+        }
+
+        table.dark\:border-gray-700 {
+            border-color: #374151;
+        }
+
+        table.rounded-lg {
+            border-radius: 0.5rem;
+        }
+
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: bold;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .claraverse-conso-table {
+            border: 2px solid #3b82f6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .claraverse-conso-table th {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+            font-size: 12px;
+        }
+
+        .error { color: #ef4444; }
+        .success { color: #10b981; }
+        .info { color: #6366f1; }
+        .warning { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 Test ClaraVerse Table Persistence</h1>
+        <p>Validation du système de persistance DOM & localStorage</p>
+    </div>
+
+    <div class="test-section">
+        <h2>🎛️ Contrôles de Test</h2>
+        <div class="test-controls">
+            <button class="btn btn-primary" onclick="initSystem()">🚀 Initialiser Système</button>
+            <button class="btn btn-success" onclick="scanTables()">🔍 Scanner Tables</button>
+            <button class="btn btn-info" onclick="createTestTables()">📊 Créer Tables Test</button>
+            <button class="btn btn-warning" onclick="testPersistence()">💾 Test Persistance</button>
+            <button class="btn btn-danger" onclick="clearAll()">🗑️ Vider Tout</button>
+        </div>
+
+        <div class="test-controls">
+            <button class="btn btn-info" onclick="exportData()">📤 Exporter</button>
+            <button class="btn btn-info" onclick="showStatus()">📊 Statut</button>
+            <button class="btn btn-info" onclick="showHelp()">❓ Aide</button>
+            <button class="btn btn-success" onclick="runFullTest()">🧪 Test Complet</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Console de Logs</h2>
+        <div id="logConsole" class="status-panel">
+            <div class="log-entry info">🔄 En attente d'initialisation...</div>
+        </div>
+        <button class="btn btn-warning" onclick="clearLogs()">🧹 Vider Console</button>
+    </div>
+
+    <!-- Tables de Test Simulant ClaraVerse -->
+    <div class="test-section">
+        <h2>📋 Tables de Test ClaraVerse</h2>
+
+        <!-- Table de Pointage (Simulée) -->
+        <div class="markdown prose prose-base dark:prose-invert max-w-none">
+            <h3>Table de Pointage</h3>
+            <div class="table-container">
+                <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg" data-table-id="pointage_test">
+                    <thead>
+                        <tr>
+                            <th>Critère</th>
+                            <th>Écart</th>
+                            <th>Conclusion</th>
+                            <th>CTR 1</th>
+                            <th>CTR 2</th>
+                            <th>CTR 3</th>
+                            <th>Assertion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Test A</td>
+                            <td>0.5</td>
+                            <td>Acceptable</td>
+                            <td>85%</td>
+                            <td>90%</td>
+                            <td>88%</td>
+                            <td>Validé</td>
+                        </tr>
+                        <tr>
+                            <td>Test B</td>
+                            <td>1.2</td>
+                            <td>À réviser</td>
+                            <td>75%</td>
+                            <td>80%</td>
+                            <td>78%</td>
+                            <td>En cours</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Table de Consolidation -->
+        <div class="markdown prose prose-base dark:prose-invert max-w-none">
+            <h3>Table de Consolidation</h3>
+            <table class="claraverse-conso-table" data-table-id="conso_test">
+                <thead>
+                    <tr>
+                        <th>📊 Table de Consolidation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="conso-content" style="padding: 8px; background: #f8f9fa; min-height: 50px;">
+                            ⏳ En attente de consolidation...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Table de Résultats -->
+        <div class="markdown prose prose-base dark:prose-invert max-w-none">
+            <h3>Table de Résultats</h3>
+            <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg" data-table-id="resultats_test">
+                <thead>
+                    <tr>
+                        <th>Résultats</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Conclusion finale du test</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Conteneur pour tables dynamiques -->
+    <div class="test-section">
+        <h2>🔄 Tables Dynamiques</h2>
+        <div id="dynamicTablesContainer" class="markdown prose prose-base dark:prose-invert max-w-none">
+            <!-- Les tables seront ajoutées ici dynamiquement -->
+        </div>
+    </div>
+
+    <!-- Chargement du script dev.js -->
+    <script src="dev.js"></script>
+
+    <script>
+        // Système de logging pour les tests
+        let logCounter = 0;
+
+        function log(message, type = 'info') {
+            const logConsole = document.getElementById('logConsole');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `[${++logCounter}] ${new Date().toLocaleTimeString()} - ${message}`;
+            logConsole.appendChild(entry);
+            logConsole.scrollTop = logConsole.scrollHeight;
+
+            // Aussi dans la console navigateur
+            console.log(`[TEST] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('logConsole').innerHTML = '';
+            logCounter = 0;
+            log('Console vidée', 'info');
+        }
+
+        // Fonctions de test
+        function initSystem() {
+            log('🚀 Initialisation du système...', 'info');
+
+            // Vérifier si le système est chargé
+            if (typeof window.claraverse !== 'undefined') {
+                log('✅ ClaraVerse Table Manager détecté', 'success');
+                log('📊 Status: ' + JSON.stringify(window.claraverse.status()), 'info');
+            } else {
+                log('❌ ClaraVerse Table Manager non trouvé', 'error');
+                log('🔄 Tentative de rechargement du script...', 'warning');
+
+                // Recharger le script
+                const script = document.createElement('script');
+                script.src = 'dev.js';
+                script.onload = () => {
+                    log('✅ Script rechargé avec succès', 'success');
+                };
+                script.onerror = () => {
+                    log('❌ Erreur lors du rechargement du script', 'error');
+                };
+                document.head.appendChild(script);
+            }
+        }
+
+        function scanTables() {
+            log('🔍 Lancement du scan des tables...', 'info');
+
+            if (typeof window.claraverse !== 'undefined') {
+                window.claraverse.scan();
+                log('✅ Scan terminé', 'success');
+
+                setTimeout(() => {
+                    const status = window.claraverse.status();
+                    log(`📊 Tables traitées: ${status.processedTables}`, 'info');
+                    log(`💾 Cellules sauvegardées: ${status.storedCells}`, 'info');
+                }, 1000);
+            } else {
+                log('❌ Système non initialisé', 'error');
+            }
+        }
+
+        function createTestTables() {
+            log('📊 Création de tables de test...', 'info');
+
+            const container = document.getElementById('dynamicTablesContainer');
+            const timestamp = Date.now();
+
+            const tableHTML = `
+                <h4>Table Dynamique ${timestamp}</h4>
+                <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg" data-table-id="dynamic_${timestamp}">
+                    <thead>
+                        <tr>
+                            <th>Colonne A</th>
+                            <th>Colonne B</th>
+                            <th>Colonne C</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Valeur 1</td>
+                            <td>Valeur 2</td>
+                            <td>Valeur 3</td>
+                        </tr>
+                        <tr>
+                            <td>Test A</td>
+                            <td>Test B</td>
+                            <td>Test C</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML += tableHTML;
+            log('✅ Table dynamique créée', 'success');
+
+            // Relancer le scan pour détecter la nouvelle table
+            setTimeout(() => {
+                scanTables();
+            }, 500);
+        }
+
+        function testPersistence() {
+            log('💾 Test de persistance...', 'info');
+
+            // Tester la modification d'une cellule
+            const firstCell = document.querySelector('td');
+            if (firstCell) {
+                const originalValue = firstCell.textContent;
+                const testValue = `TEST_${Date.now()}`;
+
+                log(`📝 Modification cellule: "${originalValue}" → "${testValue}"`, 'info');
+
+                // Simuler une modification utilisateur
+                firstCell.focus();
+                firstCell.textContent = testValue;
+
+                // Déclencher l'événement input
+                firstCell.dispatchEvent(new Event('input', { bubbles: true }));
+
+                log('✅ Modification effectuée, sauvegarde en cours...', 'success');
+
+                // Vérifier la sauvegarde après 1 seconde
+                setTimeout(() => {
+                    const stored = localStorage.getItem(`claraverse_table_${firstCell.dataset.cellId || 'unknown'}`);
+                    if (stored) {
+                        log('✅ Persistance confirmée dans localStorage', 'success');
+                    } else {
+                        log('⚠️ Persistance non confirmée', 'warning');
+                    }
+                }, 1000);
+            } else {
+                log('❌ Aucune cellule trouvée pour le test', 'error');
+            }
+        }
+
+        function clearAll() {
+            log('🗑️ Vidage de toutes les données...', 'warning');
+
+            if (typeof window.claraverse !== 'undefined') {
+                window.claraverse.clear();
+                log('✅ Données vidées', 'success');
+            }
+
+            // Vider aussi le conteneur dynamique
+            document.getElementById('dynamicTablesContainer').innerHTML = '';
+            log('✅ Tables dynamiques supprimées', 'success');
+        }
+
+        function exportData() {
+            log('📤 Export des données...', 'info');
+
+            if (typeof window.claraverse !== 'undefined') {
+                window.claraverse.export();
+                log('✅ Export terminé', 'success');
+            } else {
+                log('❌ Système non initialisé', 'error');
+            }
+        }
+
+        function showStatus() {
+            log('📊 Affichage du statut...', 'info');
+
+            if (typeof window.claraverse !== 'undefined') {
+                const status = window.claraverse.status();
+                log(`🔧 Initialisé: ${status.initialized}`, 'info');
+                log(`📋 Tables traitées: ${status.processedTables}`, 'info');
+                log(`💾 Cellules stockées: ${status.storedCells}`, 'info');
+                log(`👁️ Observers: ${status.observers}`, 'info');
+                log(`🧠 Tables en mémoire: ${status.memoryTables}`, 'info');
+            } else {
+                log('❌ Système non initialisé', 'error');
+            }
+        }
+
+        function showHelp() {
+            log('❓ Affichage de l\'aide...', 'info');
+
+            if (typeof window.claraverse !== 'undefined') {
+                window.claraverse.help();
+                log('✅ Aide affichée dans la console navigateur', 'success');
+            } else {
+                log('❌ Système non initialisé', 'error');
+            }
+        }
+
+        function runFullTest() {
+            log('🧪 Lancement du test complet...', 'info');
+
+            let step = 1;
+            const totalSteps = 6;
+
+            function nextStep(fn, delay = 2000) {
+                setTimeout(() => {
+                    log(`📋 Étape ${step}/${totalSteps}`, 'info');
+                    fn();
+                    step++;
+                }, delay);
+            }
+
+            // Séquence de test automatique
+            nextStep(() => initSystem(), 0);
+            nextStep(() => scanTables(), 2000);
+            nextStep(() => createTestTables(), 2000);
+            nextStep(() => testPersistence(), 2000);
+            nextStep(() => showStatus(), 2000);
+            nextStep(() => {
+                log('🎉 Test complet terminé !', 'success');
+                log('🔍 Vérifiez les résultats dans la console navigateur', 'info');
+            }, 2000);
+        }
+
+        // Initialisation automatique au chargement
+        window.addEventListener('load', () => {
+            log('🌐 Page chargée, initialisation automatique...', 'info');
+            setTimeout(() => {
+                initSystem();
+            }, 1000);
+        });
+
+        // Écouter les notifications du système
+        window.addEventListener('claraverse-notification', (event) => {
+            log(`📢 Notification: ${event.detail.message}`, event.detail.type || 'info');
+        });
+
+        // Override console.log pour capturer les logs du système
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            // Si le log vient du système ClaraVerse
+            const message = args.join(' ');
+            if (message.includes('ClaraVerse') || message.includes('🔥') || message.includes('💾')) {
+                log(message, 'info');
+            }
+
+            // Appel normal
+            originalConsoleLog.apply(console, args);
+        };
+    </script>
+</body>
+</html>

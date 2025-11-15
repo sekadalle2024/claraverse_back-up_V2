@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple Cycle</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .test-table th, .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+        .prose {
+            max-width: none;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Simple Cycle</h1>
+        <p>Test pour vérifier que le cycle sauvegarde/restauration fonctionne avec le même contenu</p>
+        
+        <div class="container">
+            <h2>🎯 Test</h2>
+            <button onclick="testSimpleCycle()">Test Cycle Simple</button>
+            <button onclick="clearLog()">Effacer Log</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="test-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Original</td>
+                            <td>Data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Log</h2>
+            <div id="test-log" class="log">
+                Cliquez sur le bouton pour commencer...
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        let logDiv = document.getElementById('test-log');
+
+        function logMessage(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            let className = '';
+            let icon = '';
+            
+            switch(type) {
+                case 'error':
+                    className = 'error';
+                    icon = '❌';
+                    break;
+                case 'warn':
+                    className = 'warning';
+                    icon = '⚠️';
+                    break;
+                case 'success':
+                    className = 'success';
+                    icon = '✅';
+                    break;
+                default:
+                    icon = 'ℹ️';
+            }
+            
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${icon} ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function testSimpleCycle() {
+            logMessage('🧪 Test cycle simple avec même contenu...', 'log');
+            
+            try {
+                const table = document.getElementById('test-table');
+                if (!table) {
+                    logMessage('❌ Table non trouvée', 'error');
+                    return;
+                }
+
+                const firstCell = table.querySelector('td');
+                const cycles = 3;
+                let successCount = 0;
+
+                // Utiliser le MÊME contenu pour tous les cycles
+                const stableContent = 'CONTENU_STABLE_POUR_TOUS_LES_CYCLES';
+
+                for (let i = 0; i < cycles; i++) {
+                    try {
+                        logMessage(`🔄 Cycle ${i + 1}/${cycles}...`, 'log');
+
+                        // Étape 1: Mettre le contenu stable
+                        if (firstCell) {
+                            firstCell.textContent = stableContent;
+                        }
+                        logMessage(`📝 Contenu défini: "${stableContent}"`, 'log');
+
+                        // Étape 2: Sauvegarder
+                        const saveResult = window.claraverseStorageAPI.saveTable(table);
+                        if (!saveResult) {
+                            throw new Error(`Échec sauvegarde cycle ${i}`);
+                        }
+                        logMessage(`💾 Sauvegarde cycle ${i + 1}: SUCCÈS`, 'success');
+
+                        // Étape 3: Vérifier l'ID stocké
+                        const storedId = table.getAttribute('data-robust-table-id');
+                        logMessage(`🔑 ID stocké: ${storedId ? storedId.substring(0, 30) + '...' : 'AUCUN'}`, 'log');
+
+                        // Étape 4: Modifier temporairement
+                        if (firstCell) {
+                            firstCell.textContent = `TEMP_CYCLE_${i}`;
+                        }
+                        logMessage(`📝 Contenu temporaire: "TEMP_CYCLE_${i}"`, 'log');
+
+                        // Étape 5: Restaurer
+                        const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                        if (!restoreResult) {
+                            throw new Error(`Échec restauration cycle ${i}`);
+                        }
+                        logMessage(`🔄 Restauration cycle ${i + 1}: SUCCÈS`, 'success');
+
+                        // Étape 6: Vérifier le contenu restauré
+                        const restoredContent = firstCell ? firstCell.textContent : '';
+                        logMessage(`📋 Contenu restauré: "${restoredContent}"`, 'log');
+
+                        if (restoredContent === stableContent) {
+                            successCount++;
+                            logMessage(`✅ Cycle ${i + 1} RÉUSSI`, 'success');
+                        } else {
+                            logMessage(`❌ Cycle ${i + 1} ÉCHOUÉ - Attendu: "${stableContent}", Obtenu: "${restoredContent}"`, 'error');
+                        }
+
+                        // Pause entre les cycles
+                        await new Promise(resolve => setTimeout(resolve, 100));
+
+                    } catch (error) {
+                        logMessage(`❌ Erreur cycle ${i + 1}: ${error.message}`, 'error');
+                    }
+                }
+
+                // Résultats finaux
+                const successRate = Math.round((successCount / cycles) * 100);
+                logMessage(`📊 Résultats finaux: ${successCount}/${cycles} cycles réussis (${successRate}%)`, 'log');
+
+                if (successRate === 100) {
+                    logMessage('🎉 TOUS LES CYCLES ONT RÉUSSI!', 'success');
+                } else if (successRate >= 70) {
+                    logMessage('⚠️ Majorité des cycles réussis', 'warn');
+                } else {
+                    logMessage('❌ Échec de la majorité des cycles', 'error');
+                }
+
+            } catch (error) {
+                logMessage(`❌ Erreur globale: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLog() {
+            logDiv.innerHTML = 'Log effacé...\n';
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            logMessage('🚀 Interface de test simple chargée', 'log');
+            
+            setTimeout(() => {
+                if (typeof window.claraverseStorageAPI !== 'undefined') {
+                    logMessage('✅ API claraverseStorageAPI disponible', 'success');
+                } else {
+                    logMessage('❌ API claraverseStorageAPI non disponible', 'error');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

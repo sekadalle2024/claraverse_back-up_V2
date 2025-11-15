@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test d'extraction de fichiers Excel/Word - ClaraVerse</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .upload-area {
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .upload-area.dragover {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.2);
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-list {
+            margin: 20px 0;
+        }
+        .file-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-info {
+            flex: 1;
+        }
+        .file-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .file-details {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        .extraction-result {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid rgba(0, 255, 0, 0.5);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error-result {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+        }
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #FFD700;
+        }
+        .instructions ul {
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test d'extraction Excel/Word</h1>
+        
+        <div class="instructions">
+            <h3>📋 Instructions de test</h3>
+            <ul>
+                <li><strong>Fichiers Excel (.xlsx, .xls)</strong> : Testez avec des feuilles de calcul contenant des données tabulaires</li>
+                <li><strong>Fichiers Word (.docx)</strong> : Testez avec des documents contenant du texte</li>
+                <li><strong>Vérification</strong> : L'extraction doit afficher le contenu et confirmer le traitement</li>
+                <li><strong>Format n8n</strong> : Les données seront formatées pour l'envoi vers l'endpoint n8n</li>
+            </ul>
+        </div>
+
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <p>📁 Cliquez ici ou glissez-déposez vos fichiers Excel/Word</p>
+            <p style="font-size: 0.9em; opacity: 0.8;">Formats supportés: .xlsx, .xls, .docx</p>
+        </div>
+        
+        <input type="file" id="fileInput" multiple accept=".xlsx,.xls,.docx,.doc">
+        
+        <div id="fileList" class="file-list"></div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button id="processBtn" onclick="processFiles()" disabled>🔄 Traiter les fichiers</button>
+            <button onclick="clearFiles()">🗑️ Effacer</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+
+        // Configuration de la zone de drop
+        const uploadArea = document.querySelector('.upload-area');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const processBtn = document.getElementById('processBtn');
+        const results = document.getElementById('results');
+
+        // Événements de drag & drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            selectedFiles = Array.from(files);
+            displayFiles();
+            processBtn.disabled = selectedFiles.length === 0;
+        }
+
+        function displayFiles() {
+            fileList.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">📄 ${file.name}</div>
+                        <div class="file-details">
+                            Taille: ${formatFileSize(file.size)} | 
+                            Type: ${file.type || 'Non détecté'} |
+                            Modifié: ${new Date(file.lastModified).toLocaleString()}
+                        </div>
+                    </div>
+                    <button onclick="removeFile(${index})">❌</button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            displayFiles();
+            processBtn.disabled = selectedFiles.length === 0;
+        }
+
+        function clearFiles() {
+            selectedFiles = [];
+            fileInput.value = '';
+            displayFiles();
+            results.innerHTML = '';
+            processBtn.disabled = true;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function processFiles() {
+            if (selectedFiles.length === 0) return;
+
+            processBtn.disabled = true;
+            processBtn.textContent = '⏳ Traitement en cours...';
+            results.innerHTML = '<p>🔄 Traitement des fichiers en cours...</p>';
+
+            try {
+                // Simuler le traitement comme dans ClaraVerse
+                const processedFiles = [];
+
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    const result = await processFile(file);
+                    processedFiles.push(result);
+                }
+
+                displayResults(processedFiles);
+                
+            } catch (error) {
+                results.innerHTML = `<div class="extraction-result error-result">❌ Erreur: ${error.message}</div>`;
+            } finally {
+                processBtn.disabled = false;
+                processBtn.textContent = '🔄 Traiter les fichiers';
+            }
+        }
+
+        async function processFile(file) {
+            const fileExtension = file.name.toLowerCase().split('.').pop();
+            
+            try {
+                if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+                    return await processExcelFile(file);
+                } else if (fileExtension === 'docx') {
+                    return await processWordFile(file);
+                } else {
+                    throw new Error(`Type de fichier non supporté: ${fileExtension}`);
+                }
+            } catch (error) {
+                return {
+                    filename: file.name,
+                    success: false,
+                    error: error.message,
+                    type: fileExtension
+                };
+            }
+        }
+
+        async function processExcelFile(file) {
+            // Simulation du traitement Excel
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({
+                        filename: file.name,
+                        success: true,
+                        type: 'excel',
+                        extractedText: `📊 Données extraites du fichier Excel: ${file.name}\n\n📋 Feuille "Sheet1":\n  Colonne A, Colonne B, Colonne C\n  Données 1, Données 2, Données 3\n  Ligne 2, Valeur 2, Résultat 2\n\n📈 Résumé:\n  • 1 feuille(s) de calcul\n  • Feuilles: Sheet1`,
+                        structuredData: {
+                            "Sheet1": [
+                                ["Colonne A", "Colonne B", "Colonne C"],
+                                ["Données 1", "Données 2", "Données 3"],
+                                ["Ligne 2", "Valeur 2", "Résultat 2"]
+                            ]
+                        },
+                        dataFormat: 'excel'
+                    });
+                }, 1000);
+            });
+        }
+
+        async function processWordFile(file) {
+            // Simulation du traitement Word
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({
+                        filename: file.name,
+                        success: true,
+                        type: 'word',
+                        extractedText: `📄 Contenu extrait du document Word: ${file.name}\n\nCeci est un exemple de texte extrait d'un document Word. Le contenu peut inclure des paragraphes, des listes, et du texte formaté qui sera converti en texte brut pour l'analyse.`,
+                        structuredData: {
+                            rawText: "Ceci est un exemple de texte extrait d'un document Word. Le contenu peut inclure des paragraphes, des listes, et du texte formaté qui sera converti en texte brut pour l'analyse."
+                        },
+                        dataFormat: 'word'
+                    });
+                }, 800);
+            });
+        }
+
+        function displayResults(processedFiles) {
+            let html = '<h3>📊 Résultats de l\'extraction</h3>';
+            
+            const successfulFiles = processedFiles.filter(f => f.success);
+            const failedFiles = processedFiles.filter(f => !f.success);
+
+            if (successfulFiles.length > 0) {
+                html += `<h4>✅ Fichiers traités avec succès (${successfulFiles.length})</h4>`;
+                successfulFiles.forEach(file => {
+                    html += `
+                        <div class="extraction-result">
+                            <strong>📄 ${file.filename} (${file.dataFormat})</strong>
+                            <br><br>
+                            ${file.extractedText}
+                            <br><br>
+                            <strong>📤 Données structurées pour n8n:</strong>
+                            <pre>${JSON.stringify(file.structuredData, null, 2)}</pre>
+                        </div>
+                    `;
+                });
+            }
+
+            if (failedFiles.length > 0) {
+                html += `<h4>❌ Fichiers non traités (${failedFiles.length})</h4>`;
+                failedFiles.forEach(file => {
+                    html += `
+                        <div class="extraction-result error-result">
+                            <strong>📄 ${file.filename}</strong>
+                            <br>
+                            Erreur: ${file.error}
+                        </div>
+                    `;
+                });
+            }
+
+            // Simulation des données n8n
+            const n8nData = {
+                files: processedFiles.map(file => ({
+                    filename: file.filename,
+                    type: file.type,
+                    processed: file.success,
+                    extractedText: file.extractedText || '',
+                    structuredData: file.structuredData || null,
+                    dataFormat: file.dataFormat || null,
+                    error: file.error || null
+                })),
+                hasExtractedContent: successfulFiles.length > 0,
+                totalFiles: processedFiles.length
+            };
+
+            html += `
+                <h4>🔗 Données formatées pour l'endpoint n8n</h4>
+                <div class="extraction-result">
+                    <pre>${JSON.stringify(n8nData, null, 2)}</pre>
+                </div>
+            `;
+
+            results.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

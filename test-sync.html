@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClaraVerse - Test de Synchronisation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+
+      .debug-panel {
+        background: #1f2937;
+        color: #e5e7eb;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .table-container {
+        border: 2px solid #10b981;
+        border-radius: 8px;
+        margin: 20px 0;
+        padding: 10px;
+      }
+
+      .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+      }
+
+      .status-active {
+        background-color: #10b981;
+      }
+      .status-inactive {
+        background-color: #ef4444;
+      }
+      .status-warning {
+        background-color: #f59e0b;
+      }
+
+      .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .test-button {
+        transition: all 0.2s ease;
+      }
+
+      .test-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .animation-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .log-entry {
+        padding: 4px 8px;
+        margin: 2px 0;
+        border-left: 3px solid #6366f1;
+        background: rgba(99, 102, 241, 0.1);
+      }
+
+      .log-success {
+        border-left-color: #10b981;
+        background: rgba(16, 185, 129, 0.1);
+      }
+      .log-error {
+        border-left-color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+      }
+      .log-warning {
+        border-left-color: #f59e0b;
+        background: rgba(245, 158, 11, 0.1);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg">
+      <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">🎯 ClaraVerse</h1>
+            <p class="text-gray-600">Test de Synchronisation des Scripts</p>
+          </div>
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <div class="text-sm text-gray-500">Version</div>
+              <div class="font-bold text-blue-600">v3.0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <!-- Status Dashboard -->
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+          📊 Dashboard de Synchronisation
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <!-- Script Status Cards -->
+          <div class="bg-white rounded-lg shadow p-6 metric-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm opacity-80">Coordinateur</p>
+                <p class="text-2xl font-bold" id="coordinator-status">❓</p>
+              </div>
+              <div
+                class="status-indicator status-inactive"
+                id="coordinator-indicator"
+              ></div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6 bg-green-500 text-white">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm opacity-80">Dev.js</p>
+                <p class="text-2xl font-bold" id="dev-status">❓</p>
+              </div>
+              <div
+                class="status-indicator status-inactive"
+                id="dev-indicator"
+              ></div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6 bg-blue-500 text-white">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm opacity-80">Conso.js</p>
+                <p class="text-2xl font-bold" id="conso-status">❓</p>
+              </div>
+              <div
+                class="status-indicator status-inactive"
+                id="conso-indicator"
+              ></div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6 bg-purple-500 text-white">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm opacity-80">Menu.js</p>
+                <p class="text-2xl font-bold" id="menu-status">❓</p>
+              </div>
+              <div
+                class="status-indicator status-inactive"
+                id="menu-indicator"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+              ⚡ Performance
+            </h3>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Syncs Total:</span>
+                <span class="font-bold" id="total-syncs">0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Temps Moyen:</span>
+                <span class="font-bold" id="avg-time">0ms</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Erreurs:</span>
+                <span class="font-bold text-red-500" id="error-count">0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+              📦 Stockage
+            </h3>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Entrées Dev:</span>
+                <span class="font-bold" id="storage-dev">0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Entrées Conso:</span>
+                <span class="font-bold" id="storage-conso">0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Taille Totale:</span>
+                <span class="font-bold" id="storage-size">0 KB</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+              🔄 Queue Sync
+            </h3>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-600">En Attente:</span>
+                <span class="font-bold" id="queue-pending">0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Retries:</span>
+                <span class="font-bold text-orange-500" id="retry-count"
+                  >0</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Conflits:</span>
+                <span class="font-bold text-red-500" id="conflict-count"
+                  >0</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test Controls -->
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+          🧪 Contrôles de Test
+        </h2>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button
+              id="btn-force-sync"
+              class="test-button bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            >
+              🔄 Sync Forcée
+            </button>
+
+            <button
+              id="btn-save-all"
+              class="test-button bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+            >
+              💾 Sauver Tout
+            </button>
+
+            <button
+              id="btn-restore-all"
+              class="test-button bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded"
+            >
+              🔄 Restaurer Tout
+            </button>
+
+            <button
+              id="btn-run-diagnostic"
+              class="test-button bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded"
+            >
+              🔍 Diagnostic
+            </button>
+
+            <button
+              id="btn-create-test-data"
+              class="test-button bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded"
+            >
+              📝 Créer Test Data
+            </button>
+
+            <button
+              id="btn-simulate-consolidation"
+              class="test-button bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded"
+            >
+              📊 Simuler Conso
+            </button>
+
+            <button
+              id="btn-clear-storage"
+              class="test-button bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+            >
+              🗑️ Vider Stockage
+            </button>
+
+            <button
+              id="btn-hard-reset"
+              class="test-button bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded"
+            >
+              ⚡ Hard Reset
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test Tables -->
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">📋 Tables de Test</h2>
+
+        <!-- Table de Pointage -->
+        <div class="table-container">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">
+            Table de Pointage
+          </h3>
+          <div class="prose prose-base dark:prose-invert max-w-none">
+            <table
+              class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg"
+              id="table-pointage"
+            >
+              <thead class="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th class="px-4 py-2 border-b">Assertion</th>
+                  <th class="px-4 py-2 border-b">Ecart</th>
+                  <th class="px-4 py-2 border-b">CTR1</th>
+                  <th class="px-4 py-2 border-b">CTR2</th>
+                  <th class="px-4 py-2 border-b">Conclusion</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="px-4 py-2 border-b">Facture 001</td>
+                  <td class="px-4 py-2 border-b">100.50</td>
+                  <td class="px-4 py-2 border-b">100.00</td>
+                  <td class="px-4 py-2 border-b">100.50</td>
+                  <td class="px-4 py-2 border-b">OK</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2 border-b">Facture 002</td>
+                  <td class="px-4 py-2 border-b">-25.30</td>
+                  <td class="px-4 py-2 border-b">75.20</td>
+                  <td class="px-4 py-2 border-b">100.50</td>
+                  <td class="px-4 py-2 border-b">Écart</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2 border-b">Facture 003</td>
+                  <td class="px-4 py-2 border-b">0.00</td>
+                  <td class="px-4 py-2 border-b">250.75</td>
+                  <td class="px-4 py-2 border-b">250.75</td>
+                  <td class="px-4 py-2 border-b">OK</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Table de Consolidation -->
+        <div class="table-container">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">
+            Table de Consolidation
+          </h3>
+          <div class="prose prose-base dark:prose-invert max-w-none">
+            <table
+              class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg claraverse-conso-table"
+              id="table-consolidation"
+            >
+              <thead class="bg-blue-50 dark:bg-blue-900">
+                <tr>
+                  <th class="px-4 py-2 border-b">Consolidation</th>
+                  <th class="px-4 py-2 border-b">Total Écarts</th>
+                  <th class="px-4 py-2 border-b">Nombre d'Assertions</th>
+                  <th class="px-4 py-2 border-b">Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="px-4 py-2 border-b">Total Global</td>
+                  <td class="px-4 py-2 border-b">75.20</td>
+                  <td class="px-4 py-2 border-b">3</td>
+                  <td class="px-4 py-2 border-b">En cours</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Table de Résultats -->
+        <div class="table-container">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">
+            Table de Résultats
+          </h3>
+          <div class="prose prose-base dark:prose-invert max-w-none">
+            <table
+              class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg"
+              id="table-results"
+            >
+              <thead class="bg-green-50 dark:bg-green-900">
+                <tr>
+                  <th class="px-4 py-2 border-b">Résultat</th>
+                  <th class="px-4 py-2 border-b">Valeur</th>
+                  <th class="px-4 py-2 border-b">Pourcentage</th>
+                  <th class="px-4 py-2 border-b">Commentaire</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="px-4 py-2 border-b">Concordance</td>
+                  <td class="px-4 py-2 border-b">66.67%</td>
+                  <td class="px-4 py-2 border-b">2/3</td>
+                  <td class="px-4 py-2 border-b">Acceptable</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2 border-b">Écart Total</td>
+                  <td class="px-4 py-2 border-b">75.20 €</td>
+                  <td class="px-4 py-2 border-b">18.1%</td>
+                  <td class="px-4 py-2 border-b">À corriger</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Debug Console -->
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+          🔍 Console de Debug
+        </h2>
+
+        <div class="bg-white rounded-lg shadow">
+          <div class="p-4 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+              <h3 class="text-lg font-medium">Logs en Temps Réel</h3>
+              <div class="flex space-x-2">
+                <button
+                  id="btn-clear-logs"
+                  class="text-sm bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded"
+                >
+                  Effacer
+                </button>
+                <button
+                  id="btn-export-logs"
+                  class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                >
+                  Exporter
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="debug-console" class="debug-panel p-4" style="height: 300px">
+            <div class="log-entry">🚀 Console de debug initialisée...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="text-center text-gray-500 text-sm">
+        <p>
+          ClaraVerse Sync Test Environment v3.0 - Powered by Advanced JavaScript
+          Coordination
+        </p>
+      </footer>
+    </div>
+
+    <!-- Load Scripts in Order -->
+    <script src="sync-coordinator.js"></script>
+    <script src="dev.js"></script>
+    <script src="conso.js"></script>
+    <script src="menu.js"></script>
+
+    <!-- Test Controller Script -->
+    <script>
+      // Test Environment Controller
+      class ClaraVerseTestController {
+        constructor() {
+          this.debugConsole = document.getElementById("debug-console");
+          this.logs = [];
+          this.isInitialized = false;
+          this.statusUpdateInterval = null;
+
+          this.init();
+        }
+
+        async init() {
+          this.log("🚀 Initialisation du contrôleur de test...");
+
+          // Attendre le chargement des scripts
+          await this.waitForScripts();
+
+          // Configurer les event listeners
+          this.setupEventListeners();
+
+          // Démarrer le monitoring
+          this.startStatusMonitoring();
+
+          // Intercepter les logs console
+          this.interceptConsoleLogs();
+
+          this.isInitialized = true;
+          this.log("✅ Contrôleur de test initialisé");
+        }
+
+        async waitForScripts() {
+          const maxAttempts = 30;
+          let attempts = 0;
+
+          while (attempts < maxAttempts) {
+            const scriptsLoaded = {
+              coordinator: !!window.claraverseCoordinator,
+              dev: !!window.claraverseSyncAPI,
+              conso: !!window.claraverseProcessor,
+              menu: !!window.contextualMenuManager,
+            };
+
+            this.updateScriptStatus(scriptsLoaded);
+
+            if (Object.values(scriptsLoaded).every((loaded) => loaded)) {
+              this.log("✅ Tous les scripts sont chargés");
+              break;
+            }
+
+            attempts++;
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            this.log(`⏳ Attente des scripts... (${attempts}/${maxAttempts})`);
+          }
+        }
+
+        updateScriptStatus(status) {
+          Object.entries(status).forEach(([script, loaded]) => {
+            const statusEl = document.getElementById(`${script}-status`);
+            const indicatorEl = document.getElementById(`${script}-indicator`);
+
+            if (statusEl) {
+              statusEl.textContent = loaded ? "✅" : "❌";
+            }
+
+            if (indicatorEl) {
+              indicatorEl.className = `status-indicator ${loaded ? "status-active" : "status-inactive"}`;
+            }
+          });
+        }
+
+        setupEventListeners() {
+          // Boutons de test
+          document.getElementById("btn-force-sync").onclick = () =>
+            this.forceSync();
+          document.getElementById("btn-save-all").onclick = () =>
+            this.saveAll();
+          document.getElementById("btn-restore-all").onclick = () =>
+            this.restoreAll();
+          document.getElementById("btn-run-diagnostic").onclick = () =>
+            this.runDiagnostic();
+          document.getElementById("btn-create-test-data").onclick = () =>
+            this.createTestData();
+          document.getElementById("btn-simulate-consolidation").onclick = () =>
+            this.simulateConsolidation();
+          document.getElementById("btn-clear-storage").onclick = () =>
+            this.clearStorage();
+          document.getElementById("btn-hard-reset").onclick = () =>
+            this.hardReset();
+
+          // Contrôles de debug
+          document.getElementById("btn-clear-logs").onclick = () =>
+            this.clearLogs();
+          document.getElementById("btn-export-logs").onclick = () =>
+            this.exportLogs();
+
+          // Événements ClaraVerse
+          document.addEventListener("claraverse:coordinator:ready", (e) => {
+            this.log("🎯 Coordinateur prêt");
+          });
+
+          document.addEventListener("claraverse:sync:complete", (e) => {
+            this.log(`🔄 Sync terminée: ${e.detail.source}`);
+          });
+        }
+
+        startStatusMonitoring() {
+          this.statusUpdateInterval = setInterval(() => {
+            this.updateMetrics();
+          }, 2000);
+
+          this.log("📊 Monitoring des métriques démarré");
+        }
+
+        updateMetrics() {
+          try {
+            // Métriques du coordinateur
+            if (window.claraverseCoordinator) {
+              const metrics = window.claraverseCoordinator.getMetrics();
+
+              document.getElementById("total-syncs").textContent =
+                metrics.totalSyncs || 0;
+              document.getElementById("avg-time").textContent =
+                `${Math.round(metrics.avgSyncTime || 0)}ms`;
+              document.getElementById("error-count").textContent =
+                metrics.conflicts || 0;
+              document.getElementById("queue-pending").textContent =
+                metrics.queueLength || 0;
+              document.getElementById("retry-count").textContent =
+                metrics.retries || 0;
+              document.getElementById("conflict-count").textContent =
+                metrics.conflicts || 0;
+            }
+
+            // Métriques de stockage
+            if (window.claraverseSyncAPI) {
+              const stats = window.claraverseSyncAPI.getStorageStats();
+
+              document.getElementById("storage-dev").textContent =
+                stats.totalItems || 0;
+              document.getElementById("storage-size").textContent =
+                `${Math.round((stats.totalSize || 0) / 1024)} KB`;
+            }
+          } catch (error) {
+            // Ignorer les erreurs de métrique
+          }
+        }
+
+        interceptConsoleLogs() {
+          const originalLog = console.log;
+          const originalError = console.error;
+          const originalWarn = console.warn;
+
+          console.log = (...args) => {
+            originalLog.apply(console, args);
+            if (args[0] && args[0].includes && args[0].includes("[")) {
+              this.log(args.join(" "), "info");
+            }
+          };
+
+          console.error = (...args) => {
+            originalError.apply(console, args);
+            this.log(args.join(" "), "error");
+          };
+
+          console.warn = (...args) => {
+            originalWarn.apply(console, args);
+            this.log(args.join(" "), "warning");
+          };
+        }
+
+        log(message, level = "info") {
+          const timestamp = new Date().toLocaleTimeString();
+          const logEntry = {
+            timestamp,
+            message,
+            level,
+          };
+
+          this.logs.push(logEntry);
+
+          // Garder seulement les 100 derniers logs
+          if (this.logs.length > 100) {
+            this.logs.shift();
+          }
+
+          // Afficher dans la console
+          const logDiv = document.createElement("div");
+          logDiv.className = `log-entry log-${level}`;
+          logDiv.innerHTML = `<span class="text-gray-400">[${timestamp}]</span> ${message}`;
+
+          this.debugConsole.appendChild(logDiv);
+          this.debugConsole.scrollTop = this.debugConsole.scrollHeight;
+        }
+
+        // Actions de test
+        async forceSync() {
+          this.log("🔄 Déclenchement sync forcée...");
+          try {
+            if (window.claraverseCoordinator) {
+              const result =
+                await window.claraverseCoordinator.forceMasterSync();
+              this.log(`✅ Sync forcée terminée: ${JSON.stringify(result)}`);
+            }
+          } catch (error) {
+            this.log(`❌ Erreur sync forcée: ${error.message}`, "error");
+          }
+        }
+
+        async saveAll() {
+          this.log("💾 Sauvegarde de toutes les tables...");
+          try {
+            if (window.claraverseSyncAPI) {
+              const saved = await window.claraverseSyncAPI.saveAllTables();
+              this.log(`✅ ${saved} cellules sauvegardées`);
+            }
+          } catch (error) {
+            this.log(`❌ Erreur sauvegarde: ${error.message}`, "error");
+          }
+        }
+
+        async restoreAll() {
+          this.log("🔄 Restauration de toutes les données...");
+          try {
+            if (window.claraverseSyncAPI) {
+              const result = await window.claraverseSyncAPI.restoreAllData();
+              this.log(
+                `✅ ${result.restored} cellules restaurées, ${result.failed} échecs`,
+              );
+            }
+          } catch (error) {
+            this.log(`❌ Erreur restauration: ${error.message}`, "error");
+          }
+        }
+
+        runDiagnostic() {
+          this.log("🔍 Exécution du diagnostic...");
+          try {
+            if (window.claraverseCoordinator) {
+              const diagnostic = window.claraverseCoordinator.runDiagnostic();
+              console.table(diagnostic);
+              this.log("✅ Diagnostic terminé - voir console");
+            }
+          } catch (error) {
+            this.log(`❌ Erreur diagnostic: ${error.message}`, "error");
+          }
+        }
+
+        createTestData() {
+          this.log("📝 Création de données de test...");
+
+          // Modifier quelques cellules des tables
+          const tables = document.querySelectorAll("table");
+          let modified = 0;
+
+          tables.forEach((table) => {
+            const cells = table.querySelectorAll("td");
+            cells.forEach((cell, index) => {
+              if (Math.random() > 0.7) {
+                // 30% de chance de modification
+                const originalText = cell.textContent;
+                cell.textContent = `${originalText} [MODIF-${Date.now() % 1000}]`;
+                modified++;
+              }
+            });
+          });
+
+          this.log(`✅ ${modified} cellules modifiées pour test`);
+        }
+
+        simulateConsolidation() {
+          this.log("📊 Simulation de consolidation...");
+
+          // Déclencher un événement de consolidation
+          const event = new CustomEvent("claraverse:consolidation:complete", {
+            detail: {
+              source: "test",
+              consolidationTables: document.querySelectorAll("table"),
+              timestamp: Date.now(),
+            },
+          });
+
+          document.dispatchEvent(event);
+          this.log("✅ Événement de consolidation déclenché");
+        }
+
+        clearStorage() {
+          this.log("🗑️ Nettoyage du stockage...");
+
+          try {
+            let cleared = 0;
+            const keys = Object.keys(localStorage);
+
+            keys.forEach((key) => {
+              if (key.startsWith("claraverse_")) {
+                localStorage.removeItem(key);
+                cleared++;
+              }
+            });
+
+            this.log(`✅ ${cleared} entrées supprimées du localStorage`);
+          } catch (error) {
+            this.log(`❌ Erreur nettoyage: ${error.message}`, "error");
+          }
+        }
+
+        async hardReset() {
+          this.log("⚡ HARD RESET en cours...");
+
+          try {
+            // Nettoyer le localStorage
+            this.clearStorage();
+
+            // Reset via dev.js si disponible
+            if (window.claraverseDebug && window.claraverseDebug.hardReset) {
+              await window.claraverseDebug.hardReset();
+            }
+
+            // Recharger la page après un délai
+            setTimeout(() => {
+              this.log("🔄 Rechargement de la page...");
+              window.location.reload();
+            }, 2000);
+          } catch (error) {
+            this.log(`❌ Erreur hard reset: ${error.message}`, "error");
+          }
+        }
+
+        clearLogs() {
+          this.logs = [];
+          this.debugConsole.innerHTML =
+            '<div class="log-entry">🧹 Logs effacés</div>';
+        }
+
+        exportLogs() {
+          const logData = {
+            timestamp: new Date().toISOString(),
+            logs: this.logs,
+            metrics: window.claraverseCoordinator
+              ? window.claraverseCoordinator.getMetrics()
+              : null,
+          };
+
+          const blob = new Blob([JSON.stringify(logData, null, 2)], {
+            type: "application/json",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `claraverse-test-logs-${Date.now()}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+
+          this.log("📤 Logs exportés");
+        }
+
+        destroy() {
+          if (this.statusUpdateInterval) {
+            clearInterval(this.statusUpdateInterval);
+          }
+        }
+      }
+
+      // Initialiser le contrôleur de test
+      let testController;
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+          setTimeout(() => {
+            testController = new ClaraVerseTestController();
+          }, 1000);
+        });
+      } else {
+        setTimeout(() => {
+          testController = new ClaraVerseTestController();
+        }, 1000);
+      }
+
+      // Nettoyage à la fermeture
+      window.addEventListener("beforeunload", () => {
+        if (testController) {
+          testController.destroy();
+        }
+      });
+
+      // Message de bienvenue
+      console.log(`
+🎯 CLARAVERSE TEST ENVIRONMENT v3.0
+==================================
+🧪 Environnement de test chargé
+📊 Monitoring automatique activé
+🔍 Debug console opérationnelle
+
+Contrôles disponibles:
+• testController - Contrôleur principal
+• window.claraverseCoordinator - API coordinateur
+• window.claraverseSyncAPI - API dev.js
+• window.claraverseProcessor - API conso.js
+        `);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test UN SEUL Fichier - table_data.js</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #667eea;
+    }
+
+    h1 {
+      color: #333;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #28a745;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .status-box {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .status-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .status-icon {
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+      font-size: 18px;
+    }
+
+    .status-ok { color: #28a745; }
+    .status-loading { color: #ffc107; }
+    .status-error { color: #dc3545; }
+
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+    }
+
+    .info-box h3 {
+      color: #1976d2;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .info-box ul {
+      margin-left: 20px;
+    }
+
+    .info-box li {
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary { background: #007bff; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-info { background: #17a2b8; color: white; }
+    .btn-warning { background: #ffc107; color: #333; }
+
+    .table-section {
+      margin-bottom: 30px;
+    }
+
+    .table-header {
+      background: #f8f9fa;
+      padding: 12px 15px;
+      border-radius: 8px 8px 0 0;
+      font-weight: 600;
+      color: #495057;
+      border-bottom: 2px solid #dee2e6;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      border-radius: 0 0 8px 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #dee2e6;
+    }
+
+    th {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-weight: 600;
+    }
+
+    td[contenteditable="true"] {
+      background: #f8f9fa;
+      cursor: text;
+      transition: background 0.2s;
+    }
+
+    td[contenteditable="true"]:hover {
+      background: #e9ecef;
+    }
+
+    td[contenteditable="true"]:focus {
+      outline: 2px solid #007bff;
+      background: #fff9e6;
+    }
+
+    .console {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 30px;
+    }
+
+    .console-header {
+      color: #4fc3f7;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .log-entry {
+      margin-bottom: 5px;
+      padding: 3px 0;
+    }
+
+    .log-success { color: #81c784; }
+    .log-error { color: #e57373; }
+    .log-warning { color: #ffd54f; }
+    .log-info { color: #4fc3f7; }
+
+    .highlight {
+      background: #ffeb3b;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #e9ecef;
+      color: #6c757d;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🧪 Test UN SEUL Fichier</h1>
+      <span class="badge">table_data.js uniquement</span>
+      <p class="subtitle">Démonstration que le système fonctionne avec UN SEUL fichier</p>
+    </div>
+
+    <!-- Status -->
+    <div class="status-box">
+      <div class="status-item" id="status-manager">
+        <span class="status-icon status-loading">⏳</span>
+        <span>Chargement du Table Data Manager...</span>
+      </div>
+      <div class="status-item" id="status-api">
+        <span class="status-icon status-loading">⏳</span>
+        <span>Chargement de l'API...</span>
+      </div>
+      <div class="status-item" id="status-tables">
+        <span class="status-icon status-loading">⏳</span>
+        <span>Détection des tables...</span>
+      </div>
+      <div class="status-item" id="status-save">
+        <span class="status-icon status-loading">⏳</span>
+        <span>Sauvegarde automatique...</span>
+      </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box">
+      <h3>📋 Instructions</h3>
+      <ul>
+        <li>Vérifiez que tous les statuts ci-dessus sont <span class="highlight">✅ OK</span></li>
+        <li><strong>Modifiez une cellule</strong> dans le tableau ci-dessous</li>
+        <li>Cliquez en dehors de la cellule (perdre le focus)</li>
+        <li>Cliquez sur <strong>"Vérifier Sauvegarde"</strong> pour confirmer</li>
+        <li><strong>Aucun autre fichier n'est chargé !</strong> Seulement table_data.js</li>
+      </ul>
+    </div>
+
+    <!-- Boutons -->
+    <div class="buttons">
+      <button class="btn-primary" onclick="testSave()">🧪 Vérifier Sauvegarde</button>
+      <button class="btn-success" onclick="forceSave()">💾 Forcer Sauvegarde</button>
+      <button class="btn-info" onclick="showInfo()">📊 Voir Infos</button>
+      <button class="btn-warning" onclick="clearConsole()">🗑️ Effacer Console</button>
+    </div>
+
+    <!-- Table 1 : Standard -->
+    <div class="table-section">
+      <div class="table-header">📊 Table de Test - Standard</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Prix</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td contenteditable="true">Laptop Dell XPS</td>
+            <td contenteditable="true">5</td>
+            <td contenteditable="true">1299.99</td>
+            <td contenteditable="true">En stock</td>
+          </tr>
+          <tr>
+            <td contenteditable="true">iPhone 15 Pro</td>
+            <td contenteditable="true">12</td>
+            <td contenteditable="true">1199.00</td>
+            <td contenteditable="true">Disponible</td>
+          </tr>
+          <tr>
+            <td contenteditable="true">MacBook Air M2</td>
+            <td contenteditable="true">8</td>
+            <td contenteditable="true">1449.00</td>
+            <td contenteditable="true">Précommande</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Table 2 : Pointage -->
+    <div class="table-section">
+      <div class="table-header">🔬 Table de Pointage</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Assertion</th>
+            <th>Ecart</th>
+            <th>CTR1</th>
+            <th>CTR2</th>
+            <th>Conclusion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td contenteditable="true">Test A</td>
+            <td contenteditable="true">100</td>
+            <td contenteditable="true">50</td>
+            <td contenteditable="true">50</td>
+            <td contenteditable="true">OK</td>
+          </tr>
+          <tr>
+            <td contenteditable="true">Test B</td>
+            <td contenteditable="true">200</td>
+            <td contenteditable="true">100</td>
+            <td contenteditable="true">100</td>
+            <td contenteditable="true">OK</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Console -->
+    <div class="console" id="console">
+      <div class="console-header">📋 Console de Logs</div>
+      <div class="log-entry log-info">Attente du chargement de table_data.js...</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <strong>✅ UN SEUL fichier chargé : table_data.js</strong><br>
+      Aucun autre fichier nécessaire (pas de fix_save_issue.js, debug_table_data.js, etc.)
+    </div>
+  </div>
+
+  <!-- ✅ UN SEUL FICHIER CHARGÉ -->
+  <script src="table_data.js"></script>
+
+  <!-- Script de Test -->
+  <script>
+    const consoleDiv = document.getElementById('console');
+
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      consoleDiv.appendChild(entry);
+      consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    }
+
+    function clearConsole() {
+      consoleDiv.innerHTML = '<div class="console-header">📋 Console de Logs</div><div class="log-entry log-info">Console effacée</div>';
+    }
+
+    function updateStatus(id, ok, text) {
+      const element = document.getElementById(id);
+      const icon = element.querySelector('.status-icon');
+      const span = element.querySelector('span:last-child');
+
+      if (ok) {
+        icon.className = 'status-icon status-ok';
+        icon.textContent = '✅';
+      } else {
+        icon.className = 'status-icon status-error';
+        icon.textContent = '❌';
+      }
+
+      span.textContent = text;
+    }
+
+    // Attendre que le manager soit prêt
+    function waitForManager(callback, attempt = 0) {
+      if (window.ClaraverseTableDataManager && window.ClaraverseTableData) {
+        callback();
+      } else if (attempt < 50) {
+        setTimeout(() => waitForManager(callback, attempt + 1), 100);
+      } else {
+        log('❌ Timeout - Manager non chargé après 5 secondes', 'error');
+        updateStatus('status-manager', false, 'Manager non chargé - Vérifier table_data.js');
+      }
+    }
+
+    waitForManager(() => {
+      log('✅ Table Data Manager chargé avec succès', 'success');
+      updateStatus('status-manager', true, 'Table Data Manager : OK');
+
+      log('✅ API ClaraverseTableData disponible', 'success');
+      updateStatus('status-api', true, 'API : OK');
+
+      // Vérifier les tables
+      setTimeout(() => {
+        const tables = window.ClaraverseTableData.getAllTables();
+        log(`📊 ${tables.length} table(s) détectée(s) et gérée(s)`, 'success');
+        updateStatus('status-tables', true, `${tables.length} table(s) détectée(s) : OK`);
+
+        // Vérifier les cellules éditables
+        const editableCells = document.querySelectorAll('td[contenteditable="true"]');
+        log(`✏️ ${editableCells.length} cellule(s) éditable(s) trouvée(s)`, 'info');
+
+        // Vérifier la sauvegarde automatique
+        const savedCells = document.querySelectorAll('td[data-cell-state]');
+        if (savedCells.length > 0) {
+          log(`💾 ${savedCells.length} cellule(s) déjà sauvegardée(s)`, 'success');
+          updateStatus('status-save', true, 'Sauvegarde automatique : OK');
+        } else {
+          log('ℹ️ Aucune cellule sauvegardée (normal au premier chargement)', 'info');
+          updateStatus('status-save', true, 'Sauvegarde automatique : Prête');
+        }
+
+        log('🎯 Système prêt ! Modifiez une cellule pour tester', 'success');
+
+        // Ajouter des listeners pour logger les modifications
+        editableCells.forEach(cell => {
+          cell.addEventListener('blur', () => {
+            log(`💾 Cellule sauvegardée : "${cell.textContent.trim()}"`, 'success');
+          });
+        });
+      }, 1000);
+    });
+
+    // Test de sauvegarde
+    function testSave() {
+      log('🧪 Test de sauvegarde en cours...', 'info');
+
+      const savedCells = document.querySelectorAll('td[data-cell-state]');
+
+      if (savedCells.length === 0) {
+        log('⚠️ Aucune cellule sauvegardée', 'warning');
+        log('→ Modifiez une cellule et perdez le focus d\'abord', 'warning');
+        alert('⚠️ Modifiez une cellule d\'abord !');
+        return;
+      }
+
+      log(`✅ ${savedCells.length} cellule(s) avec état sauvegardé`, 'success');
+
+      // Vérifier la première cellule
+      const firstCell = savedCells[0];
+      try {
+        const state = JSON.parse(firstCell.getAttribute('data-cell-state'));
+        log(`📊 Exemple de cellule sauvegardée :`, 'info');
+        log(`   Valeur: "${state.value}"`, 'info');
+        log(`   Timestamp: ${new Date(state.timestamp).toLocaleString()}`, 'info');
+
+        if (state.value === firstCell.textContent.trim()) {
+          log('✅ SUCCÈS : La sauvegarde fonctionne parfaitement !', 'success');
+          alert('✅ La sauvegarde fonctionne !\n\n' + savedCells.length + ' cellule(s) sauvegardée(s)');
+        } else {
+          log('⚠️ Désynchronisation détectée', 'warning');
+        }
+      } catch (e) {
+        log(`❌ Erreur : ${e.message}`, 'error');
+      }
+    }
+
+    // Forcer la sauvegarde
+    function forceSave() {
+      log('💾 Sauvegarde forcée de toutes les tables...', 'info');
+
+      if (window.forceSaveAllTables) {
+        const count = window.forceSaveAllTables();
+        log(`✅ ${count} table(s) sauvegardée(s)`, 'success');
+        alert(`✅ ${count} table(s) sauvegardée(s)`);
+      } else {
+        log('❌ Fonction forceSaveAllTables non disponible', 'error');
+      }
+    }
+
+    // Voir les infos
+    function showInfo() {
+      log('📊 Informations du système :', 'info');
+      log(`   Manager initialisé : ${window.ClaraverseTableDataManager?.isInitialized}`, 'info');
+      log(`   Tables gérées : ${window.ClaraverseTableDataManager?.tables?.size || 0}`, 'info');
+      log(`   Cellules éditables : ${document.querySelectorAll('td[contenteditable="true"]').length}`, 'info');
+      log(`   Cellules sauvegardées : ${document.querySelectorAll('td[data-cell-state]').length}`, 'info');
+
+      const tables = window.ClaraverseTableData?.getAllTables() || [];
+      tables.forEach((table, index) => {
+        const info = window.ClaraverseTableData.getTableInfo(table.dataset.tableId);
+        log(`   Table ${index + 1} : Type ${info.type}, ${info.cellCount} cellules`, 'info');
+      });
+    }
+  </script>
+</body>
+</html>

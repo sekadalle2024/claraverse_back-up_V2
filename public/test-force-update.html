@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Force Update</title>
+</head>
+
+<body>
+    <h1>Test Force Update - Persistance Menu</h1>
+    <div id="status"></div>
+
+    <script type="module">
+        const status = document.getElementById('status');
+
+        function log(msg, type = 'info') {
+            const p = document.createElement('p');
+            p.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            p.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            status.appendChild(p);
+            console.log(msg);
+        }
+
+        async function testForceUpdate() {
+            try {
+                log('🔄 Démarrage du test...', 'info');
+
+                // Import des services
+                const { flowiseTableService } = await import('/src/services/flowiseTableService.ts');
+
+                const sessionId = 'test_force_update_' + Date.now();
+                log(`📝 Session: ${sessionId}`, 'info');
+
+                // Créer une table de test
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead><tr><th>Nom</th><th>Age</th></tr></thead>
+                    <tbody>
+                        <tr><td>Alice</td><td>30</td></tr>
+                        <tr><td>Bob</td><td>25</td></tr>
+                        <tr><td>Charlie</td><td>35</td></tr>
+                    </tbody>
+                `;
+
+                // Sauvegarder la première fois
+                log('💾 Sauvegarde initiale...', 'info');
+                const id1 = await flowiseTableService.saveGeneratedTable(
+                    sessionId, table, 'TestTable', 'n8n'
+                );
+                log(`✅ Sauvegarde 1: ${id1}`, 'success');
+
+                // Modifier la table (supprimer une ligne)
+                table.querySelector('tbody tr:last-child').remove();
+
+                // Essayer de sauvegarder sans forceUpdate (devrait skip)
+                log('💾 Tentative sauvegarde sans forceUpdate...', 'info');
+                const id2 = await flowiseTableService.saveGeneratedTable(
+                    sessionId, table, 'TestTable', 'n8n'
+                );
+                log(`${id2 ? '✅' : '⚠️'} Sauvegarde 2: ${id2 || 'SKIPPED (attendu)'}`, id2 ? 'success' : 'info');
+
+                // Sauvegarder avec forceUpdate (devrait fonctionner)
+                log('💾 Sauvegarde avec forceUpdate=true...', 'info');
+                const id3 = await flowiseTableService.saveGeneratedTable(
+                    sessionId, table, 'TestTable', 'n8n', undefined, true
+                );
+                log(`✅ Sauvegarde 3: ${id3}`, 'success');
+
+                // Vérifier les tables sauvegardées
+                const restored = await flowiseTableService.restoreSessionTables(sessionId);
+                log(`📊 Tables restaurées: ${restored.length}`, 'info');
+
+                restored.forEach((t, i) => {
+                    log(`  Table ${i + 1}: ID=${t.id}, rows=${t.tableElement.querySelectorAll('tbody tr').length}`, 'info');
+                });
+
+                if (restored.length === 2 && id3) {
+                    log('✅ TEST RÉUSSI: forceUpdate fonctionne!', 'success');
+                } else {
+                    log('❌ TEST ÉCHOUÉ: Problème avec forceUpdate', 'error');
+                }
+
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        testForceUpdate();
+    </script>
+</body>
+
+</html>

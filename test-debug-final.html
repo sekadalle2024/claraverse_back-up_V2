@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Final</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .test-table th,
+        .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+
+        .prose {
+            max-width: none;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 Debug Final</h1>
+        <p>Test avec logs détaillés pour identifier le problème exact</p>
+
+        <div class="container">
+            <h2>🎯 Test Simple</h2>
+            <button onclick="testWithDetailedLogs()">Test avec Logs Détaillés</button>
+        </div>
+
+        <div class="container">
+            <h2>📋 Table de Test</h2>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table id="test-table" class="test-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Original</td>
+                            <td>Data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        async function testWithDetailedLogs() {
+            console.log('🔍 === DEBUG FINAL AVEC LOGS DÉTAILLÉS ===');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'DEBUG_FINAL_' + Date.now();
+
+                console.log('🧹 Nettoyage des attributs...');
+                table.removeAttribute('data-robust-table-id');
+                table.removeAttribute('data-menu-table-id');
+
+                console.log(`📝 Définition du contenu: "${testContent}"`);
+                firstCell.textContent = testContent;
+
+                console.log('💾 === DÉBUT SAUVEGARDE ===');
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                console.log(`💾 Résultat sauvegarde: ${saveResult}`);
+                console.log('💾 === FIN SAUVEGARDE ===');
+
+                if (saveResult) {
+                    console.log('📝 Modification temporaire...');
+                    firstCell.textContent = 'CONTENU_TEMPORAIRE_DEBUG';
+                    console.log(`📝 Contenu après modification: "${firstCell.textContent}"`);
+
+                    console.log('🔄 === DÉBUT RESTAURATION ===');
+                    const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                    console.log(`🔄 Résultat restauration: ${restoreResult}`);
+                    console.log('🔄 === FIN RESTAURATION ===');
+
+                    console.log('📋 === VÉRIFICATION FINALE ===');
+                    const finalContent = firstCell.textContent;
+                    console.log(`📋 Contenu final: "${finalContent}"`);
+                    console.log(`📋 Contenu attendu: "${testContent}"`);
+
+                    if (finalContent === testContent) {
+                        console.log('✅ SUCCESS: Restauration réussie !');
+                    } else {
+                        console.log('❌ FAILURE: Restauration échouée');
+                        console.log(`   Attendu: "${testContent}"`);
+                        console.log(`   Obtenu:  "${finalContent}"`);
+                    }
+                } else {
+                    console.log('❌ Sauvegarde échouée, impossible de tester la restauration');
+                }
+
+            } catch (error) {
+                console.error(`❌ ERREUR: ${error.message}`, error);
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🔍 Debug final chargé');
+            console.log('💡 Ouvrez la console et cliquez sur le bouton pour voir les logs détaillés');
+        });
+    </script>
+</body>
+
+</html>

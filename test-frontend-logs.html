@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test avec Logs Frontend</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .test-table th,
+        .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+
+        .prose {
+            max-width: none;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button.success {
+            background: #28a745;
+        }
+
+        button.danger {
+            background: #dc3545;
+        }
+
+        button.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .logs-container {
+            background: #1e1e1e;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .log-timestamp {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .log-success {
+            color: #4CAF50;
+        }
+
+        .log-error {
+            color: #f44336;
+        }
+
+        .log-warning {
+            color: #ff9800;
+        }
+
+        .log-info {
+            color: #2196F3;
+        }
+
+        .log-debug {
+            color: #9C27B0;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-success {
+            background: #4CAF50;
+        }
+
+        .status-error {
+            background: #f44336;
+        }
+
+        .status-warning {
+            background: #ff9800;
+        }
+
+        .status-info {
+            background: #2196F3;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .method-status {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .auto-scroll {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 Test avec Logs Frontend</h1>
+        <p>Interface de test avec affichage des logs en temps réel dans le frontend</p>
+
+        <div class="container">
+            <h2>🎯 Tests Disponibles</h2>
+            <button onclick="testDirectCall()">🎯 Test Appel Direct</button>
+            <button onclick="testAPICall()">🔌 Test API</button>
+            <button onclick="testLegacyCall()">🏛️ Test Legacy</button>
+            <button onclick="runAllTests()">🚀 Tous les Tests</button>
+            <button class="danger" onclick="clearLogs()">🧹 Effacer Logs</button>
+            <button class="warning" onclick="toggleAutoScroll()">📜 Auto-Scroll: ON</button>
+        </div>
+
+        <div class="test-grid">
+            <div class="container">
+                <h2>📋 Table de Test</h2>
+                <div class="prose prose-base dark:prose-invert max-w-none">
+                    <table id="test-table" class="test-table min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Test</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Original</td>
+                                <td>Data</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>📊 État des Méthodes</h3>
+                <div id="method-status">
+                    <!-- Sera rempli dynamiquement -->
+                </div>
+            </div>
+
+            <div class="container">
+                <h2>📊 Logs en Temps Réel</h2>
+                <div id="logs-display" class="logs-container auto-scroll">
+                    <div class="log-entry log-info">
+                        <span class="log-timestamp">[INIT]</span> Interface de test chargée
+                    </div>
+                    <div class="log-entry log-info">
+                        <span class="log-timestamp">[INIT]</span> Prêt pour les tests
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        let autoScroll = true;
+        let testResults = {
+            direct: null,
+            api: null,
+            legacy: null
+        };
+
+        // Fonction de logging avec affichage frontend
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+
+            const statusIcon = document.createElement('span');
+            statusIcon.className = `status-indicator status-${type}`;
+
+            const timestampSpan = document.createElement('span');
+            timestampSpan.className = 'log-timestamp';
+            timestampSpan.textContent = `[${timestamp}]`;
+
+            const messageSpan = document.createElement('span');
+            messageSpan.textContent = ` ${message}`;
+
+            logEntry.appendChild(statusIcon);
+            logEntry.appendChild(timestampSpan);
+            logEntry.appendChild(messageSpan);
+
+            const logsContainer = document.getElementById('logs-display');
+            logsContainer.appendChild(logEntry);
+
+            // Auto-scroll vers le bas
+            if (autoScroll) {
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+            }
+
+            // Aussi dans la console pour debug
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('logs-display').innerHTML = '';
+            log('Logs effacés', 'info');
+        }
+
+        function toggleAutoScroll() {
+            autoScroll = !autoScroll;
+            const button = document.querySelector('button[onclick="toggleAutoScroll()"]');
+            button.textContent = `📜 Auto-Scroll: ${autoScroll ? 'ON' : 'OFF'}`;
+            button.className = autoScroll ? 'warning' : '';
+        }
+
+        function updateMethodStatus() {
+            const statusContainer = document.getElementById('method-status');
+            statusContainer.innerHTML = '';
+
+            const methods = [
+                {
+                    name: 'claraverseStorageAPI',
+                    available: typeof window.claraverseStorageAPI !== 'undefined',
+                    subMethods: window.claraverseStorageAPI ? {
+                        saveTable: typeof window.claraverseStorageAPI.saveTable,
+                        restoreTable: typeof window.claraverseStorageAPI.restoreTable
+                    } : {}
+                },
+                {
+                    name: 'storageManager',
+                    available: typeof window.storageManager !== 'undefined',
+                    subMethods: window.storageManager ? {
+                        restoreTableFromStorage: typeof window.storageManager.restoreTableFromStorage
+                    } : {}
+                },
+                {
+                    name: 'restoreTableHTML (Legacy)',
+                    available: typeof window.restoreTableHTML !== 'undefined'
+                }
+            ];
+
+            methods.forEach(method => {
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'method-status';
+
+                const indicator = document.createElement('span');
+                indicator.className = `status-indicator ${method.available ? 'status-success' : 'status-error'}`;
+
+                const text = document.createElement('span');
+                text.textContent = `${method.name}: ${method.available ? 'Disponible' : 'Non disponible'}`;
+
+                statusDiv.appendChild(indicator);
+                statusDiv.appendChild(text);
+
+                if (method.subMethods) {
+                    Object.entries(method.subMethods).forEach(([subName, subType]) => {
+                        const subDiv = document.createElement('div');
+                        subDiv.style.marginLeft = '20px';
+                        subDiv.style.fontSize = '12px';
+                        subDiv.textContent = `  └─ ${subName}: ${subType}`;
+                        statusDiv.appendChild(subDiv);
+                    });
+                }
+
+                statusContainer.appendChild(statusDiv);
+            });
+        }
+
+        async function testDirectCall() {
+            log('🎯 === DÉBUT TEST APPEL DIRECT ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'DIRECT_CALL_' + Date.now();
+
+                // Nettoyer
+                table.removeAttribute('data-robust-table-id');
+                table.removeAttribute('data-menu-table-id');
+                firstCell.textContent = testContent;
+                log(`📝 Contenu défini: "${testContent}"`, 'info');
+
+                // Sauvegarder avec API
+                log('💾 Tentative de sauvegarde...', 'info');
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde API: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`, saveResult ? 'success' : 'error');
+
+                if (saveResult) {
+                    // Modifier temporairement
+                    firstCell.textContent = 'TEMP_DIRECT';
+                    log(`📝 Contenu modifié temporairement: "${firstCell.textContent}"`, 'info');
+
+                    // APPEL DIRECT à la méthode interne
+                    log('🎯 Tentative d\'appel direct au storageManager...', 'info');
+
+                    if (window.storageManager && window.storageManager.restoreTableFromStorage) {
+                        log('✅ storageManager.restoreTableFromStorage trouvé', 'success');
+                        const directResult = window.storageManager.restoreTableFromStorage(table);
+                        log(`🔄 Résultat appel direct: ${directResult ? 'SUCCÈS' : 'ÉCHEC'}`, directResult ? 'success' : 'error');
+                        testResults.direct = directResult;
+                    } else {
+                        log('❌ storageManager.restoreTableFromStorage non accessible', 'error');
+                        testResults.direct = false;
+                    }
+
+                    // Vérifier le résultat
+                    const finalContent = firstCell.textContent;
+                    log(`📋 Contenu final: "${finalContent}"`, 'info');
+                    log(`📋 Contenu attendu: "${testContent}"`, 'info');
+
+                    if (finalContent === testContent) {
+                        log('✅ TEST APPEL DIRECT RÉUSSI !', 'success');
+                    } else {
+                        log(`❌ TEST APPEL DIRECT ÉCHOUÉ`, 'error');
+                        log(`   Attendu: "${testContent}"`, 'error');
+                        log(`   Obtenu:  "${finalContent}"`, 'error');
+                    }
+                } else {
+                    log('❌ Impossible de tester sans sauvegarde', 'error');
+                    testResults.direct = false;
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR APPEL DIRECT: ${error.message}`, 'error');
+                testResults.direct = false;
+            }
+
+            log('🎯 === FIN TEST APPEL DIRECT ===', 'info');
+        }
+
+        async function testAPICall() {
+            log('🔌 === DÉBUT TEST API ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'API_CALL_' + Date.now();
+
+                // Nettoyer
+                table.removeAttribute('data-robust-table-id');
+                table.removeAttribute('data-menu-table-id');
+                firstCell.textContent = testContent;
+                log(`📝 Contenu défini: "${testContent}"`, 'info');
+
+                // Sauvegarder
+                log('💾 Sauvegarde via API...', 'info');
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`, saveResult ? 'success' : 'error');
+
+                if (saveResult) {
+                    // Modifier temporairement
+                    firstCell.textContent = 'TEMP_API';
+                    log(`📝 Contenu modifié: "${firstCell.textContent}"`, 'info');
+
+                    // Appel API
+                    log('🔌 Restauration via API...', 'info');
+                    const apiResult = window.claraverseStorageAPI.restoreTable(table);
+                    log(`🔄 Résultat API: ${apiResult ? 'SUCCÈS' : 'ÉCHEC'}`, apiResult ? 'success' : 'error');
+                    testResults.api = apiResult;
+
+                    // Vérifier
+                    const finalContent = firstCell.textContent;
+                    log(`📋 Contenu final: "${finalContent}"`, 'info');
+
+                    if (finalContent === testContent) {
+                        log('✅ TEST API RÉUSSI !', 'success');
+                    } else {
+                        log(`❌ TEST API ÉCHOUÉ`, 'error');
+                        log(`   Attendu: "${testContent}"`, 'error');
+                        log(`   Obtenu:  "${finalContent}"`, 'error');
+                    }
+                } else {
+                    log('❌ Impossible de tester sans sauvegarde', 'error');
+                    testResults.api = false;
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR API: ${error.message}`, 'error');
+                testResults.api = false;
+            }
+
+            log('🔌 === FIN TEST API ===', 'info');
+        }
+
+        async function testLegacyCall() {
+            log('🏛️ === DÉBUT TEST LEGACY ===', 'info');
+
+            try {
+                const table = document.getElementById('test-table');
+                const firstCell = table.querySelector('td');
+                const testContent = 'LEGACY_CALL_' + Date.now();
+
+                // Nettoyer
+                table.removeAttribute('data-robust-table-id');
+                table.removeAttribute('data-menu-table-id');
+                firstCell.textContent = testContent;
+                log(`📝 Contenu défini: "${testContent}"`, 'info');
+
+                // Sauvegarder
+                log('💾 Sauvegarde via API...', 'info');
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`, saveResult ? 'success' : 'error');
+
+                if (saveResult) {
+                    // Modifier temporairement
+                    firstCell.textContent = 'TEMP_LEGACY';
+                    log(`📝 Contenu modifié: "${firstCell.textContent}"`, 'info');
+
+                    // Appel Legacy
+                    log('🏛️ Restauration via Legacy API...', 'info');
+                    if (typeof window.restoreTableHTML === 'function') {
+                        log('✅ restoreTableHTML trouvé', 'success');
+                        const legacyResult = window.restoreTableHTML(table);
+                        log(`🔄 Résultat Legacy: ${legacyResult ? 'SUCCÈS' : 'ÉCHEC'}`, legacyResult ? 'success' : 'error');
+                        testResults.legacy = legacyResult;
+                    } else {
+                        log('❌ restoreTableHTML non disponible', 'error');
+                        testResults.legacy = false;
+                    }
+
+                    // Vérifier
+                    const finalContent = firstCell.textContent;
+                    log(`📋 Contenu final: "${finalContent}"`, 'info');
+
+                    if (finalContent === testContent) {
+                        log('✅ TEST LEGACY RÉUSSI !', 'success');
+                    } else {
+                        log(`❌ TEST LEGACY ÉCHOUÉ`, 'error');
+                        log(`   Attendu: "${testContent}"`, 'error');
+                        log(`   Obtenu:  "${finalContent}"`, 'error');
+                    }
+                } else {
+                    log('❌ Impossible de tester sans sauvegarde', 'error');
+                    testResults.legacy = false;
+                }
+
+            } catch (error) {
+                log(`❌ ERREUR LEGACY: ${error.message}`, 'error');
+                testResults.legacy = false;
+            }
+
+            log('🏛️ === FIN TEST LEGACY ===', 'info');
+        }
+
+        async function runAllTests() {
+            log('🚀 === DÉBUT DE TOUS LES TESTS ===', 'info');
+
+            await testDirectCall();
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            await testAPICall();
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            await testLegacyCall();
+
+            // Résumé final
+            log('📊 === RÉSUMÉ FINAL ===', 'info');
+            log(`🎯 Appel Direct: ${testResults.direct ? 'SUCCÈS' : 'ÉCHEC'}`, testResults.direct ? 'success' : 'error');
+            log(`🔌 API: ${testResults.api ? 'SUCCÈS' : 'ÉCHEC'}`, testResults.api ? 'success' : 'error');
+            log(`🏛️ Legacy: ${testResults.legacy ? 'SUCCÈS' : 'ÉCHEC'}`, testResults.legacy ? 'success' : 'error');
+
+            const successCount = Object.values(testResults).filter(r => r).length;
+            log(`📈 Score: ${successCount}/3 tests réussis`, successCount > 0 ? 'success' : 'error');
+
+            log('🚀 === FIN DE TOUS LES TESTS ===', 'info');
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function () {
+            log('🚀 Interface de test avec logs frontend chargée', 'success');
+            updateMethodStatus();
+            log('🔍 État des méthodes mis à jour', 'info');
+            log('💡 Cliquez sur un bouton de test pour commencer', 'info');
+        });
+    </script>
+</body>
+
+</html>

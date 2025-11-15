@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suite de Tests Complète</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .test-table th, .test-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .test-table th {
+            background-color: #f2f2f2;
+        }
+        .prose {
+            max-width: none;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button.success { background: #28a745; }
+        button.danger { background: #dc3545; }
+        .test-results {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Suite de Tests Complète</h1>
+        <p>Tests complets pour valider toutes les fonctionnalités du système de stockage de tables</p>
+        
+        <div class="container">
+            <h2>🎯 Tests Principaux</h2>
+            <button onclick="runAllTests()">🚀 Lancer Tous les Tests</button>
+            <button onclick="clearResults()">🧹 Effacer Résultats</button>
+            <button onclick="clearStorage()">🗑️ Vider localStorage</button>
+        </div>
+
+        <div class="test-grid">
+            <div class="container">
+                <h3>📋 Test 1: Sauvegarde/Restauration Basique</h3>
+                <button onclick="testBasicSaveRestore()">Test Basique</button>
+                <div class="prose prose-base dark:prose-invert max-w-none">
+                    <table id="test-table-1" class="test-table min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Age</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Alice</td>
+                                <td>25</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="container">
+                <h3>🔄 Test 2: Cycles Multiples</h3>
+                <button onclick="testMultipleCycles()">Test Cycles</button>
+                <div class="prose prose-base dark:prose-invert max-w-none">
+                    <table id="test-table-2" class="test-table min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Produit</th>
+                                <th>Prix</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Ordinateur</td>
+                                <td>1200€</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="container">
+                <h3>📊 Test 3: Table Complexe</h3>
+                <button onclick="testComplexTable()">Test Complexe</button>
+                <div class="prose prose-base dark:prose-invert max-w-none">
+                    <table id="test-table-3" class="test-table min-w-full">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Jean Dupont</td>
+                                <td>jean@example.com</td>
+                                <td>Actif</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Marie Martin</td>
+                                <td>marie@example.com</td>
+                                <td>Inactif</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="container">
+                <h3>🔀 Test 4: Tables Multiples</h3>
+                <button onclick="testMultipleTables()">Test Multiple</button>
+                <div class="prose prose-base dark:prose-invert max-w-none">
+                    <table id="test-table-4a" class="test-table min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Table A</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Données A</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br>
+                    <table id="test-table-4b" class="test-table min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Table B</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Données B</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="container">
+                <h3>⚡ Test 5: Performance</h3>
+                <button onclick="testPerformance()">Test Performance</button>
+                <div class="prose prose-base dark:prose-invert max-w-none">
+                    <table id="test-table-5" class="test-table min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Col1</th>
+                                <th>Col2</th>
+                                <th>Col3</th>
+                            </tr>
+                        </thead>
+                        <tbody id="perf-tbody">
+                            <!-- Sera rempli dynamiquement -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="container">
+                <h3>🛡️ Test 6: Robustesse</h3>
+                <button onclick="testRobustness()">Test Robustesse</button>
+                <div class="prose prose-base dark:prose-invert max-w-none">
+                    <table id="test-table-6" class="test-table min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Test</th>
+                                <th>Valeur</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Caractères spéciaux: &lt;&gt;&amp;"'</td>
+                                <td>Émojis: 🎯🚀✅❌</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>📊 Résultats des Tests</h2>
+            <div id="test-results" class="test-results">
+Aucun test exécuté pour le moment.
+Cliquez sur "Lancer Tous les Tests" pour commencer.
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le système de stockage -->
+    <script src="menu_storage.js"></script>
+
+    <script>
+        let testResults = [];
+
+        function log(message) {
+            console.log(message);
+            testResults.push(`${new Date().toLocaleTimeString()} - ${message}`);
+            updateResultsDisplay();
+        }
+
+        function updateResultsDisplay() {
+            document.getElementById('test-results').textContent = testResults.join('\n');
+        }
+
+        function clearResults() {
+            testResults = [];
+            updateResultsDisplay();
+        }
+
+        function clearStorage() {
+            const keys = Object.keys(localStorage);
+            const claraverseKeys = keys.filter(key => key.startsWith('claraverse_table_'));
+            claraverseKeys.forEach(key => localStorage.removeItem(key));
+            log(`🗑️ ${claraverseKeys.length} clés de stockage supprimées`);
+        }
+
+        async function testBasicSaveRestore() {
+            log('🧪 === TEST 1: SAUVEGARDE/RESTAURATION BASIQUE ===');
+            
+            try {
+                const table = document.getElementById('test-table-1');
+                const firstCell = table.querySelector('td');
+                const originalContent = firstCell.textContent;
+                const testContent = 'TEST_BASIQUE_' + Date.now();
+
+                // Nettoyer
+                table.removeAttribute('data-robust-table-id');
+                firstCell.textContent = testContent;
+                log(`📝 Contenu défini: "${testContent}"`);
+
+                // Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                // Modifier
+                firstCell.textContent = 'CONTENU_TEMPORAIRE';
+                log(`📝 Contenu modifié temporairement`);
+
+                // Restaurer
+                const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                log(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                // Vérifier
+                const finalContent = firstCell.textContent;
+                if (finalContent === testContent) {
+                    log('✅ TEST 1 RÉUSSI: Contenu correctement restauré');
+                } else {
+                    log(`❌ TEST 1 ÉCHOUÉ: Attendu "${testContent}", obtenu "${finalContent}"`);
+                }
+
+                // Restaurer contenu original
+                firstCell.textContent = originalContent;
+
+            } catch (error) {
+                log(`❌ TEST 1 ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testMultipleCycles() {
+            log('🧪 === TEST 2: CYCLES MULTIPLES ===');
+            
+            try {
+                const table = document.getElementById('test-table-2');
+                const firstCell = table.querySelector('td');
+                const originalContent = firstCell.textContent;
+                let successCount = 0;
+
+                table.removeAttribute('data-robust-table-id');
+
+                for (let i = 1; i <= 5; i++) {
+                    const testContent = `CYCLE_${i}_${Date.now()}`;
+                    
+                    firstCell.textContent = testContent;
+                    const saveResult = window.claraverseStorageAPI.saveTable(table);
+                    
+                    firstCell.textContent = 'TEMP';
+                    const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                    
+                    if (firstCell.textContent === testContent) {
+                        successCount++;
+                        log(`✅ Cycle ${i}/5 réussi`);
+                    } else {
+                        log(`❌ Cycle ${i}/5 échoué`);
+                    }
+                }
+
+                if (successCount === 5) {
+                    log('✅ TEST 2 RÉUSSI: Tous les cycles fonctionnent');
+                } else {
+                    log(`❌ TEST 2 PARTIELLEMENT RÉUSSI: ${successCount}/5 cycles`);
+                }
+
+                firstCell.textContent = originalContent;
+
+            } catch (error) {
+                log(`❌ TEST 2 ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testComplexTable() {
+            log('🧪 === TEST 3: TABLE COMPLEXE ===');
+            
+            try {
+                const table = document.getElementById('test-table-3');
+                const cells = table.querySelectorAll('td');
+                const originalContents = Array.from(cells).map(cell => cell.textContent);
+                
+                table.removeAttribute('data-robust-table-id');
+
+                // Modifier toutes les cellules
+                cells.forEach((cell, index) => {
+                    cell.textContent = `MODIF_${index}_${Date.now()}`;
+                });
+
+                const testContents = Array.from(cells).map(cell => cell.textContent);
+                log(`📝 ${cells.length} cellules modifiées`);
+
+                // Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                // Modifier temporairement
+                cells.forEach(cell => {
+                    cell.textContent = 'TEMP';
+                });
+
+                // Restaurer
+                const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                log(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                // Vérifier
+                let correctCells = 0;
+                cells.forEach((cell, index) => {
+                    if (cell.textContent === testContents[index]) {
+                        correctCells++;
+                    }
+                });
+
+                if (correctCells === cells.length) {
+                    log('✅ TEST 3 RÉUSSI: Toutes les cellules restaurées');
+                } else {
+                    log(`❌ TEST 3 PARTIELLEMENT RÉUSSI: ${correctCells}/${cells.length} cellules`);
+                }
+
+                // Restaurer contenu original
+                cells.forEach((cell, index) => {
+                    cell.textContent = originalContents[index];
+                });
+
+            } catch (error) {
+                log(`❌ TEST 3 ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testMultipleTables() {
+            log('🧪 === TEST 4: TABLES MULTIPLES ===');
+            
+            try {
+                const tableA = document.getElementById('test-table-4a');
+                const tableB = document.getElementById('test-table-4b');
+                const cellA = tableA.querySelector('td');
+                const cellB = tableB.querySelector('td');
+                
+                const originalA = cellA.textContent;
+                const originalB = cellB.textContent;
+                
+                const testContentA = 'TABLE_A_' + Date.now();
+                const testContentB = 'TABLE_B_' + Date.now();
+
+                // Nettoyer
+                tableA.removeAttribute('data-robust-table-id');
+                tableB.removeAttribute('data-robust-table-id');
+
+                // Modifier et sauvegarder les deux tables
+                cellA.textContent = testContentA;
+                cellB.textContent = testContentB;
+
+                const saveA = window.claraverseStorageAPI.saveTable(tableA);
+                const saveB = window.claraverseStorageAPI.saveTable(tableB);
+                log(`💾 Sauvegarde A: ${saveA ? 'SUCCÈS' : 'ÉCHEC'}, B: ${saveB ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                // Modifier temporairement
+                cellA.textContent = 'TEMP_A';
+                cellB.textContent = 'TEMP_B';
+
+                // Restaurer les deux tables
+                const restoreA = window.claraverseStorageAPI.restoreTable(tableA);
+                const restoreB = window.claraverseStorageAPI.restoreTable(tableB);
+                log(`🔄 Restauration A: ${restoreA ? 'SUCCÈS' : 'ÉCHEC'}, B: ${restoreB ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                // Vérifier
+                const finalA = cellA.textContent;
+                const finalB = cellB.textContent;
+
+                if (finalA === testContentA && finalB === testContentB) {
+                    log('✅ TEST 4 RÉUSSI: Les deux tables restaurées correctement');
+                } else {
+                    log(`❌ TEST 4 ÉCHOUÉ: A="${finalA}" (attendu "${testContentA}"), B="${finalB}" (attendu "${testContentB}")`);
+                }
+
+                // Restaurer contenu original
+                cellA.textContent = originalA;
+                cellB.textContent = originalB;
+
+            } catch (error) {
+                log(`❌ TEST 4 ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testPerformance() {
+            log('🧪 === TEST 5: PERFORMANCE ===');
+            
+            try {
+                const table = document.getElementById('test-table-5');
+                const tbody = document.getElementById('perf-tbody');
+                
+                table.removeAttribute('data-robust-table-id');
+
+                // Créer une grande table
+                const rowCount = 100;
+                tbody.innerHTML = '';
+                for (let i = 0; i < rowCount; i++) {
+                    const row = tbody.insertRow();
+                    row.insertCell(0).textContent = `Ligne ${i}`;
+                    row.insertCell(1).textContent = `Valeur ${i}`;
+                    row.insertCell(2).textContent = `Data ${i}`;
+                }
+
+                log(`📊 Table créée avec ${rowCount} lignes`);
+
+                // Test de performance sauvegarde
+                const startSave = performance.now();
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                const endSave = performance.now();
+                const saveTime = endSave - startSave;
+
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'} en ${saveTime.toFixed(2)}ms`);
+
+                // Modifier le contenu
+                const cells = table.querySelectorAll('td');
+                cells.forEach(cell => {
+                    cell.textContent = 'MODIFIÉ';
+                });
+
+                // Test de performance restauration
+                const startRestore = performance.now();
+                const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                const endRestore = performance.now();
+                const restoreTime = endRestore - startRestore;
+
+                log(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'} en ${restoreTime.toFixed(2)}ms`);
+
+                // Vérifier quelques cellules
+                const firstCell = table.querySelector('td');
+                const isCorrect = firstCell.textContent === 'Ligne 0';
+
+                if (isCorrect && saveTime < 1000 && restoreTime < 1000) {
+                    log('✅ TEST 5 RÉUSSI: Performance acceptable');
+                } else {
+                    log(`❌ TEST 5 PROBLÈME: Correct=${isCorrect}, Save=${saveTime.toFixed(2)}ms, Restore=${restoreTime.toFixed(2)}ms`);
+                }
+
+            } catch (error) {
+                log(`❌ TEST 5 ERREUR: ${error.message}`);
+            }
+        }
+
+        async function testRobustness() {
+            log('🧪 === TEST 6: ROBUSTESSE ===');
+            
+            try {
+                const table = document.getElementById('test-table-6');
+                const cells = table.querySelectorAll('td');
+                
+                table.removeAttribute('data-robust-table-id');
+
+                // Contenu avec caractères spéciaux
+                const specialContent1 = 'Test avec "quotes", <tags>, &amp; caractères spéciaux';
+                const specialContent2 = 'Émojis: 🎯🚀✅❌ et accents: àéèùç';
+
+                cells[0].textContent = specialContent1;
+                cells[1].textContent = specialContent2;
+
+                log(`📝 Contenu spécial défini`);
+
+                // Sauvegarder
+                const saveResult = window.claraverseStorageAPI.saveTable(table);
+                log(`💾 Sauvegarde: ${saveResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                // Modifier
+                cells[0].textContent = 'TEMP1';
+                cells[1].textContent = 'TEMP2';
+
+                // Restaurer
+                const restoreResult = window.claraverseStorageAPI.restoreTable(table);
+                log(`🔄 Restauration: ${restoreResult ? 'SUCCÈS' : 'ÉCHEC'}`);
+
+                // Vérifier
+                const final1 = cells[0].textContent;
+                const final2 = cells[1].textContent;
+
+                if (final1 === specialContent1 && final2 === specialContent2) {
+                    log('✅ TEST 6 RÉUSSI: Caractères spéciaux gérés correctement');
+                } else {
+                    log(`❌ TEST 6 ÉCHOUÉ: Contenu altéré`);
+                    log(`   Attendu 1: "${specialContent1}"`);
+                    log(`   Obtenu 1:  "${final1}"`);
+                    log(`   Attendu 2: "${specialContent2}"`);
+                    log(`   Obtenu 2:  "${final2}"`);
+                }
+
+            } catch (error) {
+                log(`❌ TEST 6 ERREUR: ${error.message}`);
+            }
+        }
+
+        async function runAllTests() {
+            log('🚀 === DÉBUT DE LA SUITE DE TESTS COMPLÈTE ===');
+            
+            const startTime = performance.now();
+            
+            await testBasicSaveRestore();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testMultipleCycles();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testComplexTable();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testMultipleTables();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testPerformance();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testRobustness();
+            
+            const endTime = performance.now();
+            const totalTime = endTime - startTime;
+            
+            log(`🏁 === SUITE DE TESTS TERMINÉE en ${totalTime.toFixed(2)}ms ===`);
+            
+            // Compter les succès
+            const successCount = testResults.filter(result => result.includes('RÉUSSI')).length;
+            const failCount = testResults.filter(result => result.includes('ÉCHOUÉ')).length;
+            
+            log(`📊 RÉSUMÉ: ${successCount} succès, ${failCount} échecs`);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Suite de tests complète chargée');
+            log('💡 Cliquez sur "Lancer Tous les Tests" pour commencer');
+        });
+    </script>
+</body>
+</html>

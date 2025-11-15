@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Simple ClaraVerse Persistence</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1000px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #f0f2f5;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .test-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary {
+        background: #3b82f6;
+        color: white;
+      }
+      .btn-success {
+        background: #10b981;
+        color: white;
+      }
+      .btn-warning {
+        background: #f59e0b;
+        color: white;
+      }
+      .btn-danger {
+        background: #ef4444;
+        color: white;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .console {
+        background: #1a1a1a;
+        color: #00ff00;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+      }
+
+      .console-entry {
+        margin: 2px 0;
+      }
+
+      .error {
+        color: #ff4444;
+      }
+      .warning {
+        color: #ffaa00;
+      }
+      .success {
+        color: #00ff88;
+      }
+      .info {
+        color: #00aaff;
+      }
+
+      /* Styles ClaraVerse simulés */
+      .markdown {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+      }
+
+      table.min-w-full.border.border-gray-200.rounded-lg {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+      }
+
+      th,
+      td {
+        border: 1px solid #d1d5db;
+        padding: 12px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f9fafb;
+        font-weight: bold;
+      }
+
+      .status {
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+        font-weight: bold;
+      }
+
+      .status.ready {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .status.error {
+        background: #fecaca;
+        color: #991b1b;
+      }
+      .status.warning {
+        background: #fef3c7;
+        color: #92400e;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>🧪 Test Simple - ClaraVerse Persistence</h1>
+      <p>Diagnostic rapide du système de persistance</p>
+    </div>
+
+    <div class="test-section">
+      <h2>🎛️ Contrôles</h2>
+      <div class="controls">
+        <button class="btn btn-primary" onclick="testInit()">
+          🚀 Test Initialisation
+        </button>
+        <button class="btn btn-success" onclick="testScan()">
+          🔍 Test Scan
+        </button>
+        <button class="btn btn-warning" onclick="testEdit()">
+          ✏️ Test Édition
+        </button>
+        <button class="btn btn-danger" onclick="clearTest()">🗑️ Vider</button>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-primary" onclick="showStatus()">
+          📊 Status
+        </button>
+        <button class="btn btn-success" onclick="runAutoTest()">
+          🤖 Test Auto
+        </button>
+        <button class="btn btn-warning" onclick="clearConsole()">
+          🧹 Vider Console
+        </button>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>📊 Console de Test</h2>
+      <div id="testConsole" class="console">
+        <div class="console-entry info">[INFO] En attente des tests...</div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>📊 Status Système</h2>
+      <div id="systemStatus" class="status warning">⏳ Non testé</div>
+    </div>
+
+    <!-- Tables de Test ClaraVerse -->
+    <div class="test-section">
+      <h2>📋 Tables de Test</h2>
+
+      <!-- Simulation div response-content-container -->
+      <div id="response-content-container">
+        <div class="markdown prose prose-base dark:prose-invert max-w-none">
+          <h3>Table Test 1 - Pointage</h3>
+          <table
+            class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg"
+            data-table-id="test_pointage"
+          >
+            <thead>
+              <tr>
+                <th>Critère</th>
+                <th>Écart</th>
+                <th>Conclusion</th>
+                <th>CTR 1</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Test A</td>
+                <td>0.5</td>
+                <td>OK</td>
+                <td>85%</td>
+              </tr>
+              <tr>
+                <td>Test B</td>
+                <td>1.2</td>
+                <td>À réviser</td>
+                <td>75%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Table de consolidation simulée -->
+      <div class="markdown">
+        <h3>Table Test 2 - Consolidation</h3>
+        <table class="claraverse-conso-table" data-table-id="test_conso">
+          <thead>
+            <tr>
+              <th style="background: #3b82f6; color: white; padding: 8px">
+                📊 Table de Consolidation
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="conso-content" style="padding: 8px; background: #f8f9fa">
+                ⏳ En attente de consolidation...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table simple -->
+      <div class="markdown">
+        <h3>Table Test 3 - Simple</h3>
+        <table class="min-w-full border border-gray-200 rounded-lg">
+          <thead>
+            <tr>
+              <th>Colonne A</th>
+              <th>Colonne B</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Données 1</td>
+              <td>Données 2</td>
+            </tr>
+            <tr>
+              <td>Test 1</td>
+              <td>Test 2</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Chargement du script -->
+    <script src="dev.js"></script>
+
+    <script>
+      let testCounter = 0;
+
+      // Fonction de log pour les tests
+      function testLog(message, type = "info") {
+        const console = document.getElementById("testConsole");
+        const entry = document.createElement("div");
+        entry.className = `console-entry ${type}`;
+        entry.innerHTML = `[${++testCounter}] ${new Date().toLocaleTimeString()} - ${message}`;
+        console.appendChild(entry);
+        console.scrollTop = console.scrollHeight;
+
+        // Log aussi dans la console navigateur
+        console.log(`[TEST] ${message}`);
+      }
+
+      function clearConsole() {
+        document.getElementById("testConsole").innerHTML = "";
+        testCounter = 0;
+        testLog("Console vidée", "info");
+      }
+
+      function updateStatus(message, type) {
+        const status = document.getElementById("systemStatus");
+        status.textContent = message;
+        status.className = `status ${type}`;
+      }
+
+      // Tests individuels
+      function testInit() {
+        testLog("🚀 Test d'initialisation...", "info");
+
+        // Vérifier le raccourci principal
+        if (typeof window.cp !== "undefined") {
+          testLog("✅ cp (API principale) détecté", "success");
+          updateStatus("✅ Système initialisé", "ready");
+        } else {
+          testLog("❌ window.cp non trouvé", "error");
+          updateStatus("❌ Système non initialisé", "error");
+        }
+
+        // Tester les fonctions de base
+        if (typeof window.cp?.scan === "function") {
+          testLog("✅ Fonction cp.scan() disponible", "success");
+        } else {
+          testLog("⚠️ Fonction cp.scan() non disponible", "warning");
+        }
+      }
+
+      function testScan() {
+        testLog("🔍 Test de scan des tables...", "info");
+
+        if (typeof window.cp !== "undefined") {
+          try {
+            window.cp.scan();
+            testLog("✅ Scan exécuté", "success");
+
+            setTimeout(() => {
+              const status = window.cp.status();
+              testLog(`📊 Tables traitées: ${status.processedTables}`, "info");
+              testLog(`📝 Cellules éditables: ${status.editableCells}`, "info");
+              testLog(`💾 Cellules stockées: ${status.storedCells}`, "info");
+
+              if (status.processedTables > 0) {
+                updateStatus(
+                  `✅ ${status.processedTables} tables détectées`,
+                  "ready",
+                );
+              } else {
+                updateStatus("⚠️ Aucune table détectée", "warning");
+              }
+            }, 1000);
+          } catch (error) {
+            testLog(`❌ Erreur lors du scan: ${error}`, "error");
+            updateStatus("❌ Erreur de scan", "error");
+          }
+        } else {
+          testLog("❌ Système non initialisé", "error");
+          updateStatus("❌ Système non disponible", "error");
+        }
+      }
+
+      function testEdit() {
+        testLog("✏️ Test d'édition...", "info");
+
+        // Chercher une cellule éditable
+        const editableCell = document.querySelector("[data-cell-id]");
+
+        if (editableCell) {
+          testLog("✅ Cellule éditable trouvée", "success");
+
+          const originalValue = editableCell.textContent;
+          const testValue = `TEST_${Date.now()}`;
+
+          testLog(
+            `📝 Modification: "${originalValue}" → "${testValue}"`,
+            "info",
+          );
+
+          // Simuler l'édition
+          editableCell.focus();
+          editableCell.textContent = testValue;
+          editableCell.dispatchEvent(new Event("input", { bubbles: true }));
+
+          testLog("✅ Modification effectuée", "success");
+          updateStatus("✅ Test d'édition réussi", "ready");
+
+          // Vérifier la sauvegarde après 1 seconde
+          setTimeout(() => {
+            const cellId = editableCell.dataset.cellId;
+            const stored = localStorage.getItem(`claraverse_cell_${cellId}`);
+
+            if (stored) {
+              testLog("💾 Sauvegarde confirmée dans localStorage", "success");
+              updateStatus("✅ Persistance confirmée", "ready");
+            } else {
+              testLog("⚠️ Sauvegarde non confirmée", "warning");
+              updateStatus("⚠️ Persistance non confirmée", "warning");
+            }
+          }, 1500);
+        } else {
+          testLog("❌ Aucune cellule éditable trouvée", "error");
+          testLog("💡 Lancez d'abord un scan", "info");
+          updateStatus("❌ Aucune cellule éditable", "error");
+        }
+      }
+
+      function clearTest() {
+        testLog("🗑️ Nettoyage des données de test...", "warning");
+
+        if (typeof window.cp !== "undefined") {
+          window.cp.clear();
+          testLog("✅ Données supprimées", "success");
+          updateStatus("🗑️ Données vidées", "warning");
+        } else {
+          // Nettoyage manuel
+          Object.keys(localStorage).forEach((key) => {
+            if (key.startsWith("claraverse_cell_")) {
+              localStorage.removeItem(key);
+            }
+          });
+          testLog("✅ Nettoyage manuel effectué", "success");
+        }
+      }
+
+      function showStatus() {
+        testLog("📊 Affichage du statut système...", "info");
+
+        if (typeof window.cp !== "undefined") {
+          try {
+            const status = window.cp.status();
+            testLog("=== STATUT SYSTÈME ===", "info");
+            testLog(`Initialisé: ${status.initialized}`, "info");
+            testLog(`Tables traitées: ${status.processedTables}`, "info");
+            testLog(`Cellules éditables: ${status.editableCells}`, "info");
+            testLog(`Cellules stockées: ${status.storedCells}`, "info");
+            testLog(
+              `Conteneurs traités: ${status.processedContainers}`,
+              "info",
+            );
+            testLog("======================", "info");
+
+            updateStatus(
+              `📊 ${status.processedTables} tables, ${status.editableCells} cellules`,
+              "ready",
+            );
+          } catch (error) {
+            testLog(`❌ Erreur statut: ${error}`, "error");
+          }
+        } else {
+          testLog("❌ Système non disponible pour le statut", "error");
+        }
+      }
+
+      function runAutoTest() {
+        testLog("🤖 Lancement du test automatique...", "info");
+
+        let step = 1;
+        const totalSteps = 4;
+
+        function nextStep(fn, delay) {
+          setTimeout(() => {
+            testLog(`=== ÉTAPE ${step}/${totalSteps} ===`, "info");
+            fn();
+            step++;
+          }, delay);
+        }
+
+        // Séquence automatique
+        nextStep(() => testInit(), 0);
+        nextStep(() => testScan(), 2000);
+        nextStep(() => testEdit(), 3000);
+        nextStep(() => {
+          showStatus();
+          testLog("🎉 Test automatique terminé !", "success");
+          testLog("👀 Vérifiez que les tables ont des bordures vertes", "info");
+          testLog("👀 Vérifiez que vous pouvez éditer les cellules", "info");
+        }, 4000);
+      }
+
+      // Tests au chargement
+      window.addEventListener("load", () => {
+        testLog("🌐 Page chargée", "info");
+
+        // Test d'initialisation automatique après 2 secondes
+        setTimeout(() => {
+          testLog("⚡ Test d'initialisation automatique...", "info");
+          testInit();
+
+          // Si tout va bien, lancer le scan
+          setTimeout(() => {
+            if (typeof window.cp !== "undefined") {
+              testLog("🔄 Lancement du scan automatique...", "info");
+              testScan();
+            }
+          }, 2000);
+        }, 2000);
+      });
+
+      // Instructions dans la console
+      setTimeout(() => {
+        console.log(`
+🧪 INSTRUCTIONS DE TEST
+=======================
+
+1. Attendez l'initialisation (3-4 secondes)
+2. Vérifiez les tables avec OUTLINE VERT
+3. Vérifiez les indicateurs 💾 sur les tables
+4. Cliquez sur cellule → fond jaune
+5. Tapez du texte → notification 💾
+6. Rechargez → données restaurées ✨
+
+🎛️ COMMANDES TEST:
+• testInit() - Test initialisation
+• testScan() - Test scan tables
+• testEdit() - Test édition auto
+• runAutoTest() - Test complet
+
+🔧 API SYSTÈME:
+• cp.scan() - Scanner maintenant
+• cp.status() - Voir statistiques
+• cp.clear() - Vider données
+• cp.help() - Aide complète
+• cp.debug() - Info debug
+            `);
+      }, 500);
+    </script>
+  </body>
+</html>
