@@ -18,9 +18,11 @@ temp/
 *.tmp
 *.temp
 
-# Debug screenshots (optionnel - décommenter si tu veux les exclure)
-# *.jpg
-# *.png
+# Debug screenshots et images de test
+*.jpg
+*.JPG
+*.png
+*.PNG
 
 # Fichiers problématiques
 nul
