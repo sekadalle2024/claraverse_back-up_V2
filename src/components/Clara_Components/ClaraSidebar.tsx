@@ -12,6 +12,7 @@ interface ClaraSidebarProps {
   onNewChat?: () => void;
   onSessionAction?: (sessionId: string, action: 'star' | 'archive' | 'delete') => void;
   onLoadMore?: () => void;
+  onClose?: () => void;
 }
 
 const ClaraSidebar: React.FC<ClaraSidebarProps> = ({
@@ -23,7 +24,8 @@ const ClaraSidebar: React.FC<ClaraSidebarProps> = ({
   onSelectSession = () => {},
   onNewChat = () => {},
   onSessionAction = () => {},
-  onLoadMore = () => {}
+  onLoadMore = () => {},
+  onClose = () => {}
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [filter, setFilter] = useState<'all' | 'starred' | 'archived'>('all');
@@ -91,11 +93,11 @@ const ClaraSidebar: React.FC<ClaraSidebarProps> = ({
 
   return (
     <div
-      className={`glassmorphic h-full flex flex-col transition-all duration-300 z-[10000] ${isExpanded ? 'w-80' : 'w-16'}`}
+      className={`glassmorphic h-full flex flex-col transition-all duration-300 z-[10000] animate-in slide-in-from-left ${isExpanded ? 'w-80' : 'w-16'}`}
       style={{ 
         minWidth: isExpanded ? '20rem' : '4rem', 
         maxWidth: isExpanded ? '20rem' : '4rem',
-        // Ajout de styles pour positionner à gauche
+        // Positionné à GAUCHE (Grok style - remplace le menu principal)
         borderRight: '1px solid rgba(229, 231, 235, 0.2)'
       }}
       onMouseEnter={() => setIsExpanded(true)}
@@ -103,9 +105,23 @@ const ClaraSidebar: React.FC<ClaraSidebarProps> = ({
     >
       {isExpanded ? (
         <>
-          {/* Header */}
-          <div className="flex items-center py-4 px-4 justify-between">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Chat Histories</h2>
+          {/* Header - Logo, nom et bouton de fermeture (Grok style) */}
+          <div className="flex items-center py-4 px-4 justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="E-audit Logo" className="w-8 h-8 flex-shrink-0" />
+              <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap">
+                Chat History
+              </h1>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title="Close chat history"
+            >
+              <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
 
           {/* Search */}
@@ -277,11 +293,9 @@ const ClaraSidebar: React.FC<ClaraSidebarProps> = ({
           </div>
         </>
       ) : (
-        /* Collapsed State - Center the title vertically */
+        /* Collapsed State - Logo centré verticalement */
         <div className="h-full flex flex-col items-center justify-center">
-          <span className="text-xs font-semibold tracking-widest text-gray-700 dark:text-gray-300 rotate-180" style={{ writingMode: 'vertical-rl' }}>
-            Chat Histories
-          </span>
+          <img src="/logo.png" alt="E-audit" className="w-8 h-8 object-contain" />
         </div>
       )}
     </div>

@@ -199,7 +199,7 @@ const Onboarding = ({onComplete}: OnboardingProps) => {
                                                 {!logoError ? (
                                                     <img
                                                         src="/logo.png"
-                                                        alt="Clara Logo"
+                                                        alt="E-audit Logo"
                                                         className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
                                                         onError={() => setLogoError(true)}
                                                     />
@@ -211,7 +211,7 @@ const Onboarding = ({onComplete}: OnboardingProps) => {
                                     </div>
 
                                     <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white animate-fadeIn leading-tight">
-                                        Welcome to <span className="text-sakura-500">Clara</span>
+                                        Welcome to <span className="text-sakura-500">E-audit</span>
                                     </h1>
 
                                     <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto lg:mx-0 animate-fadeInUp delay-200 leading-relaxed">
@@ -267,7 +267,7 @@ const Onboarding = ({onComplete}: OnboardingProps) => {
                 className={`glassmorphic rounded-2xl p-6 sm:p-8 max-w-md w-full mx-4 space-y-4 sm:space-y-6 shadow-2xl ${animationClass}`}>
                 <div className="text-center space-y-2">
                     <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                        Let's Set Up Clara
+                        Let's Set Up E-audit
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400">
                         {step === 1 ? "First, tell us a bit about yourself" :
@@ -301,7 +301,7 @@ const Onboarding = ({onComplete}: OnboardingProps) => {
                                 </h3>
                             </div>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Your name helps personalize your experience with Clara.
+                                Your name helps personalize your experience with E-audit.
                             </p>
                             <input
                                 type="text"
@@ -354,7 +354,7 @@ const Onboarding = ({onComplete}: OnboardingProps) => {
                             </div>
 
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Choose a secure password for your Clara account.
+                                Choose a secure password for your E-audit account.
                             </p>
                             <input
                                 type="password"
@@ -493,7 +493,7 @@ const Onboarding = ({onComplete}: OnboardingProps) => {
                 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed
                 hover:shadow-[0_0_20px_rgba(244,163,187,0.5)] hover:bg-sakura-400"
                             >
-                                {step === 4 ? 'Launch Clara' : 'Continue'}
+                                {step === 4 ? 'Launch E-audit' : 'Continue'}
                             </button>
                         </>
                     )}

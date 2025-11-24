@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple - Examen CIA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+        }
+
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎓 Test Simple - Examen CIA</h1>
+
+    <div class="status">
+        <h3>Statut</h3>
+        <div id="status-script">Script: ⏳ Chargement...</div>
+        <div id="status-diagnostic">Diagnostic: ⏳ Chargement...</div>
+        <div id="status-tables">Tables: ⏳ Chargement...</div>
+    </div>
+
+    <h2>Table de test</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Ref_question</th>
+                <th>Question</th>
+                <th>Option</th>
+                <th>Reponse_user</th>
+                <th>Reponse_cia</th>
+                <th>Remarques</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Q1.1</td>
+                <td>Quelle est la principale responsabilité de l'audit interne?</td>
+                <td>A. Détecter les fraudes</td>
+                <td></td>
+                <td>Non</td>
+                <td>Info A</td>
+            </tr>
+            <tr>
+                <td>Q1.1</td>
+                <td>Quelle est la principale responsabilité de l'audit interne?</td>
+                <td>B. Fournir une assurance</td>
+                <td></td>
+                <td>Oui</td>
+                <td>Info B</td>
+            </tr>
+            <tr>
+                <td>Q1.1</td>
+                <td>Quelle est la principale responsabilité de l'audit interne?</td>
+                <td>C. Remplacer l'audit externe</td>
+                <td></td>
+                <td>Non</td>
+                <td>Info C</td>
+            </tr>
+            <tr>
+                <td>Q1.1</td>
+                <td>Quelle est la principale responsabilité de l'audit interne?</td>
+                <td>D. Gérer les risques</td>
+                <td></td>
+                <td>Non</td>
+                <td>Info D</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Scripts -->
+    <script>
+        console.log("=== TEST SIMPLE EXAMEN CIA ===");
+
+        // Vérifier le chargement des scripts
+        setTimeout(() => {
+            const statusScript = document.getElementById('status-script');
+            const statusDiagnostic = document.getElementById('status-diagnostic');
+            const statusTables = document.getElementById('status-tables');
+
+            // Vérifier examen_cia.js
+            if (typeof window.examenCIA !== 'undefined') {
+                statusScript.textContent = "Script: ✅ Chargé";
+                statusScript.style.color = "green";
+                console.log("✅ window.examenCIA est défini");
+                console.log("API disponible:", Object.keys(window.examenCIA));
+            } else {
+                statusScript.textContent = "Script: ❌ Non chargé";
+                statusScript.style.color = "red";
+                console.error("❌ window.examenCIA n'est PAS défini");
+            }
+
+            // Vérifier diagnostic-examen-cia.js
+            if (typeof window.diagnosticExamenCIA !== 'undefined') {
+                statusDiagnostic.textContent = "Diagnostic: ✅ Chargé";
+                statusDiagnostic.style.color = "green";
+                console.log("✅ window.diagnosticExamenCIA est défini");
+            } else {
+                statusDiagnostic.textContent = "Diagnostic: ❌ Non chargé";
+                statusDiagnostic.style.color = "red";
+                console.error("❌ window.diagnosticExamenCIA n'est PAS défini");
+            }
+
+            // Vérifier les tables
+            const tables = document.querySelectorAll('[data-exam-table-id]');
+            if (tables.length > 0) {
+                statusTables.textContent = `Tables: ✅ ${tables.length} détectée(s)`;
+                statusTables.style.color = "green";
+                console.log(`✅ ${tables.length} table(s) détectée(s)`);
+
+                tables.forEach((table, i) => {
+                    console.log(`Table ${i + 1}:`, table.dataset.examTableId);
+                    const checkboxes = table.querySelectorAll('.exam-cia-checkbox');
+                    console.log(`  Checkboxes: ${checkboxes.length}`);
+                });
+            } else {
+                statusTables.textContent = "Tables: ⏳ En attente...";
+                statusTables.style.color = "orange";
+                console.warn("⚠️ Aucune table détectée encore");
+            }
+
+            // Afficher les commandes disponibles
+            console.log("\n=== COMMANDES DISPONIBLES ===");
+            if (typeof window.examenCIA !== 'undefined') {
+                console.log("window.examenCIA.debug()");
+                console.log("window.examenCIA.getInfo()");
+                console.log("window.examenCIA.exportData()");
+            }
+            if (typeof window.diagnosticExamenCIA !== 'undefined') {
+                console.log("diagnosticExamenCIA.forcerFusion()");
+                console.log("diagnosticExamenCIA.verifierSauvegarde()");
+                console.log("diagnosticExamenCIA.verifierRestauration()");
+            }
+
+        }, 3000);
+
+        // Vérifier périodiquement
+        setInterval(() => {
+            const tables = document.querySelectorAll('[data-exam-table-id]');
+            const statusTables = document.getElementById('status-tables');
+            if (tables.length > 0) {
+                statusTables.textContent = `Tables: ✅ ${tables.length} détectée(s)`;
+                statusTables.style.color = "green";
+            }
+        }, 2000);
+    </script>
+
+    <script src="/examen_cia.js"></script>
+    <script src="/diagnostic-examen-cia.js"></script>
+</body>
+
+</html>

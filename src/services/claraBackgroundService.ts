@@ -46,8 +46,8 @@ class ClaraBackgroundService {
     // Create new persistent notification
     this.persistentNotificationId = notificationService.addNotification({
       type: 'info',
-      title: 'Clara Assistant Active',
-      message: 'Clara is running in the background and ready to assist you.',
+      title: 'E-audit Assistant Active',
+      message: 'E-audit is running in the background and ready to assist you.',
       duration: undefined, // Persistent - no auto-dismiss
       sound: false // Don't play sound for background service notification
     });

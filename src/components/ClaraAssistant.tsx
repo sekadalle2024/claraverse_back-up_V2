@@ -341,19 +341,19 @@ when you are asked for something always resort to writing a python script and ru
 
   switch (provider?.type) {
     case 'ollama':
-      return `You are Clara, a helpful AI assistant powered by ${providerName}. You are knowledgeable, friendly, and provide accurate information. You can help with various tasks including analysis, coding, writing, and general questions. When using tools, be thorough and explain your actions clearly.${artifactGuidance} ${toolsGuidance}`;
+      return `You are E-audit, a helpful AI assistant powered by ${providerName}. You are knowledgeable, friendly, and provide accurate information. You can help with various tasks including analysis, coding, writing, and general questions. When using tools, be thorough and explain your actions clearly.${artifactGuidance} ${toolsGuidance}`;
       
     case 'openai':
-      return `You are Clara, an intelligent AI assistant powered by OpenAI. You are helpful, harmless, and honest. You excel at reasoning, analysis, creative tasks, and problem-solving. Always strive to provide accurate, well-structured responses and use available tools effectively when needed.${artifactGuidance} ${toolsGuidance}`;
+      return `You are E-audit, an intelligent AI assistant powered by OpenAI. You are helpful, harmless, and honest. You excel at reasoning, analysis, creative tasks, and problem-solving. Always strive to provide accurate, well-structured responses and use available tools effectively when needed.${artifactGuidance} ${toolsGuidance}`;
       
     case 'openrouter':
-      return `You are Clara, a versatile AI assistant with access to various models through OpenRouter. You adapt your communication style based on the task at hand and leverage the strengths of different AI models. Be helpful, accurate, and efficient in your responses.${artifactGuidance} ${toolsGuidance}`;
+      return `You are E-audit, a versatile AI assistant with access to various models through OpenRouter. You adapt your communication style based on the task at hand and leverage the strengths of different AI models. Be helpful, accurate, and efficient in your responses.${artifactGuidance} ${toolsGuidance}`;
       
     case 'claras-pocket':
-      return `You are Clara, a privacy-focused AI assistant running locally on the user's device. You prioritize user privacy and provide helpful assistance without requiring external connectivity. You are efficient, knowledgeable, and respect the user's privacy preferences.${artifactGuidance} ${toolsGuidance}`;
+      return `You are E-audit, a privacy-focused AI assistant running locally on the user's device. You prioritize user privacy and provide helpful assistance without requiring external connectivity. You are efficient, knowledgeable, and respect the user's privacy preferences.${artifactGuidance} ${toolsGuidance}`;
       
     default:
-      return `You are Clara, a helpful AI assistant. You are knowledgeable, friendly, and provide accurate information. You can help with various tasks including analysis, coding, writing, and general questions. Always be helpful and respectful in your interactions.${artifactGuidance} ${toolsGuidance}`;
+      return `You are E-audit, a helpful AI assistant. You are knowledgeable, friendly, and provide accurate information. You can help with various tasks including analysis, coding, writing, and general questions. Always be helpful and respectful in your interactions.${artifactGuidance} ${toolsGuidance}`;
   }
 };
 
@@ -393,6 +393,9 @@ const useIsVisible = () => {
 const ClaraAssistant: React.FC<ClaraAssistantProps> = ({ onPageChange }) => {
   // Check if Clara is currently visible (for background operation)
   const isVisible = useIsVisible();
+  
+  // State for toggling chat history sidebar
+  const [showChatHistory, setShowChatHistory] = useState(false);
   
   // User and session state
   const [userName, setUserName] = useState<string>('');
@@ -1745,7 +1748,7 @@ Please provide your refined response for following user question:
           // Standard notification when Clara is visible
           addCompletionNotification(
             'Chat Response Complete',
-            isVoiceMessage ? 'Clara has finished responding to your voice message.' : 'Clara has finished responding to your message.',
+            isVoiceMessage ? 'E-audit has finished responding to your voice message.' : 'E-audit has finished responding to your message.',
             4000
           );
         }
@@ -3739,26 +3742,57 @@ ${data.timezone ? `• **Timezone:** ${data.timezone}` : ''}`;
 
       {/* Content with relative z-index */}
       <div className="relative z-10 flex h-screen w-full">
-        {/* Clara Chat History Sidebar on the left (anciennement à droite) */}
-        <ClaraSidebar 
-          sessions={sessions}
-          currentSessionId={currentSession?.id}
-          isLoading={isLoadingSessions}
-          isLoadingMore={isLoadingMoreSessions}
-          hasMoreSessions={hasMoreSessions}
-          onSelectSession={handleSelectSession}
-          onNewChat={handleNewChat}
-          onSessionAction={handleSessionAction}
-          onLoadMore={loadMoreSessions}
-        />
+        {/* Grok Style: Les deux sidebars se remplacent à GAUCHE */}
+        {showChatHistory ? (
+          /* Chat History Sidebar - Visible quand showChatHistory = true */
+          <ClaraSidebar 
+            sessions={sessions}
+            currentSessionId={currentSession?.id}
+            isLoading={isLoadingSessions}
+            isLoadingMore={isLoadingMoreSessions}
+            hasMoreSessions={hasMoreSessions}
+            onSelectSession={handleSelectSession}
+            onNewChat={handleNewChat}
+            onSessionAction={handleSessionAction}
+            onLoadMore={loadMoreSessions}
+            onClose={() => setShowChatHistory(false)}
+          />
+        ) : (
+          /* App Sidebar (main navigation) - Visible quand showChatHistory = false */
+          <Sidebar 
+            activePage="clara" 
+            onPageChange={(page) => {
+              if (page === 'clara') {
+                // Afficher la chat history quand on clique sur Chat
+                setShowChatHistory(true);
+              } else {
+                onPageChange(page);
+              }
+            }}
+            showChatHistoryIndicator={showChatHistory}
+          />
+        )}
 
         {/* Main: Chat Area */}
-        <div className="flex-1 flex flex-col h-full">
-          {/* Header */}
+        <div className="flex-1 flex flex-col h-full relative">
+          {/* Topbar avec style Grok (transparent, se fond avec le chat) */}
           <Topbar 
             userName={userName}
             onPageChange={onPageChange}
           />
+          
+          {/* Toggle Chat History Button - Grok style (floating on left side) */}
+          {!showChatHistory && (
+            <button
+              onClick={() => setShowChatHistory(true)}
+              className="fixed left-4 top-20 z-50 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 group"
+              title="Show chat history"
+            >
+              <svg className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-sakura-600 dark:group-hover:text-sakura-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
           
           {/* Chat Window */}
           <ClaraChatWindow
@@ -3909,8 +3943,6 @@ ${data.timezone ? `• **Timezone:** ${data.timezone}` : ''}`;
           />
         </div>
 
-        {/* App Sidebar (main navigation) on the right (anciennement à gauche) */}
-        <Sidebar activePage="clara" onPageChange={onPageChange} />
       </div>
 
       {/* No Models Available Modal */}

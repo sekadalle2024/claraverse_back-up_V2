@@ -30,7 +30,7 @@ const AVAILABLE_WIDGETS: WidgetOption[] = [
       <div className="p-3 bg-gray-500/5 dark:bg-gray-300/5 rounded-lg">
         <div className="flex items-center gap-2">
           <Bot className="w-4 h-4 text-sakura-500" />
-          <h3 className="text-sm font-medium text-gray-900 dark:text-white">Welcome to Clara</h3>
+          <h3 className="text-sm font-medium text-gray-900 dark:text-white">Welcome to E-audit</h3>
         </div>
         <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5">Your AI assistant powered by Ollama...</p>
       </div>
@@ -49,7 +49,7 @@ const AVAILABLE_WIDGETS: WidgetOption[] = [
           <Info className="w-4 h-4 text-sakura-500" />
           <h3 className="text-sm font-medium text-gray-900 dark:text-white">Private & Secure</h3>
         </div>
-        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5">Clara runs locally on your machine...</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5">E-audit runs locally on your machine...</p>
       </div>
     )
   },

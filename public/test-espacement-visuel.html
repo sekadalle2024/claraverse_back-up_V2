@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Visuel Espacement - AVANT/APRÈS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .section {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .section h2 {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .avant h2 {
+            background: #ef4444;
+            color: white;
+        }
+
+        .apres h2 {
+            background: #10b981;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            background: #1e40af;
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        td {
+            padding: 0.75rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .avant .overflow-x-auto {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .avant hr {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            opacity: 1;
+            border-color: #d1d5db;
+        }
+
+        .apres .overflow-x-auto {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .apres hr {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+            border-color: rgba(156, 163, 175, 0.3);
+        }
+
+        .stats {
+            background: #fef3c7;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="max-w-7xl mx-auto">
+        <div class="bg-white rounded-lg shadow-2xl p-6 mb-6">
+            <h1 class="text-4xl font-bold text-center text-gray-800 mb-4">
+                🎨 Test Visuel Espacement Tables
+            </h1>
+            <p class="text-center text-gray-600 text-lg">
+                Comparaison AVANT / APRÈS - Réduction de 50%
+            </p>
+        </div>
+
+        <div class="comparison-container">
+            <!-- AVANT -->
+            <div class="section avant">
+                <h2>❌ AVANT (Espacement Normal)</h2>
+
+                <div class="overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Table 1</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Contenu table 1</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr>
+
+                <div class="overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Table 2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Contenu table 2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr>
+
+                <div class="overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Table 3</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Contenu table 3</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="stats">
+                    📊 Espacement total: ~64px (32px entre chaque table)
+                </div>
+            </div>
+
+            <!-- APRÈS -->
+            <div class="section apres">
+                <h2>✅ APRÈS (Réduction 50%)</h2>
+
+                <div class="overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Table 1</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Contenu table 1</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr>
+
+                <div class="overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Table 2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Contenu table 2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr>
+
+                <div class="overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Table 3</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Contenu table 3</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="stats">
+                    📊 Espacement total: ~32px (16px entre chaque table)
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-2xl p-6 mt-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">📊 Résumé</h3>
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div class="bg-red-100 p-4 rounded-lg">
+                    <div class="text-3xl font-bold text-red-600">32px</div>
+                    <div class="text-sm text-gray-600">Avant (par table)</div>
+                </div>
+                <div class="bg-yellow-100 p-4 rounded-lg">
+                    <div class="text-3xl font-bold text-yellow-600">→</div>
+                    <div class="text-sm text-gray-600">Réduction</div>
+                </div>
+                <div class="bg-green-100 p-4 rounded-lg">
+                    <div class="text-3xl font-bold text-green-600">16px</div>
+                    <div class="text-sm text-gray-600">Après (par table)</div>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <div class="text-4xl font-bold text-purple-600">50% de réduction</div>
+                <div class="text-gray-600 mt-2">Design plus compact et aéré</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

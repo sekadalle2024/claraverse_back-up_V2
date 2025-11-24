@@ -22,12 +22,16 @@
 
 | Fichier | Rôle | Priorité | Statut |
 |---------|------|----------|--------|
+| **`restore-lock-manager.js`** | Gestionnaire de verrouillage global | ⭐⭐⭐ CRITIQUE | ✅ ACTIF |
+| **`single-restore-on-load.js`** | Restauration unique au chargement | ⭐⭐⭐ CRITIQUE | ✅ ACTIF |
 | **`auto-restore-chat-change.js`** | Restauration automatique au changement de chat | ⭐⭐⭐ CRITIQUE | ✅ ACTIF |
+| **`dev-indexedDB.js`** | Édition de cellules avec IndexedDB | ⭐⭐⭐ INTÉGRÉ | ✅ ACTIF |
 | `wrap-tables-auto.js` | Enveloppe les tables dans des conteneurs | ⭐⭐⭐ | ✅ ACTIF |
 | `Flowise.js` | Intégration avec Flowise | ⭐⭐⭐ | ✅ ACTIF |
 | `menu.js` | Menus contextuels des tables | ⭐⭐⭐ | ✅ ACTIF |
 | `menu-persistence-bridge.js` | Pont menu ↔ persistance | ⭐⭐⭐ | ✅ ACTIF |
-| `force-restore-on-load.js` | Restauration au chargement | ⭐⭐ | ✅ ACTIF |
+| `force-restore-on-load.js` | Restauration au chargement (backup) | ⭐ | ✅ ACTIF |
+| `dev-persistence-adapter.js` | Adaptateur localStorage → IndexedDB | ⭐ OPTIONNEL | 🔧 UTIL |
 
 ### Scripts de Diagnostic (Optionnels)
 

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modelisation Template</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #1e40af;
+            margin-bottom: 30px;
+        }
+
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table.min-w-full.border.border-gray-200.dark\:border-gray-700.rounded-lg {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+        }
+
+        th,
+        td {
+            border: 1px solid #d1d5db;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f3f4f6;
+            font-weight: 600;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .log {
+            background: #1e293b;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Modelisation_template.js</h1>
+
+        <div class="test-section">
+            <h2>Test Case 1: PARTIE 1 (Document DOCX)</h2>
+            <p>Table avec mot-clé "Flowise" et "PARTIE 1"</p>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <thead>
+                        <tr>
+                            <th>Flowise</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PARTIE 1</td>
+                            <td>Document DOCX statique</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn" onclick="testCase1()">Tester Case 1</button>
+        </div>
+
+        <div class="test-section">
+            <h2>Test Case 2: PARTIE 2 (JSON statique)</h2>
+            <p>Table avec mot-clé "Flowise" et "PARTIE 2"</p>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <thead>
+                        <tr>
+                            <th>Flowise</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PARTIE 2</td>
+                            <td>Données JSON statiques</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn" onclick="testCase2()">Tester Case 2</button>
+        </div>
+
+        <div class="test-section">
+            <h2>Test Case 3: PARTIE 3 (JSON dynamique n8n)</h2>
+            <p>Table avec mot-clé "Flowise" et "PARTIE 3"</p>
+            <div class="prose prose-base dark:prose-invert max-w-none">
+                <table class="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <thead>
+                        <tr>
+                            <th>Flowise</th>
+                            <th>Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PARTIE 3</td>
+                            <td>Endpoint n8n dynamique</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn" onclick="testCase3()">Tester Case 3</button>
+        </div>
+
+        <div class="test-section">
+            <h2>Console de logs</h2>
+            <div class="log" id="logConsole">
+                Logs apparaîtront ici...
+            </div>
+        </div>
+    </div>
+
+    <script src="Modelisation_template.js"></script>
+    <script>
+        // Intercepter les console.log pour affichage
+        const logConsole = document.getElementById('logConsole');
+        const originalLog = console.log;
+
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            const message = args.join(' ');
+            logConsole.innerHTML += message + '<br>';
+            logConsole.scrollTop = logConsole.scrollHeight;
+        };
+
+        function testCase1() {
+            console.log('=== TEST CASE 1 ===');
+            if (window.ModelisationTemplate) {
+                window.ModelisationTemplate.execute();
+            }
+        }
+
+        function testCase2() {
+            console.log('=== TEST CASE 2 ===');
+            if (window.ModelisationTemplate) {
+                window.ModelisationTemplate.execute();
+            }
+        }
+
+        function testCase3() {
+            console.log('=== TEST CASE 3 ===');
+            if (window.ModelisationTemplate) {
+                window.ModelisationTemplate.execute();
+            }
+        }
+
+        // Auto-exécution au chargement
+        window.addEventListener('load', () => {
+            console.log('✅ Page de test chargée');
+            console.log('📋 Utilisez les boutons pour tester chaque cas');
+        });
+    </script>
+</body>
+
+</html>

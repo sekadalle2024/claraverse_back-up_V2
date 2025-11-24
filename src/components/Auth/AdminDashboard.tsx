@@ -196,7 +196,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             </button>
             <div>
               <h1 className="text-3xl font-bold text-white">Dashboard Administrateur</h1>
-              <p className="text-gray-400">Gestion des utilisateurs Clara</p>
+              <p className="text-gray-400">Gestion des utilisateurs E-audit</p>
             </div>
           </div>
           

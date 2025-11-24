@@ -869,6 +869,76 @@ async function saveCellData(cell, cellId, tableId) {
 
 /**
  * ========================================
+ * FONCTIONS DE VALIDATION
+ * ========================================
+ */
+function validateTableContext(table, tableId) {
+  try {
+    // Vérifier que la table existe et est dans le DOM
+    if (!table || !table.isConnected) {
+      log(`⚠️ Table ${tableId} non connectée au DOM`, "warning");
+      return false;
+    }
+
+    // Vérifier que la table a des cellules
+    const cells = table.querySelectorAll("td, th");
+    if (cells.length === 0) {
+      log(`⚠️ Table ${tableId} sans cellules`, "warning");
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    log(`❌ Erreur validation contexte: ${error.message}`, "error");
+    return false;
+  }
+}
+
+function validateTableHierarchy(table, savedData, tableId) {
+  try {
+    // Validation basique - toujours accepter pour l'instant
+    // On peut améliorer plus tard avec des vérifications strictes
+    return true;
+  } catch (error) {
+    log(`❌ Erreur validation hiérarchie: ${error.message}`, "error");
+    return false;
+  }
+}
+
+function shouldRestoreContent(currentContent, savedContent) {
+  try {
+    // Ne pas restaurer si le contenu actuel est identique
+    if (currentContent === savedContent) {
+      return false;
+    }
+
+    // Ne pas restaurer si le contenu sauvegardé est vide ou invalide
+    if (!savedContent || savedContent === "undefined" || savedContent === "") {
+      return false;
+    }
+
+    // Restaurer dans tous les autres cas
+    return true;
+  } catch (error) {
+    log(`❌ Erreur validation restauration: ${error.message}`, "error");
+    return false;
+  }
+}
+
+function sanitizeHtmlContent(html) {
+  try {
+    // Nettoyer le HTML pour éviter les injections
+    const temp = document.createElement("div");
+    temp.textContent = html;
+    return temp.innerHTML;
+  } catch (error) {
+    log(`❌ Erreur sanitization HTML: ${error.message}`, "error");
+    return "";
+  }
+}
+
+/**
+ * ========================================
  * SYSTÈME DE RESTAURATION ROBUSTE
  * ========================================
  */

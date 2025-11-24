@@ -58,6 +58,12 @@
 
     testLocalStorage() {
       try {
+        // Vérifier si localStorage est disponible
+        if (typeof localStorage === 'undefined') {
+          debug.warn("⚠️ localStorage n'est pas disponible dans ce contexte");
+          return false;
+        }
+
         const testKey = "claraverse_test";
         localStorage.setItem(testKey, "test");
         const testValue = localStorage.getItem(testKey);
@@ -74,14 +80,18 @@
           if (tableCount > 0) {
             debug.log("📊 Tables sauvegardées:", Object.keys(existingData));
           }
+          return true;
         } else {
           debug.error("❌ localStorage ne fonctionne pas correctement");
+          return false;
         }
       } catch (error) {
-        debug.error("❌ Erreur de test localStorage:", error);
-        alert(
-          "⚠️ Le stockage local n'est pas disponible. Les données ne seront pas sauvegardées.",
-        );
+        debug.error("❌ Erreur de test localStorage:", error.message);
+        // Afficher l'alerte seulement si c'est une vraie erreur (pas juste indisponible)
+        if (error.name !== 'SecurityError') {
+          console.warn("⚠️ Le stockage local n'est pas disponible. Les données ne seront pas sauvegardées.");
+        }
+        return false;
       }
     }
 
@@ -986,10 +996,10 @@
             const cleanContent = content.replace(/<[^>]*>/g, "").trim();
             alert(
               `✅ MISE À JOUR CONFIRMÉE\n\n` +
-                `Table Conso: ${consoUpdated ? "Mise à jour" : "Non trouvée"}\n` +
-                `Table Résultat: ${resultatUpdated ? "Mise à jour" : "Non trouvée"}\n\n` +
-                `Contenu Table Résultat:\n${cleanContent.substring(0, 200)}${cleanContent.length > 200 ? "..." : ""}\n\n` +
-                `Contenu Table Conso:\n${simpleContent.replace(/<[^>]*>/g, "").substring(0, 150)}`,
+              `Table Conso: ${consoUpdated ? "Mise à jour" : "Non trouvée"}\n` +
+              `Table Résultat: ${resultatUpdated ? "Mise à jour" : "Non trouvée"}\n\n` +
+              `Contenu Table Résultat:\n${cleanContent.substring(0, 200)}${cleanContent.length > 200 ? "..." : ""}\n\n` +
+              `Contenu Table Conso:\n${simpleContent.replace(/<[^>]*>/g, "").substring(0, 150)}`,
             );
           }, 500);
         } else {
@@ -1498,9 +1508,28 @@
       } catch (error) {
         debug.error("❌ Erreur lors de la sauvegarde:", error);
         if (error.name === "QuotaExceededError") {
-          alert(
-            "⚠️ Espace de stockage insuffisant. Certaines données n'ont pas pu être sauvegardées.",
-          );
+          debug.warn("⚠️ Quota localStorage dépassé, tentative de nettoyage...");
+
+          // Tenter un nettoyage automatique si le CleanupManager est disponible
+          if (window.CleanupManager) {
+            const result = window.CleanupManager.autoCleanup();
+            if (result && result.saved > 0) {
+              debug.log(`✅ ${(result.saved / 1024).toFixed(2)} KB libérés, nouvelle tentative...`);
+
+              // Réessayer la sauvegarde
+              try {
+                localStorage.setItem(this.storageKey, JSON.stringify(data));
+                debug.log("✅ Sauvegarde réussie après nettoyage");
+                return;
+              } catch (retryError) {
+                debug.error("❌ Échec même après nettoyage");
+              }
+            }
+          }
+
+          // Si le nettoyage n'a pas fonctionné, afficher un message discret
+          console.warn("⚠️ Espace de stockage insuffisant. Certaines données n'ont pas pu être sauvegardées.");
+          console.warn("💡 Utilisez CleanupManager.autoCleanup() pour libérer de l'espace");
         }
       }
     }

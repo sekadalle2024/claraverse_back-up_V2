@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="favicon" href="/favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Clara - AI Assistant</title>
+  <title>E-audit</title>
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
@@ -18,22 +18,79 @@
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
-  <!-- Wrapper automatique de tables - DOIT être chargé EN PREMIER -->
+
+  <!-- ========================================== -->
+  <!-- SYSTÈME DE RESTAURATION UNIQUE -->
+  <!-- ========================================== -->
+
+  <!-- 1. Gestionnaire de verrouillage - DOIT être chargé EN PREMIER -->
+  <script src="/restore-lock-manager.js"></script>
+
+  <!-- 2. Restauration unique au chargement -->
+  <script src="/single-restore-on-load.js"></script>
+
+  <!-- ========================================== -->
+  <!-- SCRIPTS PRINCIPAUX -->
+  <!-- ========================================== -->
+
+  <!-- Wrapper automatique de tables -->
   <script src="/wrap-tables-auto.js"></script>
+
+  <!-- Fix pour charger Mammoth.js sans conflit AMD/RequireJS -->
+  <script src="/mammoth-loader-fix.js"></script>
+
+  <!-- Version 2: Génère un document séparé pour chaque table Flowise -->
+  <script src="/Modelisation_template_v2.js"></script>
+
+  <!-- Version 1 (désactivée) -->
+  <!-- <script src="/Modelisation_template.js"></script> --></script>
+
+  <!-- Diagnostic Modelisation (décommenter pour debug) -->
+  <!-- <script src="/diagnostic-modelisation.js"></script> -->
+
   <script src="/Flowise.js"></script>
-  <!-- Restauration forcée -->
-  <script type="module" src="/force-restore-on-load.js"></script>
-  <!-- Pont de persistance - DOIT être chargé AVANT menu.js -->
+
+  <!-- LocalStorage Cleanup Manager - DOIT être chargé EN PREMIER -->
+  <script src="/localstorage-cleanup.js"></script>
+
+  <!-- Pont de persistance - DOIT être chargé AVANT menu.js et conso.js -->
   <script src="/menu-persistence-bridge.js"></script>
+
+  <!-- Scripts utilisant le système de persistance -->
   <script src="/menu.js"></script>
+  <script src="/conso.js"></script>
+
+
+  <!-- Script Examen CIA - Questionnaires avec persistance -->
+  <script src="/examen_cia.js"></script>
+
+  <!-- Script Auto-Fix Examen CIA - Force fusion et restauration -->
+  <script src="/examen-cia-auto-fix.js"></script>
+
+  <!-- Script de modélisation ULTRA COMPACT - Réduction 75% -->
+  <script src="/modelisation-ultra-compact.js"></script>
+
+  <!-- Diagnostic espacement (console: diagnosticEspacement()) -->
+  <script src="/diagnostic-espacement.js"></script>
+  <script src="/diagnostic-espacement-complet.js"></script>
+
+
+
   <!-- Restauration automatique au changement de chat -->
   <script type="module" src="/auto-restore-chat-change.js"></script>
-  <!-- Diagnostic changement de chat -->
-  <script src="/diagnostic-chat-change.js"></script>
-  <!-- Diagnostic restauration détaillé -->
-  <script src="/diagnostic-restauration-detaille.js"></script>
-  <!-- Test restauration forcée -->
-  <script src="/test-restore-force.js"></script>
+
+  <!-- ========================================== -->
+  <!-- SCRIPTS DE DIAGNOSTIC (TOUS DÉSACTIVÉS) -->
+  <!-- ========================================== -->
+
+  <!-- Debug restaurations multiples -->
+  <!-- <script src="/debug-restaurations-multiples.js"></script> -->
+
+  <!-- Autres diagnostics -->
+  <!-- <script src="/diagnostic-chat-change.js"></script> -->
+  <!-- <script src="/diagnostic-restauration-detaille.js"></script> -->
+  <!-- <script src="/test-restore-force.js"></script> -->
+
   <!-- 2. Puis le Patch (nouveau) -->
 
 

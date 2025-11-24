@@ -39,7 +39,7 @@ const StartupTab = () => {
               <Power className="w-5 h-5 text-sakura-500" />
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-white">Auto Start with System</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Launch Clara automatically when you start your computer</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Launch E-audit automatically when you start your computer</p>
               </div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">

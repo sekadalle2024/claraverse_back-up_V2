@@ -69,8 +69,23 @@
         -webkit-backdrop-filter: blur(10px);
       `;
 
-      // Menu items - Uniquement modification de structure et import/export
+      // Menu items - Modification de structure, édition et import/export
       const menuItems = [
+        // Actions d'édition de cellules
+        {
+          text: "✏️ Activer édition des cellules",
+          action: () => this.enableCellEditing(),
+          category: "edit",
+          shortcut: "Ctrl+E",
+        },
+        {
+          text: "🔒 Désactiver édition des cellules",
+          action: () => this.disableCellEditing(),
+          category: "edit",
+        },
+
+        { text: "---", action: null }, // Séparateur
+
         // Actions de modification de structure
         {
           text: "➕ Insérer ligne en dessous",
@@ -258,6 +273,12 @@
       this.addEventListenerWithCleanup(document, "keydown", (e) => {
         if (e.key === "Escape" && this.isMenuVisible) {
           this.hideMenu();
+        }
+
+        // Raccourci Ctrl+E pour activer l'édition
+        if (e.ctrlKey && e.key === "e" && this.targetTable) {
+          e.preventDefault();
+          this.enableCellEditing();
         }
 
         // Raccourcis avec Ctrl+Shift
@@ -531,6 +552,104 @@
           columnIndex: targetColIndex,
         });
         this.syncWithDev();
+      }
+    }
+
+    // ==================
+    // ÉDITION DE CELLULES
+    // ==================
+
+    // Activer l'édition des cellules
+    enableCellEditing() {
+      if (!this.targetTable) {
+        this.showAlert("⚠️ Aucune table sélectionnée.");
+        return;
+      }
+
+      try {
+        // Rendre toutes les cellules éditables (sauf les en-têtes)
+        const cells = this.targetTable.querySelectorAll("tbody td");
+
+        cells.forEach((cell) => {
+          this.makeCellEditable(cell);
+        });
+
+        // Ajouter un indicateur visuel
+        this.addEditingIndicator(this.targetTable);
+
+        console.log("✅ Édition des cellules activée");
+        this.showQuickNotification("✏️ Édition activée - Cliquez sur une cellule pour modifier");
+      } catch (error) {
+        console.error("❌ Erreur activation édition:", error);
+        this.showAlert("❌ Erreur lors de l'activation de l'édition");
+      }
+    }
+
+    // Désactiver l'édition des cellules
+    disableCellEditing() {
+      if (!this.targetTable) {
+        this.showAlert("⚠️ Aucune table sélectionnée.");
+        return;
+      }
+
+      try {
+        // Désactiver l'édition de toutes les cellules
+        const cells = this.targetTable.querySelectorAll("td[contenteditable='true']");
+
+        cells.forEach((cell) => {
+          cell.contentEditable = false;
+          cell.removeAttribute("data-editable");
+        });
+
+        // Retirer l'indicateur visuel
+        this.removeEditingIndicator(this.targetTable);
+
+        console.log("✅ Édition des cellules désactivée");
+        this.showQuickNotification("🔒 Édition désactivée");
+      } catch (error) {
+        console.error("❌ Erreur désactivation édition:", error);
+        this.showAlert("❌ Erreur lors de la désactivation de l'édition");
+      }
+    }
+
+    // Ajouter un indicateur visuel d'édition
+    addEditingIndicator(table) {
+      // Vérifier si l'indicateur existe déjà
+      if (table.querySelector(".editing-indicator")) {
+        return;
+      }
+
+      const indicator = document.createElement("div");
+      indicator.className = "editing-indicator";
+      indicator.innerHTML = "✏️ Mode Édition";
+      indicator.style.cssText = `
+        position: absolute;
+        top: -30px;
+        right: 0;
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        z-index: 1000;
+        pointer-events: none;
+      `;
+
+      // S'assurer que la table a position relative
+      if (getComputedStyle(table).position === "static") {
+        table.style.position = "relative";
+      }
+
+      table.appendChild(indicator);
+    }
+
+    // Retirer l'indicateur visuel d'édition
+    removeEditingIndicator(table) {
+      const indicator = table.querySelector(".editing-indicator");
+      if (indicator) {
+        indicator.remove();
       }
     }
 
@@ -956,43 +1075,29 @@
     }
 
     // Sauvegarde des données de cellule
+    // ✅ CORRIGÉ : Suit maintenant le même flux que les autres actions
     saveCellData(cell) {
       try {
         const table = cell.closest("table");
         if (table) {
-          const tableId = this.generateTableId(table);
+          // ✅ CORRECTION 1 : Définir this.targetTable (comme les autres actions)
+          this.targetTable = table;
 
-          // Sauvegarder via l'API de dev.js si disponible
-          if (
-            window.claraverseSyncAPI &&
-            window.claraverseSyncAPI.forceSaveTable
-          ) {
-            window.claraverseSyncAPI.forceSaveTable(table);
-          }
+          const newContent = cell.textContent || cell.innerText || "";
 
-          // Notifier la modification
-          if (
-            window.claraverseSyncAPI &&
-            window.claraverseSyncAPI.notifyTableUpdate
-          ) {
-            window.claraverseSyncAPI.notifyTableUpdate(tableId, table, "menu");
-          }
-
-          // Déclencher un événement personnalisé
-          const event = new CustomEvent("claraverse:table:updated", {
-            detail: {
-              tableId: tableId,
-              table: table,
-              cell: cell,
-              source: "menu",
-              action: "cell_edit",
-              timestamp: Date.now(),
-            },
+          // ✅ CORRECTION 2 : Notifier le changement (comme les autres actions)
+          this.notifyTableStructureChange("cell_edited", {
+            cellContent: newContent,
+            timestamp: Date.now(),
           });
-          document.dispatchEvent(event);
+
+          // ✅ CORRECTION 3 : Sauvegarder via syncWithDev (comme les autres actions)
+          this.syncWithDev();
+
+          console.log("✅ Cellule sauvegardée via système existant");
         }
       } catch (error) {
-        console.error("Erreur sauvegarde cellule:", error);
+        console.error("❌ Erreur sauvegarde cellule:", error);
       }
     }
 
@@ -1044,16 +1149,38 @@
     }
 
     // Génération d'ID de table
+    // ✅ CORRIGÉ : ID stable basé sur la structure (pas le contenu)
     generateTableId(table) {
       try {
-        const tableContent = table.outerHTML.replace(/\s+/g, " ").trim();
-        const hash = this.hashCode(tableContent);
-        const position = Array.from(document.querySelectorAll("table")).indexOf(
-          table
-        );
-        return `table_${position}_${Math.abs(hash)}`;
+        // ✅ CORRECTION 1 : Réutiliser l'ID si déjà généré
+        if (table.dataset.stableTableId) {
+          return table.dataset.stableTableId;
+        }
+
+        // ✅ CORRECTION 2 : Générer un ID basé sur la STRUCTURE
+        const position = Array.from(document.querySelectorAll("table")).indexOf(table);
+
+        // Extraire les en-têtes de colonnes
+        const headers = Array.from(table.querySelectorAll("th"))
+          .map(th => th.textContent.trim())
+          .join("_")
+          .replace(/[^a-zA-Z0-9_]/g, "") // Supprimer caractères spéciaux
+          .substring(0, 30); // Limiter la longueur
+
+        // Extraire les dimensions
+        const rows = table.querySelectorAll("tr").length;
+        const cols = table.querySelector("tr")?.querySelectorAll("td, th").length || 0;
+
+        // Créer un ID stable basé sur la structure
+        const stableId = `table_${position}_${headers}_${rows}x${cols}`;
+
+        // ✅ CORRECTION 3 : Sauvegarder l'ID pour réutilisation
+        table.dataset.stableTableId = stableId;
+
+        console.log(`🔑 ID stable généré: ${stableId}`);
+        return stableId;
       } catch (error) {
-        console.error("Erreur génération ID table:", error);
+        console.error("❌ Erreur génération ID table:", error);
         return `table_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       }
     }

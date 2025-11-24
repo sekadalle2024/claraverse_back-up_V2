@@ -292,8 +292,8 @@ const Help = () => {
           {selectedSection === 'dashboard-features' ? (
             <div className="flex-1 flex flex-col items-center justify-center h-full w-full">
               <div className="w-full max-w-3xl mx-auto flex flex-col items-center mb-6 px-2 md:px-0">
-                <h1 className="text-3xl md:text-4xl font-extrabold text-sakura-700 dark:text-sakura-300 mb-2 font-sans text-center drop-shadow-sm">Clara Dashboard Tour</h1>
-                <p className="text-lg md:text-xl text-gray-700 dark:text-gray-200 mb-4 font-sans text-center max-w-2xl">Discover all the features and possibilities of your Clara dashboard. Watch this quick tour to learn how to get the most out of your workspace, customize your experience, and unlock powerful tools for productivity and creativity.</p>
+                <h1 className="text-3xl md:text-4xl font-extrabold text-sakura-700 dark:text-sakura-300 mb-2 font-sans text-center drop-shadow-sm">E-audit Dashboard Tour</h1>
+                <p className="text-lg md:text-xl text-gray-700 dark:text-gray-200 mb-4 font-sans text-center max-w-2xl">Discover all the features and possibilities of your E-audit dashboard. Watch this quick tour to learn how to get the most out of your workspace, customize your experience, and unlock powerful tools for productivity and creativity.</p>
               </div>
               <div className="relative flex flex-col items-center justify-center w-full h-full rounded-2xl shadow-lg overflow-hidden bg-white/80 dark:bg-gray-900/80" style={{ aspectRatio: '16/9', minHeight: 320, maxHeight: '70vh' }}>
                 {/* Soft blur/glow overlay for video edges */}

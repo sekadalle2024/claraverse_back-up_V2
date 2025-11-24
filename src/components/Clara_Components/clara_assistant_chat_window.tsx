@@ -534,13 +534,13 @@ const WelcomeScreen: React.FC<{
       <div className="max-w-2xl text-center">
         {/* Hero Section */}
         <div className="mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-pink-500 to-sakura-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            {/* support dark mode and light mode */}
-            <Bot className="w-10 h-10 dark:text-white text-gray-500" />
+          <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-pink-500 to-sakura-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg p-3">
+            {/* Logo de l'application */}
+            <img src="/logo.png" alt="E-audit Logo" className="w-full h-full object-contain" />
           </div>
           
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
-            Welcome{userName ? ` back, ${userName}` : ''} to Clara! 
+            Welcome{userName ? ` back, ${userName}` : ''} to E-audit! 
             <Sparkles className="inline-block w-6 h-6 ml-2 text-sakura-500" />
           </h1>
           
@@ -600,7 +600,7 @@ const WelcomeScreen: React.FC<{
             💡 <strong>Pro tip:</strong> You can drag and drop files directly into the chat!
           </p>
           <p>
-            🔄 Clara automatically detects file types and uses the best AI models for each task.
+            🔄 E-audit automatically detects file types and uses the best AI models for each task.
           </p>
         </div>
       </div>
@@ -618,12 +618,12 @@ const LoadingScreen: React.FC<{
     <div className="flex items-center justify-center h-full p-8">
       <div className="max-w-md text-center">
         {/* Loading Animation */}
-        <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-pink-500 to-sakura-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-pulse">
-          <Bot className="w-10 h-10 text-white" />
+        <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-pink-500 to-sakura-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-pulse p-3">
+          <img src="/logo.png" alt="E-audit Logo" className="w-full h-full object-contain" />
         </div>
         
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-          Initializing Clara...
+          Initializing E-audit...
         </h2>
         
         <p className="text-gray-600 dark:text-gray-400 mb-6">
@@ -687,7 +687,7 @@ const ProcessingIndicator: React.FC<{
       case 'processing':
         return {
           icon: <Loader2 className="w-5 h-5 animate-spin" />,
-          text: message || 'Clara is thinking...',
+          text: message || 'E-audit is thinking...',
           bgColor: 'bg-blue-500'
         };
       case 'success':

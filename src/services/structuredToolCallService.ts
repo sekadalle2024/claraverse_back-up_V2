@@ -361,7 +361,7 @@ export class StructuredToolCallService {
   private buildNativeStructuredPrompt(tools: Tool[], originalSystemPrompt?: string): string {
     const toolsDescription = this.formatToolsForPrompt(tools);
     
-    return `You are Clara, an autonomous AI agent. Your task is to accomplish user requests using available tools.
+    return `You are E-audit, an autonomous AI agent. Your task is to accomplish user requests using available tools.
 
 ${originalSystemPrompt || ''}
 
@@ -444,7 +444,7 @@ Be thorough, accurate, and helpful in your responses.`;
     // Check if the task appears to be already completed based on memory context
     const hasCompletedTask = this.isTaskAlreadyCompleted(userMessage, memoryContext);
     
-    let systemPrompt = `You are Clara, an autonomous AI agent. ACCOMPLISH THE TASK using structured tool calls.
+    let systemPrompt = `You are E-audit, an autonomous AI agent. ACCOMPLISH THE TASK using structured tool calls.
 
 STRUCTURED TOOL FORMAT:
 \`\`\`json

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Examen CIA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section h2 {
+            color: #3498db;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        tr:hover {
+            background: #f0f8ff;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(235, 51, 73, 0.4);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            min-width: 200px;
+        }
+
+        .status h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .status-label {
+            color: #7f8c8d;
+        }
+
+        .status-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎓 Test - Script Examen CIA</h1>
+
+    <div class="info-box">
+        <h3>📋 Instructions</h3>
+        <p>Cette page teste le script <code>examen_cia.js</code> avec différents scénarios de tables de questionnaires
+            CIA.</p>
+        <p><strong>Fonctionnalités testées:</strong></p>
+        <ul>
+            <li>Détection automatique des tables d'examen</li>
+            <li>Checkboxes avec choix unique par table</li>
+            <li>Masquage des colonnes (Reponse_cia, Remarques)</li>
+            <li>Fusion des cellules (Question, Ref_question)</li>
+            <li>Persistance dans localStorage</li>
+            <li>Restauration automatique</li>
+        </ul>
+    </div>
+
+    <div class="controls">
+        <button class="btn-primary" onclick="window.examenCIA.debug()">
+            📊 Afficher les infos
+        </button>
+        <button class="btn-success" onclick="window.examenCIA.exportData()">
+            💾 Exporter les données
+        </button>
+        <button class="btn-danger" onclick="window.examenCIA.clearData()">
+            🗑️ Effacer les données
+        </button>
+        <button class="btn-info" onclick="location.reload()">
+            🔄 Recharger la page
+        </button>
+    </div>
+
+    <div class="status">
+        <h3>📈 Statut</h3>
+        <div class="status-item">
+            <span class="status-label">Examens:</span>
+            <span class="status-value" id="exam-count">-</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Taille:</span>
+            <span class="status-value" id="data-size">-</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Dernière MAJ:</span>
+            <span class="status-value" id="last-update">-</span>
+        </div>
+    </div>
+
+    <!-- TEST 1: Table d'information -->
+    <div class="test-section">
+        <h2>📄 Test 1: Table d'information (première table)</h2>
+        <p>Cette table ne devrait pas être traitée comme un questionnaire.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Titre Examen</th>
+                    <th>Durée</th>
+                    <th>Date</th>
+                    <th>Nombre de questions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>CIA Part 1 - Internal Audit Basics</td>
+                    <td>3 heures</td>
+                    <td>15 Janvier 2024</td>
+                    <td>125 questions</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TEST 2: Table avec toutes les colonnes -->
+    <div class="test-section">
+        <h2>✅ Test 2: Table complète avec toutes les colonnes</h2>
+        <p>Cette table contient toutes les colonnes: Ref_question, Question, Option, Reponse_user, Reponse_cia,
+            Remarques</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Ref_question</th>
+                    <th>Question</th>
+                    <th>Option</th>
+                    <th>Reponse_user</th>
+                    <th>Reponse_cia</th>
+                    <th>Remarques</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Q1.1</td>
+                    <td>Quelle est la principale responsabilité de l'audit interne selon l'IIA?</td>
+                    <td>A. Détecter les fraudes</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>L'audit interne ne se limite pas à la détection de fraudes</td>
+                </tr>
+                <tr>
+                    <td>Q1.1</td>
+                    <td>Quelle est la principale responsabilité de l'audit interne selon l'IIA?</td>
+                    <td>B. Fournir une assurance et des conseils</td>
+                    <td></td>
+                    <td>Oui</td>
+                    <td>C'est la définition officielle de l'IIA</td>
+                </tr>
+                <tr>
+                    <td>Q1.1</td>
+                    <td>Quelle est la principale responsabilité de l'audit interne selon l'IIA?</td>
+                    <td>C. Remplacer l'audit externe</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>L'audit interne complète mais ne remplace pas l'audit externe</td>
+                </tr>
+                <tr>
+                    <td>Q1.1</td>
+                    <td>Quelle est la principale responsabilité de l'audit interne selon l'IIA?</td>
+                    <td>D. Gérer les risques opérationnels</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>L'audit interne évalue mais ne gère pas les risques</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TEST 3: Table avec variations de noms -->
+    <div class="test-section">
+        <h2>🔤 Test 3: Table avec variations de noms de colonnes</h2>
+        <p>Test des variations: "reponse user" (avec espace), "REPONSE CIA" (majuscules), "remarque" (singulier)</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ref question</th>
+                    <th>question</th>
+                    <th>option</th>
+                    <th>reponse user</th>
+                    <th>REPONSE CIA</th>
+                    <th>remarque</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Q2.1</td>
+                    <td>Quel est le cadre de référence international pour l'audit interne?</td>
+                    <td>A. COSO</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>COSO est un cadre de contrôle interne</td>
+                </tr>
+                <tr>
+                    <td>Q2.1</td>
+                    <td>Quel est le cadre de référence international pour l'audit interne?</td>
+                    <td>B. IPPF (International Professional Practices Framework)</td>
+                    <td></td>
+                    <td>Oui</td>
+                    <td>L'IPPF est le cadre de l'IIA</td>
+                </tr>
+                <tr>
+                    <td>Q2.1</td>
+                    <td>Quel est le cadre de référence international pour l'audit interne?</td>
+                    <td>C. ISO 9001</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>ISO 9001 concerne la qualité</td>
+                </tr>
+                <tr>
+                    <td>Q2.1</td>
+                    <td>Quel est le cadre de référence international pour l'audit interne?</td>
+                    <td>D. Sarbanes-Oxley</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>SOX est une loi américaine</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TEST 4: Table avec accents -->
+    <div class="test-section">
+        <h2>🔠 Test 4: Table avec accents français</h2>
+        <p>Test avec "Réponse_user" et "Réponse_cia" (avec accents)</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Réf_question</th>
+                    <th>Question</th>
+                    <th>Option</th>
+                    <th>Réponse_user</th>
+                    <th>Réponse_cia</th>
+                    <th>Remarques</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Q3.1</td>
+                    <td>Quelle norme définit l'indépendance de l'audit interne?</td>
+                    <td>A. Norme 1000</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>La norme 1000 concerne les objectifs</td>
+                </tr>
+                <tr>
+                    <td>Q3.1</td>
+                    <td>Quelle norme définit l'indépendance de l'audit interne?</td>
+                    <td>B. Norme 1100</td>
+                    <td></td>
+                    <td>Oui</td>
+                    <td>La norme 1100 traite de l'indépendance et de l'objectivité</td>
+                </tr>
+                <tr>
+                    <td>Q3.1</td>
+                    <td>Quelle norme définit l'indépendance de l'audit interne?</td>
+                    <td>C. Norme 2000</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>La norme 2000 concerne la gestion de l'activité</td>
+                </tr>
+                <tr>
+                    <td>Q3.1</td>
+                    <td>Quelle norme définit l'indépendance de l'audit interne?</td>
+                    <td>D. Norme 2100</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>La norme 2100 concerne la nature du travail</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TEST 5: Table minimaliste -->
+    <div class="test-section">
+        <h2>⚡ Test 5: Table minimaliste (Option + Reponse_user uniquement)</h2>
+        <p>Test avec seulement les colonnes essentielles</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Option</th>
+                    <th>Reponse_user</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>A. Vrai</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>B. Faux</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/examen_cia.js"></script>
+    <script src="/diagnostic-examen-cia.js"></script>
+
+    <script>
+        // Mise à jour du statut
+        function updateStatus() {
+            try {
+                if (window.examenCIA && typeof window.examenCIA.getInfo === 'function') {
+                    const info = window.examenCIA.getInfo();
+                    document.getElementById('exam-count').textContent = info.examCount;
+                    document.getElementById('data-size').textContent = info.dataSizeKB + ' KB';
+                    document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+                } else {
+                    document.getElementById('exam-count').textContent = '⏳';
+                    document.getElementById('data-size').textContent = '⏳';
+                    document.getElementById('last-update').textContent = 'Chargement...';
+                }
+            } catch (error) {
+                console.error('Erreur mise à jour statut:', error);
+            }
+        }
+
+        // Mise à jour initiale
+        setTimeout(updateStatus, 2000);
+
+        // Mise à jour périodique
+        setInterval(updateStatus, 5000);
+
+        // Logs de bienvenue
+        console.log('%c🎓 Test Examen CIA', 'font-size: 20px; font-weight: bold; color: #667eea;');
+        console.log('%cCommandes disponibles:', 'font-size: 14px; font-weight: bold;');
+        console.log('  window.examenCIA.debug()      - Afficher les informations');
+        console.log('  window.examenCIA.exportData() - Exporter les données');
+        console.log('  window.examenCIA.clearData()  - Effacer les données');
+        console.log('  window.examenCIA.getInfo()    - Obtenir les statistiques');
+        console.log('\n%c🔍 Diagnostic disponible:', 'font-size: 14px; font-weight: bold; color: #f39c12;');
+        console.log('  diagnosticExamenCIA.verifierSauvegarde()   - Vérifier la sauvegarde');
+        console.log('  diagnosticExamenCIA.verifierRestauration() - Vérifier la restauration');
+        console.log('  diagnosticExamenCIA.forcerFusion()         - Forcer la fusion des cellules');
+        console.log('  diagnosticExamenCIA.forcerRestauration()   - Forcer la restauration');
+        console.log('  diagnosticExamenCIA.afficherTout()         - Afficher tout');
+    </script>
+</body>
+
+</html>

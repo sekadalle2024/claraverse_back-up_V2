@@ -39,6 +39,12 @@ class AutoRestoreService {
    * Tente de restaurer les tables de la session stable
    */
   private async attemptRestore(): Promise<void> {
+    // Vérifier le gestionnaire de verrouillage
+    if ((window as any).restoreLockManager && !(window as any).restoreLockManager.canRestore()) {
+      console.log('%c🔒 AUTO-RESTORE: Bloqué par le gestionnaire de verrouillage', 'background: #ff9800; color: black; padding: 3px;');
+      return;
+    }
+
     if (this.restoreAttempted) {
       console.log('%c⚠️ AUTO-RESTORE: Déjà tenté', 'background: #ff9800; color: black; padding: 3px;');
       return;
@@ -109,46 +115,15 @@ if (typeof window !== 'undefined') {
   (window as any).autoRestoreService = autoRestoreService;
 }
 
-// Auto-initialisation IMMÉDIATE et MULTIPLE
+// Auto-initialisation UNIQUE avec gestionnaire de verrouillage
 if (typeof window !== 'undefined') {
-  console.log('%c🔄 AUTO-RESTORE: Initialisation...', 'background: #007acc; color: white; font-size: 14px; padding: 5px;');
+  console.log('%c🔄 AUTO-RESTORE: Initialisation unique...', 'background: #007acc; color: white; font-size: 14px; padding: 5px;');
   
-  // Tentative 1: Après un délai pour laisser les tables se charger
+  // Une seule tentative après un délai raisonnable
   setTimeout(() => {
-    console.log('%c🔄 AUTO-RESTORE: Tentative 1 (2s)', 'background: #007acc; color: white; padding: 3px;');
+    console.log('%c🔄 AUTO-RESTORE: Tentative unique (1.5s)', 'background: #007acc; color: white; padding: 3px;');
     autoRestoreService.initialize().catch(error => {
-      console.error('❌ Erreur initialisation auto-restore (tentative 1):', error);
+      console.error('❌ Erreur initialisation auto-restore:', error);
     });
-  }, 2000);
-  
-  // Tentative 2: Après chargement DOM
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('%c🔄 AUTO-RESTORE: Tentative 2 (DOMContentLoaded + 3s)', 'background: #007acc; color: white; padding: 3px;');
-      setTimeout(() => autoRestoreService.forceRestore(), 3000);
-    });
-  } else {
-    setTimeout(() => {
-      console.log('%c🔄 AUTO-RESTORE: Tentative 2 (DOM déjà prêt + 3s)', 'background: #007acc; color: white; padding: 3px;');
-      autoRestoreService.forceRestore();
-    }, 3000);
-  }
-  
-  // Tentative 3: Après chargement complet
-  window.addEventListener('load', () => {
-    console.log('%c🔄 AUTO-RESTORE: Tentative 3 (window.load + 4s)', 'background: #007acc; color: white; padding: 3px;');
-    setTimeout(() => autoRestoreService.forceRestore(), 4000);
-  });
-  
-  // Tentative 4: Très tardive pour s'assurer que Flowise a généré les tables
-  setTimeout(() => {
-    console.log('%c🔄 AUTO-RESTORE: Tentative 4 (8s - tardive)', 'background: #ff5722; color: white; padding: 3px;');
-    autoRestoreService.forceRestore();
-  }, 8000);
-  
-  // Tentative 5: Ultra-tardive en dernier recours
-  setTimeout(() => {
-    console.log('%c🔄 AUTO-RESTORE: Tentative 5 (15s - ultra-tardive)', 'background: #f44336; color: white; padding: 3px;');
-    autoRestoreService.forceRestore();
-  }, 15000);
+  }, 1500);
 }

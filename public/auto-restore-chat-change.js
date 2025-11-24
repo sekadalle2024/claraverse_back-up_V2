@@ -11,11 +11,20 @@
 
     // === FONCTION DE RESTAURATION ===
     async function restoreCurrentSession() {
+        // Vérifier le gestionnaire de verrouillage
+        if (window.restoreLockManager && !window.restoreLockManager.canRestore()) {
+            console.log('🔒 Restauration bloquée par le gestionnaire de verrouillage');
+            return;
+        }
+
         const now = Date.now();
         if (now - lastRestoreTime < MIN_RESTORE_INTERVAL) {
             console.log('⏭️ Restauration trop récente, skip');
             return;
         }
+
+        // Activer le flag pour ignorer les mutations pendant la restauration
+        isRestoring = true;
 
         lastRestoreTime = now;
         console.log('🎯 === RESTAURATION VIA ÉVÉNEMENT ===');
@@ -59,6 +68,12 @@
 
         } catch (error) {
             console.error('❌ Erreur:', error);
+        } finally {
+            // Désactiver le flag après un délai pour laisser le DOM se stabiliser
+            setTimeout(() => {
+                isRestoring = false;
+                console.log('🔓 Flag de restauration désactivé');
+            }, 2000);
         }
     }
 
@@ -91,22 +106,46 @@
 
     // === INITIALISATION ===
 
-    // Vérifier périodiquement
-    setInterval(checkForChanges, 500);
+    // Vérifier périodiquement (DÉSACTIVÉ - utilise uniquement MutationObserver)
+    // setInterval(checkForChanges, 500);
+
+    // Flag pour éviter les boucles de restauration
+    let isRestoring = false;
 
     // Observer DOM
     const observer = new MutationObserver((mutations) => {
+        // Ignorer les mutations pendant la restauration
+        if (isRestoring) {
+            return;
+        }
+
         const hasTableChanges = mutations.some(m => {
             return Array.from(m.addedNodes).some(node => {
                 if (node.nodeType === 1) {
-                    return node.tagName === 'TABLE' || node.querySelector?.('table');
+                    // Ignorer les tables déjà restaurées
+                    if (node.tagName === 'TABLE') {
+                        const container = node.closest('[data-restored-content="true"]');
+                        if (container) {
+                            return false; // Table déjà restaurée, ignorer
+                        }
+                        return true;
+                    }
+                    // Vérifier les sous-éléments
+                    const tables = node.querySelectorAll?.('table');
+                    if (tables && tables.length > 0) {
+                        // Vérifier si au moins une table n'est pas restaurée
+                        return Array.from(tables).some(table => {
+                            const container = table.closest('[data-restored-content="true"]');
+                            return !container;
+                        });
+                    }
                 }
                 return false;
             });
         });
 
         if (hasTableChanges) {
-            console.log('🔄 Nouvelles tables détectées');
+            console.log('🔄 Nouvelles tables NON restaurées détectées');
             scheduleRestore();
         }
     });

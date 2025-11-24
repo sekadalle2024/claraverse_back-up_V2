@@ -181,7 +181,7 @@ const ThinkingDisplay: React.FC<{
           <div className={`w-2 h-2 bg-blue-500 rounded-full ${isStreaming && !isComplete ? 'animate-pulse' : ''}`}></div>
           <span className={`text-[14px] font-medium ${getStatusColor()}`}>
             <span className="text-xs text-gray-500 dark:text-gray-400">
-            {getStatusText() === "thinking..." ? "Clara is  " : "Thought for "} {getStatusText()} {"herself"}
+            {getStatusText() === "thinking..." ? "E-audit is  " : "Thought for "} {getStatusText()} {"herself"}
             </span>
           </span>
         </div>
@@ -1104,7 +1104,7 @@ const ClaraMessageBubble: React.FC<ClaraMessageBubbleProps> = ({
         {isUser ? (
           <User className="w-5 h-5 text-white" />
         ) : (
-          <Bot className="w-5 h-5 text-white drop-shadow-sm" />
+          <img src="/logo.png" alt="E-audit" className="w-5 h-5 object-contain drop-shadow-sm" />
         )}
       </div>
 
@@ -1113,7 +1113,7 @@ const ClaraMessageBubble: React.FC<ClaraMessageBubbleProps> = ({
         {/* Header with name and timestamp */}
         <div className={`flex items-center gap-2 mb-3 ${isUser ? 'justify-end' : ''}`}>
           <span className="text-[15px] font-semibold text-gray-900 dark:text-white">
-            {isUser ? userName : 'Clara'}
+            {isUser ? userName : 'E-audit'}
           </span>
           <span className="text-xs text-gray-500 dark:text-gray-400">
             {message.timestamp.toLocaleTimeString([], { 

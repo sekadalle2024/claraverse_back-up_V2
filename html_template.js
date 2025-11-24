@@ -1,20 +1,24 @@
 /**
- * Script d'injection HTML pour Claraverse - Version PDF E-AUDIT PRO 2.0 - Accordéon avec Tables
+ * Script d'injection HTML pour Claraverse - Version Debug
  * Nom : html_template.js
- * Reproduction fidèle du PDF Guide Pratique en menu accordéon avec tables à une ligne/une colonne
+ * Objectif : Injecter du contenu HTML structuré dans la page de chat
  */
-(function() {
+
+(function () {
     'use strict';
-    
-    console.log('🚀 Script HTML Template Claraverse - PDF E-AUDIT PRO 2.0 Accordéon Tables');
+
+    console.log('🚀 Script HTML Template Claraverse chargé');
 
     // Configuration
     const CONFIG = {
+        // Différents sélecteurs à essayer
         selectors: [
+            // Sélecteur spécifique des tables Claraverse
             'table.min-w-full.border.border-gray-200',
             'table.min-w-full',
             'div.prose table',
             'table',
+            // Sélecteur des divs prose
             'div.prose',
             'div[class*="prose"]'
         ],
@@ -27,451 +31,351 @@
     let retryCount = 0;
 
     /**
-     * Template HTML reproduisant le PDF E-AUDIT PRO 2.0 en accordéon avec tables
+     * Contenu HTML simplifié pour test
      */
     const HTML_TEMPLATE = `
-        <div class="accordion-container" style="margin: 40px auto; max-width: 900px; background: #e5e7eb; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+        <div class="html-template-wrapper" style="margin: 40px auto; max-width: 900px; background: #e5e7eb; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
             <style>
-                .accordion-container {
+                .html-template-wrapper {
                     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                     max-height: 800px;
                     overflow-y: auto;
                     scroll-behavior: smooth;
                 }
-                .accordion-container::-webkit-scrollbar {
+                .html-template-wrapper::-webkit-scrollbar {
                     width: 10px;
                 }
-                .accordion-container::-webkit-scrollbar-track {
+                .html-template-wrapper::-webkit-scrollbar-track {
                     background: #f1f1f1;
                     border-radius: 10px;
                 }
-                .accordion-container::-webkit-scrollbar-thumb {
+                .html-template-wrapper::-webkit-scrollbar-thumb {
                     background: #667eea;
                     border-radius: 10px;
                 }
-                .accordion-container::-webkit-scrollbar-thumb:hover {
+                .html-template-wrapper::-webkit-scrollbar-thumb:hover {
                     background: #5568d3;
                 }
-                details {
-                    margin-bottom: 10px;
-                    border: 1px solid #d1d5db;
+                .template-slide {
+                    background: white;
+                    padding: 40px;
+                    margin: 15px 0;
                     border-radius: 8px;
-                    overflow: hidden;
-                    background: white;
-                }
-                details[open] {
                     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                    min-height: 500px;
+                    max-height: 700px;
+                    page-break-after: always;
                 }
-                summary {
-                    padding: 20px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    cursor: pointer;
-                    font-weight: 600;
-                    font-size: 18px;
-                    list-style: none;
-                    outline: none;
-                    transition: background 0.3s ease;
-                }
-                summary:hover {
-                    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-                }
-                summary::-webkit-details-marker {
-                    display: none;
-                }
-                summary::before {
-                    content: '▶';
-                    display: inline-block;
-                    margin-right: 10px;
-                    transition: transform 0.3s ease;
-                }
-                details[open] summary::before {
-                    transform: rotate(90deg);
-                }
-                .accordion-content {
-                    padding: 0 20px 20px;
-                    background: #f8fafc;
-                }
-                .content-table {
-                    min-width: 100%;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 0.5rem;
-                    overflow: hidden;
-                    margin-bottom: 15px;
-                    background: white;
-                }
-                .content-table.dark {
-                    border-color: #374151;
-                    background: #1f2937;
-                }
-                .content-table td {
-                    padding: 15px;
-                    vertical-align: top;
-                    border: none;
-                }
-                .cover-table td {
+                .template-slide.gradient {
                     background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%), url('/src/assets/B10.jpg');
                     background-size: cover;
                     background-position: center;
+                    background-repeat: no-repeat;
                     color: white;
-                    text-align: center;
-                    min-height: 100px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
                 }
-                .content-table.cover-table td::before {
+                .template-slide.gradient-alt {
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.85) 0%, rgba(118, 75, 162, 0.85) 100%), url('/src/assets/B41.JPG');
+                    background-size: cover;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    color: white;
+                }
+                .template-slide.with-bg {
+                    background: url('/src/assets/B10.jpg');
+                    background-size: cover;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    position: relative;
+                }
+                .template-slide.with-bg::before {
                     content: '';
                     position: absolute;
                     top: 0;
                     left: 0;
                     right: 0;
                     bottom: 0;
-                    background: rgba(255, 255, 255, 0.97);
-                    border-radius: 0.5rem;
+                    background: rgba(255, 255, 255, 0.95);
+                    border-radius: 8px;
                 }
-                .content-table.cover-table td > * {
+                .template-slide.with-bg > * {
                     position: relative;
                     z-index: 1;
                 }
-                .title-main {
+                .template-title {
                     font-size: 48px;
-                    font-weight: 700;
+                    font-weight: bold;
+                    text-align: center;
                     margin-bottom: 20px;
                     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-                    letter-spacing: 2px;
                 }
-                .subtitle-main {
-                    font-size: 28px;
-                    font-weight: 600;
-                    margin-bottom: 20px;
-                    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-                }
-                .title-secondary {
-                    font-size: 16px;
-                    line-height: 1.6;
+                .template-subtitle {
+                    font-size: 24px;
+                    text-align: center;
                     opacity: 0.95;
-                    max-width: 500px;
                     text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
                 }
-                .section-title {
-                    font-size: 24px;
-                    font-weight: 700;
-                    color: #1e40af;
-                    margin-bottom: 20px;
-                    text-transform: uppercase;
-                }
-                .card-table td {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                .template-card {
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
                     color: white;
-                    text-align: center;
-                    min-height: 150px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                }
-                .card-number {
-                    font-size: 48px;
-                    font-weight: 700;
-                    margin-bottom: 10px;
-                }
-                .card-text {
-                    font-size: 12px;
-                    line-height: 1.4;
-                }
-                .list-table td {
-                    padding-left: 30px;
-                    position: relative;
-                    border-bottom: 1px solid #e5e7eb;
-                    font-size: 16px;
-                }
-                .list-table td::before {
-                    content: "•";
-                    position: absolute;
-                    left: 0;
-                    color: #667eea;
-                    font-size: 24px;
-                    line-height: 1;
-                }
-                .text-block-table td {
-                    background: #f1f5f9;
-                    border-left: 4px solid #667eea;
-                    font-size: 14px;
-                    line-height: 1.6;
-                }
-                .highlight-table td {
-                    background: #eff6ff;
-                    border: 2px solid #3b82f6;
-                    border-radius: 0.5rem;
-                    font-size: 13px;
-                    line-height: 1.6;
-                }
-                .case-title-table td {
-                    font-size: 20px;
-                    font-weight: 700;
-                    color: #1e40af;
-                    margin-bottom: 15px;
-                }
-                .story-text-table td {
-                    font-size: 14px;
-                    line-height: 1.7;
-                    color: #374151;
-                    margin-bottom: 10px;
-                    text-align: justify;
-                }
-                .workflow-table td {
-                    text-align: center;
-                    font-size: 16px;
-                    font-weight: 700;
-                    color: white;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    border-radius: 0.5rem;
-                    padding: 15px;
+                    padding: 30px;
+                    border-radius: 10px;
                     margin: 20px 0;
+                    backdrop-filter: blur(5px);
                 }
-                .norm-table td {
-                    background: #fef3c7;
-                    border: 3px solid #f59e0b;
-                    border-radius: 0.5rem;
-                    font-size: 13px;
-                    line-height: 1.6;
-                }
-                .norm-title {
-                    font-weight: 700;
-                    color: #92400e;
-                    margin-bottom: 8px;
-                    font-size: 14px;
-                }
-                .h3-table td {
-                    font-size: 20px;
-                    font-weight: 700;
-                    color: #1e40af;
+                .template-card h3 {
+                    font-size: 36px;
                     margin-bottom: 15px;
                 }
-                .grid-wrapper {
+                .template-command {
+                    background: #2d3748;
+                    color: #68d391;
+                    padding: 20px;
+                    border-radius: 8px;
+                    font-family: 'Courier New', monospace;
+                    margin: 15px 0;
+                }
+                .template-grid {
                     display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 30px;
-                    margin-top: 30px;
-                }
-                @media (max-width: 768px) {
-                    .title-main {
-                        font-size: 32px;
-                    }
-                    .grid-wrapper {
-                        grid-template-columns: 1fr;
-                    }
-                    summary {
-                        padding: 15px;
-                        font-size: 16px;
-                    }
-                }
-                .dark .accordion-container {
-                    background: #1f2937;
-                    color: #f9fafb;
-                }
-                .dark details {
-                    border-color: #4b5563;
-                    background: #374151;
-                }
-                .dark .accordion-content {
-                    background: #4b5563;
-                }
-                .dark .content-table {
-                    border-color: #4b5563;
-                }
-                .dark .text-block-table td {
-                    background: #1f2937;
-                    border-color: #60a5fa;
-                }
-                .dark .highlight-table td {
-                    background: #1e3a8a;
-                    border-color: #60a5fa;
-                }
-                .dark .norm-table td {
-                    background: #78350f;
-                    border-color: #d97706;
-                }
-                .dark .story-text-table td {
-                    color: #f9fafb;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 20px;
+                    margin: 30px 0;
                 }
             </style>
 
-            <!-- ACCORDÉON ITEM 1: COUVERTURE -->
-            <details>
-                <summary>Couverture - E-AUDIT PRO 2.0</summary>
-                <div class="accordion-content">
-                    <table class="content-table cover-table"><tbody><tr><td class="title-main">E-AUDIT PRO 2.0</td></tr></tbody></table>
-                    <table class="content-table cover-table"><tbody><tr><td class="subtitle-main">GUIDE PRATIQUE</td></tr></tbody></table>
-                    <table class="content-table cover-table"><tbody><tr><td class="title-secondary">Norme 9.4 Plan d'audit interne- Pourquoi votre plan annuel d'audit ne couvre pas exhaustivement les risques</td></tr></tbody></table>
+            <!-- Slide 1: Titre -->
+            <div class="template-slide gradient">
+                <div class="template-title">E-AUDIT PRO 2.0</div>
+                <div class="template-subtitle">GUIDE PRATIQUE</div>
+                <div style="text-align: center; margin-top: 20px; font-size: 18px; opacity: 0.9;">
+                    Guide des Commandes utilisateur
                 </div>
-            </details>
+            </div>
 
-            <!-- ACCORDÉON ITEM 2: SOMMAIRE -->
-            <details>
-                <summary>Sommaire</summary>
-                <div class="accordion-content">
-                    <table class="content-table"><tbody><tr><td class="section-title">SOMMAIRE</td></tr></tbody></table>
-                    <div class="grid-wrapper">
-                        <div>
-                            <table class="content-table h3-table"><tbody><tr><td>Sommaire détaillé</td></tr></tbody></table>
-                            <table class="content-table list-table"><tbody><tr><td>Etude de cas - P4</td></tr></tbody></table>
-                            <table class="content-table list-table"><tbody><tr><td>Méthode manuelle - P11</td></tr></tbody></table>
-                            <table class="content-table list-table"><tbody><tr><td>Méthode automatisée -P20</td></tr></tbody></table>
-                            <table class="content-table list-table"><tbody><tr><td>Offre logicielle - P27</td></tr></tbody></table>
-                            <table class="content-table list-table"><tbody><tr><td>Contact -P29</td></tr></tbody></table>
+            <!-- Slide 2: Sommaire -->
+            <div class="template-slide with-bg">
+                <h2 style="color: #667eea; font-size: 36px; border-bottom: 3px solid #667eea; padding-bottom: 10px;">SOMMAIRE</h2>
+                <ul style="list-style: none; font-size: 20px; line-height: 2; margin-top: 30px;">
+                    <li style="padding-left: 30px; position: relative;">
+                        <span style="position: absolute; left: 0; color: #667eea; font-size: 24px;">•</span>
+                        Avant-propos
+                    </li>
+                    <li style="padding-left: 30px; position: relative;">
+                        <span style="position: absolute; left: 0; color: #667eea; font-size: 24px;">•</span>
+                        Principe de base - P3
+                    </li>
+                    <li style="padding-left: 30px; position: relative;">
+                        <span style="position: absolute; left: 0; color: #667eea; font-size: 24px;">•</span>
+                        Cartographie des risques - P5
+                    </li>
+                    <li style="padding-left: 30px; position: relative;">
+                        <span style="position: absolute; left: 0; color: #667eea; font-size: 24px;">•</span>
+                        Interfaces - P8
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Slide 3: Principes -->
+            <div class="template-slide with-bg">
+                <h2 style="color: #667eea; font-size: 36px; border-bottom: 3px solid #667eea; padding-bottom: 10px;">Principe de base</h2>
+                
+                <div class="template-grid">
+                    <div class="template-card">
+                        <h3>1</h3>
+                        <p>Un programme de travail constitue les travaux d'audit à accomplir pour atteindre les objectifs d'audit</p>
+                    </div>
+                    <div class="template-card">
+                        <h3>2</h3>
+                        <p>Les objectifs d'audit de la mission et les risques associés doivent être annexés à tout programme de travail</p>
+                    </div>
+                    <div class="template-card">
+                        <h3>3</h3>
+                        <p>E-audit a adopté une interface de type intelligence artificielle avec les mêmes principes d'interaction</p>
+                    </div>
+                </div>
+
+                <div style="background: #f8f9fa; border: 3px solid #667eea; border-radius: 10px; padding: 30px; margin-top: 30px;">
+                    <p style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">RISQUES → SCENARIO → ÉCART</p>
+                    <p style="font-size: 16px;">Le logiciel propose la rédaction automatisée de l'étape clés de mission :</p>
+                    <p style="font-size: 16px; margin-top: 10px;">○ Cartographie des risques</p>
+                </div>
+            </div>
+
+            <!-- Slide 4: Commandes -->
+            <div class="template-slide with-bg">
+                <h2 style="color: #667eea; font-size: 36px; border-bottom: 3px solid #667eea; padding-bottom: 10px;">Les Commandes</h2>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px;">
+                    <div style="background: #f8f9fa; border: 3px solid #667eea; border-radius: 10px; padding: 25px;">
+                        <h4 style="color: #667eea; font-size: 22px; margin-bottom: 15px;">La commande elle-même</h4>
+                        <p style="margin-bottom: 15px;">Il y a la commande en elle même qui représente une étape de mission.</p>
+                        <p style="font-weight: bold; margin-bottom: 10px;">Exemple :</p>
+                        <div class="template-command">
+                            <code>[Command] = /Cartographie</code>
                         </div>
-                        <div>
-                            <table class="content-table h3-table"><tbody><tr><td>Avant-propos</td></tr></tbody></table>
-                            <table class="content-table text-block-table"><tbody><tr><td>Ce guide pratique vous explique comment construire un univers d'audit robuste, conformément à la Norme 9.4.<br><br>Vous apprendrez à utiliser la revue documentaire pour identifier tous les objets auditables pertinents.</td></tr></tbody></table>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; border: 3px solid #667eea; border-radius: 10px; padding: 25px;">
+                        <h4 style="color: #667eea; font-size: 22px; margin-bottom: 15px;">Les paramètres</h4>
+                        <p style="margin-bottom: 15px;">Les paramètres permettent de rendre dynamique la commande selon les besoins.</p>
+                        <p style="font-weight: bold; margin-bottom: 10px;">Exemple :</p>
+                        <div class="template-command">
+                            <code>[Command] = /Cartographie</code><br>
+                            <code>[Processus] = inventaire de caisse</code><br>
+                            <code>[Objectif] = conformité</code>
                         </div>
                     </div>
                 </div>
-            </details>
+            </div>
 
-            <!-- ACCORDÉON ITEM 3: ETUDE DE CAS - INTRODUCTION -->
-            <details>
-                <summary>Etude de cas - Introduction</summary>
-                <div class="accordion-content">
-                    <table class="content-table case-title-table"><tbody><tr><td>ETUDE DE CAS – Bahi Legre, RESPONSABLE AUDIT INTERNE</td></tr></tbody></table>
-                    <table class="content-table workflow-table"><tbody><tr><td>RISQUES → SCENARIO → ECART</td></tr></tbody></table>
-                    <table class="content-table card-table"><tbody><tr><td><div class="card-number">1</div><div class="card-text">Un programme de travail constitue les travaux d'audit à accomplir pour atteindre les objectifs d'audit</div></td></tr></tbody></table>
-                    <table class="content-table card-table"><tbody><tr><td><div class="card-number">2</div><div class="card-text">Les objectifs d'audit de la mission et les risques associés doivent être annexés à tout programme de travail. Les objectifs d'audit sont des sous-thématiques de la thématique globale de mission.</div></td></tr></tbody></table>
-                    <table class="content-table card-table"><tbody><tr><td><div class="card-number">3</div><div class="card-text">Les objectifs d'audit sont des sous-thématiques de la thématique globale de mission.</div></td></tr></tbody></table>
+            <!-- Slide 5: Fonctionnalités -->
+            <div class="template-slide with-bg">
+                <h2 style="color: #667eea; font-size: 36px; border-bottom: 3px solid #667eea; padding-bottom: 10px;">Fonctionnalités</h2>
+                
+                <h3 style="color: #667eea; font-size: 28px; margin: 30px 0 20px;">1. Cartographie des risques</h3>
+                
+                <div class="template-command" style="font-size: 16px;">
+                    <code>[Command] = /Cartographie</code><br>
+                    <code>[Secteur d'activité] = industrie</code><br>
+                    <code>[Cycle] = trésorerie</code><br>
+                    <code>[Processus] = élaboration des rapprochements bancaire</code>
                 </div>
-            </details>
+                
+                <div style="text-align: center; margin-top: 40px; font-size: 18px; color: #666;">
+                    COMMANDE USER → INTERFACE → E-AUDIT PRO
+                </div>
+            </div>
 
-            <!-- ACCORDÉON ITEM 4: ETUDE DE CAS - PARTIE 1 -->
-            <details>
-                <summary>Etude de cas – Bahi Legre (1/2)</summary>
-                <div class="accordion-content">
-                    <table class="content-table case-title-table"><tbody><tr><td>ETUDE DE CAS – Bahi Legre (1/2)</td></tr></tbody></table>
-                    <table class="content-table story-text-table"><tbody><tr><td><strong>Lundi, 16h.</strong> Bahi Legre, Responsable de l'Audit Interne, était fatigué, mais soulagé. Sur son écran, la version finale du Plan d'Audit Annuel, prête à être présentée au Comité d'Audit le lendemain. Il avait personnellement supervisé son élaboration.</td></tr></tbody></table>
-                    <table class="content-table story-text-table"><tbody><tr><td>Son équipe avait passé les dernières semaines à analyser les rapports d'audit interne des trois années précédentes.</td></tr></tbody></table>
-                    <table class="content-table highlight-table"><tbody><tr><td><strong>Le lendemain.</strong> Bahi attendait l'approbation. Le Président du Comité, prit la parole, avec des mots durs. "Monsieur Legre, en comparant votre proposition avec le rapport de nos Commissaires aux Comptes de l'année N-1, que j'ai ici, je constate une divergence inquiétante."<br><br>"Votre plan ne couvre absolument pas 40% des risques élevés et des faiblesses significatives que le CAC a pourtant clairement signalés."</td></tr></tbody></table>
+            <!-- Slide 6: Final -->
+            <div class="template-slide gradient-alt">
+                <div class="template-title" style="font-size: 64px;">E-Audit</div>
+                <div class="template-subtitle" style="font-size: 28px;">V2.0</div>
+                <div style="text-align: center; margin-top: 30px; font-size: 20px; opacity: 0.95; letter-spacing: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">
+                    CREATIVE & CLEAN TEMPLATE
                 </div>
-            </details>
-
-            <!-- ACCORDÉON ITEM 5: ETUDE DE CAS - PARTIE 2 -->
-            <details>
-                <summary>Etude de cas – Bahi Legre (2/2)</summary>
-                <div class="accordion-content">
-                    <table class="content-table case-title-table"><tbody><tr><td>ETUDE DE CAS – Bahi Legre (2/2)</td></tr></tbody></table>
-                    <table class="content-table story-text-table"><tbody><tr><td><strong>De retour,</strong> Le plan d'audit, sur son bureau, était comme une preuve d'incompétence. La question du Président du Comité tournait en boucle dans son esprit.</td></tr></tbody></table>
-                    <table class="content-table highlight-table" style="background: #fee2e2; border-color: #dc2626;"><tbody><tr><td>Comment avons-nous pu définir notre univers d'audit en ignorant une source d'information externe aussi cruciale que les risques du CAC ?<br><br>Comment garantir la pertinence de notre plan si notre revue documentaire n'a pas été exhaustive ?</td></tr></tbody></table>
-                    <table class="content-table text-block-table" style="background: #dbeafe; border-color: #2563eb;"><tbody><tr><td>La publication des nouvelles normes du CRIPP par l'IIA en janvier 2024, avec une entrée en vigueur en janvier 2025, renforce l'exigence d'une planification de l'audit basée sur une évaluation exhaustive des risques, elle-même fondée sur un univers d'audit complet.</td></tr></tbody></table>
-                </div>
-            </details>
-
-            <!-- ACCORDÉON ITEM 6: NORMES -->
-            <details open>
-                <summary>Normes (Ouvert par défaut)</summary>
-                <div class="accordion-content">
-                    <table class="content-table case-title-table"><tbody><tr><td>ETUDE DE CAS – Bahi Legre (Normes)</td></tr></tbody></table>
-                    <table class="content-table norm-table"><tbody><tr><td><div class="norm-title">Norme 9.4 Plan d'audit interne:</div>« Le responsable de l'audit interne doit fonder le plan d'audit interne sur une évaluation documentée des stratégies, des objectifs et des risques de l'organisation. [...] Pour établir le plan d'audit interne, il est possible de catégoriser les unités à auditer visant à définir un univers d'audit. »</td></tr></tbody></table>
-                    <table class="content-table norm-table" style="background: #e0f2fe; border-color: #0284c7;"><tbody><tr><td><div class="norm-title" style="color: #075985;">Norme 13.2 Évaluation des risques dans le cadre de la mission:</div>« Les auditeurs internes doivent comprendre l'activité examinée pour évaluer les risques y afférents. [...] Pour une compréhension appropriée, les auditeurs internes doivent identifier et réunir des informations fiables, pertinentes et suffisantes. »</td></tr></tbody></table>
-                </div>
-            </details>
+            </div>
         </div>
     `;
 
     /**
-     * Fonction de débogage
+     * Fonction de débogage pour afficher les éléments trouvés
      */
     function debugElements() {
         console.log('🔍 Débogage des éléments présents dans la page:');
-        
+
         CONFIG.selectors.forEach((selector, index) => {
             try {
                 const elements = document.querySelectorAll(selector);
-                console.log(`  ${index + 1}. Sélecteur: "${selector}" → ${elements.length} élément(s)`);
+                console.log(`  ${index + 1}. Sélecteur: "${selector}" → ${elements.length} élément(s) trouvé(s)`);
+
+                if (elements.length > 0) {
+                    console.log('     Premier élément:', elements[0]);
+                }
             } catch (e) {
-                console.log(`  ${index + 1}. Sélecteur: "${selector}" → ERREUR`);
+                console.log(`  ${index + 1}. Sélecteur: "${selector}" → ERREUR: ${e.message}`);
             }
         });
+
+        // Vérifier les divs générales
+        const allDivs = document.querySelectorAll('div');
+        console.log(`  📦 Total divs dans la page: ${allDivs.length}`);
+
+        const allTables = document.querySelectorAll('table');
+        console.log(`  📊 Total tables dans la page: ${allTables.length}`);
     }
 
     /**
-     * Trouve le conteneur d'injection
+     * Trouve le conteneur d'injection avec plusieurs stratégies
      */
     function findInjectionTarget() {
-        console.log('🎯 Recherche du conteneur...');
+        console.log('🎯 Recherche du conteneur d\'injection...');
 
+        // Stratégie 1: Trouver la dernière table
         for (const selector of CONFIG.selectors.filter(s => s.includes('table'))) {
             const tables = document.querySelectorAll(selector);
             if (tables.length > 0) {
                 const lastTable = tables[tables.length - 1];
+                console.log('✅ Table trouvée avec:', selector);
+
+                // Chercher le conteneur parent
                 let parent = lastTable.closest('div');
                 if (parent) {
-                    console.log('✅ Conteneur trouvé');
+                    console.log('✅ Conteneur parent trouvé');
                     return parent;
                 }
+
+                // Sinon, utiliser le parent direct
                 return lastTable.parentElement;
             }
         }
 
+        // Stratégie 2: Trouver une div prose ou similaire
         for (const selector of CONFIG.selectors.filter(s => s.includes('div'))) {
             const divs = document.querySelectorAll(selector);
             if (divs.length > 0) {
-                return divs[divs.length - 1];
+                const lastDiv = divs[divs.length - 1];
+                console.log('✅ Div trouvée avec:', selector);
+                return lastDiv;
             }
         }
 
-        console.log('⚠️ Utilisation du body');
+        // Stratégie 3: Utiliser le body comme dernier recours
+        console.log('⚠️ Aucun conteneur spécifique trouvé, utilisation du body');
         return document.body;
     }
 
     /**
-     * Injecte le template accordéon avec tables (remplace si table présente)
+     * Injecte le template HTML
      */
     function injectTemplate(container) {
         if (!container) {
-            console.error('❌ Aucun conteneur');
+            console.error('❌ Aucun conteneur fourni pour l\'injection');
             return false;
         }
 
-        if (container.querySelector('.accordion-container')) {
-            console.log('ℹ️ Accordéon déjà présent');
+        // Vérifier si déjà traité
+        if (container.querySelector('.html-template-wrapper')) {
+            console.log('ℹ️ Template déjà présent, injection annulée');
             return false;
         }
 
         try {
-            // Si une table est dans le conteneur, la remplacer par l'accordéon
-            const existingTable = container.querySelector('table');
-            if (existingTable) {
-                existingTable.remove();
-                console.log('🗑️ Table existante supprimée');
-            }
-
+            // Créer un élément temporaire
             const temp = document.createElement('div');
             temp.innerHTML = HTML_TEMPLATE;
+
+            // Insérer le contenu
             const templateContent = temp.firstElementChild;
             container.appendChild(templateContent);
-            console.log('✅ Accordéon avec tables PDF injecté !');
+
+            console.log('✅ Template injecté avec succès !');
             return true;
         } catch (error) {
-            console.error('❌ Erreur:', error);
+            console.error('❌ Erreur lors de l\'injection:', error);
             return false;
         }
     }
 
     /**
-     * Exécution principale
+     * Fonction principale d'exécution
      */
     function execute() {
-        console.log(`\n🔄 Tentative ${retryCount + 1}/${CONFIG.maxRetries}`);
-        
+        console.log(`\n🔄 Tentative d'injection ${retryCount + 1}/${CONFIG.maxRetries}`);
+
+        // Débogage
         debugElements();
+
+        // Trouver et injecter
         const target = findInjectionTarget();
         const success = injectTemplate(target);
 
         if (!success && retryCount < CONFIG.maxRetries) {
             retryCount++;
+            console.log(`⏳ Nouvelle tentative dans ${CONFIG.retryInterval}ms...`);
             setTimeout(execute, CONFIG.retryInterval);
         } else if (success) {
-            console.log('🎉 Injection accordéon avec tables réussie !');
+            console.log('🎉 Injection terminée avec succès !');
+        } else {
+            console.log('❌ Nombre maximum de tentatives atteint');
         }
     }
 
@@ -479,7 +383,7 @@
      * Initialisation
      */
     function initialize() {
-        console.log('⚙️ Initialisation...');
+        console.log('⚙️ Initialisation du script...');
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
@@ -491,14 +395,14 @@
     }
 
     /**
-     * Observer
+     * Observer pour détecter les changements
      */
     function setupObserver() {
         const observer = new MutationObserver((mutations) => {
-            const hasNewTable = mutations.some(mutation => 
-                Array.from(mutation.addedNodes).some(node => 
+            const hasNewTable = mutations.some(mutation =>
+                Array.from(mutation.addedNodes).some(node =>
                     node.nodeType === 1 && (
-                        node.tagName === 'TABLE' || 
+                        node.tagName === 'TABLE' ||
                         node.querySelector('table')
                     )
                 )
@@ -515,6 +419,8 @@
             childList: true,
             subtree: true
         });
+
+        console.log('👀 Observer activé');
     }
 
     // Démarrage
@@ -525,9 +431,10 @@
     window.ClaraverseHTML = {
         inject: execute,
         debug: debugElements,
-        version: '3.0.0-ACCORDÉON-TABLES'
+        version: '2.0.0'
     };
 
-    console.log('✅ Script E-AUDIT PRO 2.0 Accordéon Tables initialisé');
+    console.log('✅ Script initialisé. Utilisez window.ClaraverseHTML.inject() pour forcer l\'injection');
+    console.log('✅ Utilisez window.ClaraverseHTML.debug() pour voir les éléments disponibles');
 
 })();

@@ -13,6 +13,12 @@
 
     // Fonction de restauration
     async function forceRestoreNow() {
+        // Vérifier le gestionnaire de verrouillage
+        if (window.restoreLockManager && !window.restoreLockManager.canRestore()) {
+            console.log('🔒 Restauration bloquée par le gestionnaire de verrouillage');
+            return false;
+        }
+
         if (restorationComplete) {
             console.log('✅ Restauration déjà effectuée');
             return true;

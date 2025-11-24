@@ -18,11 +18,31 @@ temp/
 *.tmp
 *.temp
 
-# Debug screenshots et images de test
-*.jpg
-*.JPG
-*.png
-*.PNG
+# Debug screenshots et images de test (mais pas les assets du projet)
+# Exclure les images de debug à la racine uniquement
+/*.jpg
+/*.JPG
+/*.png
+/*.PNG
+
+# Exclure les images de debug dans les dossiers de documentation
+docs/**/*.jpg
+docs/**/*.JPG
+docs/**/*.png
+docs/**/*.PNG
+documentation/**/*.jpg
+documentation/**/*.JPG
+documentation/**/*.png
+documentation/**/*.PNG
+
+# IMPORTANT: Garder les assets nécessaires au projet
+!src/assets/**/*.png
+!src/assets/**/*.jpg
+!public/**/*.png
+!public/**/*.jpg
+!assets/icons/**/*.png
+!assets/icons/**/*.icns
+!assets/icons/**/*.ico
 
 # Fichiers problématiques
 nul

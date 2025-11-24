@@ -2166,7 +2166,7 @@ Please check your request and try again. Make sure the file exists and your inst
         {/* Enhanced Typing/Thinking Indicator */}
         <TypingIndicator 
           isVisible={isLoading && !showLiveExecution} 
-          message={currentTask || 'Clara is thinking...'}
+          message={currentTask || 'E-audit is thinking...'}
         />
         
         <div ref={messagesEndRef} />

@@ -39,6 +39,7 @@ interface SidebarProps {
   activePage: string;
   onPageChange: (page: string) => void;
   alphaFeaturesEnabled?: boolean;
+  showChatHistoryIndicator?: boolean;
 }
 
 interface DownloadProgress {
@@ -83,6 +84,7 @@ const Sidebar = ({
   activePage = "dashboard",
   onPageChange,
   alphaFeaturesEnabled = false,
+  showChatHistoryIndicator = false,
 }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeDownloads, setActiveDownloads] = useState<
@@ -321,8 +323,8 @@ const Sidebar = ({
       style={{
         minWidth: isExpanded ? "16rem" : "5rem",
         maxWidth: isExpanded ? "16rem" : "5rem",
-        // Ajout de styles pour positionner à droite
-        borderLeft: "1px solid rgba(229, 231, 235, 0.2)",
+        // Positionné à GAUCHE maintenant (Grok style)
+        borderRight: "1px solid rgba(229, 231, 235, 0.2)",
       }}
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
@@ -336,13 +338,13 @@ const Sidebar = ({
           onClick={() => onPageChange("dashboard")}
           className="flex items-center gap-3 hover:opacity-80 transition-opacity"
         >
-          <img src={logo} alt="Clara Logo" className="w-8 h-8 flex-shrink-0" />
+          <img src={logo} alt="E-audit Logo" className="w-8 h-8 flex-shrink-0" />
           <h1
             className={`text-2xl font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap overflow-hidden transition-all duration-300 ${
               isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0"
             }`}
           >
-            Clara
+            E-audit
           </h1>
         </button>
       </div>
@@ -366,6 +368,10 @@ const Sidebar = ({
               >
                 <div className="relative">
                   <item.icon className="w-5 h-5 flex-shrink-0" />
+                  {/* Chat history indicator - Grok style */}
+                  {item.id === "clara" && showChatHistoryIndicator && (
+                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></div>
+                  )}
                   {/* Background activity indicator for Clara */}
                   {item.id === "clara" && claraBackgroundActivity && (
                     <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>

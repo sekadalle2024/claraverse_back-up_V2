@@ -913,19 +913,19 @@ when you are asked for something always resort to writing a python script and ru
 
     switch (provider?.type) {
       case 'ollama':
-        return `You are Clara, a helpful AI assistant powered by ${providerName}. You are knowledgeable, friendly, and provide accurate information. You can help with various tasks including analysis, coding, writing, and general questions. When using tools, be thorough and explain your actions clearly.${artifactGuidance} ${toolsGuidance}`;
+        return `You are E-audit, a helpful AI assistant powered by ${providerName}. You are knowledgeable, friendly, and provide accurate information. You can help with various tasks including analysis, coding, writing, and general questions. When using tools, be thorough and explain your actions clearly.${artifactGuidance} ${toolsGuidance}`;
         
       case 'openai':
-        return `You are Clara, an intelligent AI assistant powered by OpenAI. You are helpful, harmless, and honest. You excel at reasoning, analysis, creative tasks, and problem-solving. Always strive to provide accurate, well-structured responses and use available tools effectively when needed.${artifactGuidance} ${toolsGuidance}`;
+        return `You are E-audit, an intelligent AI assistant powered by OpenAI. You are helpful, harmless, and honest. You excel at reasoning, analysis, creative tasks, and problem-solving. Always strive to provide accurate, well-structured responses and use available tools effectively when needed.${artifactGuidance} ${toolsGuidance}`;
         
       case 'openrouter':
-        return `You are Clara, a versatile AI assistant with access to various models through OpenRouter. You adapt your communication style based on the task at hand and leverage the strengths of different AI models. Be helpful, accurate, and efficient in your responses.${artifactGuidance} ${toolsGuidance}`;
+        return `You are E-audit, a versatile AI assistant with access to various models through OpenRouter. You adapt your communication style based on the task at hand and leverage the strengths of different AI models. Be helpful, accurate, and efficient in your responses.${artifactGuidance} ${toolsGuidance}`;
         
       case 'claras-pocket':
-        return `You are Clara, a privacy-focused AI assistant running locally on the user's device. You prioritize user privacy and provide helpful assistance without requiring external connectivity. You are efficient, knowledgeable, and respect the user's privacy preferences.${artifactGuidance} ${toolsGuidance}`;
+        return `You are E-audit, a privacy-focused AI assistant running locally on the user's device. You prioritize user privacy and provide helpful assistance without requiring external connectivity. You are efficient, knowledgeable, and respect the user's privacy preferences.${artifactGuidance} ${toolsGuidance}`;
         
       default:
-        return `You are Clara, a helpful AI assistant. You are knowledgeable, friendly, and provide accurate information. You can help with various tasks including analysis, coding, writing, and general questions. Always be helpful and respectful in your interactions.${artifactGuidance} ${toolsGuidance}`;
+        return `You are E-audit, a helpful AI assistant. You are knowledgeable, friendly, and provide accurate information. You can help with various tasks including analysis, coding, writing, and general questions. Always be helpful and respectful in your interactions.${artifactGuidance} ${toolsGuidance}`;
     }
   };
 
@@ -3989,7 +3989,8 @@ You can right-click on the image to save it or use it in your projects.`;
       )}
 
       <div className="max-w-4xl mx-auto">
-        <div className="p-6 flex justify-center">
+        {/* Positionnement au maximum vers le bas - Style Grok */}
+        <div className="pb-6 pt-16 flex justify-center">
           <div className="max-w-3xl w-full relative">
             {/* Main Input Container - Conditionally render chat input OR voice chat */}
             {showVoiceChat ? (
@@ -4009,19 +4010,8 @@ You can right-click on the image to save it or use it in your projects.`;
                 }}
               />
             ) : (
-              /* Chat Input Mode */
-              <div 
-                className={`glassmorphic rounded-xl p-4 bg-white/60 dark:bg-gray-900/40 backdrop-blur-md shadow-lg transition-all duration-300 ${
-                  progressState.isActive && isLoading
-                    ? 'border-2 border-blue-400 dark:border-blue-500 shadow-blue-200/50 dark:shadow-blue-800/50 shadow-lg' 
-                    : 'border border-transparent'
-                }`}
-                style={{
-                  background: progressState.isActive && isLoading && progressState.progress > 0 
-                    ? `linear-gradient(90deg, rgba(59, 130, 246, 0.1) ${progressState.progress}%, transparent ${progressState.progress}%)`
-                    : undefined
-                }}
-              >
+              /* Chat Input Mode - Sans cadre glassmorphic */
+              <div className="relative">
                 
                 {/* Progress Indicator */}
                 {progressState.isActive && isLoading && (
@@ -4076,58 +4066,87 @@ You can right-click on the image to save it or use it in your projects.`;
                   isProcessing={isLoading}
                 />
 
-                {/* Input Field */}
+                {/* Input Field - Grok Style: Zone de saisie séparée et ovale */}
                 <div className={files.length > 0 ? 'mt-3' : ''}>
-                  {/* Removed preloading indicator - preloading is now completely silent */}
-                  
-                  <textarea
-                    ref={textareaRef}
-                    value={input}
-                    onChange={(e) => handleInputChange(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onFocus={() => {
-                      // Trigger aggressive preload on focus for fastest TTFT - SILENT
-                      console.log('⚡ Input focused - triggering silent immediate preload');
-                      onPreloadModel?.();
-                      
-                      // Close autonomous agent status panel when user focuses input
-                      if (autonomousAgentStatus?.isActive) {
-                        console.log('🏁 Input focused - closing autonomous agent status panel');
-                        autonomousAgentStatus.completeAgent('Input focused - closing status panel', 0);
-                      }
-                    }}
-                    onInput={() => {
-                      // Trigger preload on very first keystroke - SILENT
-                      if (input.length === 0) {
-                        console.log('🚀 First keystroke detected - silent aggressive preload');
+                  {/* Zone de saisie principale - Style Grok avec forme ovale */}
+                  <div className={`
+                    flex items-center gap-3 px-5 py-3
+                    bg-white dark:bg-gray-800 
+                    border-2 border-gray-200 dark:border-gray-700
+                    rounded-[28px]
+                    shadow-sm hover:shadow-md
+                    transition-all duration-200
+                    ${input.length > 0 ? 'min-h-[56px]' : 'h-[56px]'}
+                  `}>
+                    <textarea
+                      ref={textareaRef}
+                      value={input}
+                      onChange={(e) => handleInputChange(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      onFocus={() => {
+                        // Trigger aggressive preload on focus for fastest TTFT - SILENT
+                        console.log('⚡ Input focused - triggering silent immediate preload');
                         onPreloadModel?.();
-                      }
-                    }}
-                    placeholder="Ask me anything..."
-                    className="w-full border-0 outline-none focus:outline-none focus:ring-0 resize-none bg-transparent text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500"
-                    style={{
-                      height: 'auto',
-                      minHeight: '24px',
-                      maxHeight: '250px',
-                      overflowY: 'auto',
-                      padding: '0',
-                      borderRadius: '0'
-                    }}
-                    data-chat-input="true"
-                    disabled={isLoading}
-                  />
-                </div>
+                        
+                        // Close autonomous agent status panel when user focuses input
+                        if (autonomousAgentStatus?.isActive) {
+                          console.log('🏁 Input focused - closing autonomous agent status panel');
+                          autonomousAgentStatus.completeAgent('Input focused - closing status panel', 0);
+                        }
+                      }}
+                      onInput={() => {
+                        // Trigger preload on very first keystroke - SILENT
+                        if (input.length === 0) {
+                          console.log('🚀 First keystroke detected - silent aggressive preload');
+                          onPreloadModel?.();
+                        }
+                      }}
+                      placeholder="Ask me anything..."
+                      className="flex-1 border-0 outline-none focus:outline-none focus:ring-0 resize-none bg-transparent text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 leading-relaxed"
+                      style={{
+                        height: 'auto',
+                        minHeight: '28px',
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        padding: '0',
+                        borderRadius: '0'
+                      }}
+                      data-chat-input="true"
+                      disabled={isLoading}
+                    />
+                    
+                    {/* Send/Stop Button - Intégré dans la zone de saisie */}
+                    {isLoading ? (
+                      <Tooltip content="Stop generating" position="top">
+                        <button
+                          className="flex items-center justify-center w-10 h-10 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors flex-shrink-0"
+                          onClick={onStop}
+                          disabled={!onStop}
+                        >
+                          <Square className="w-5 h-5" fill="white" />
+                        </button>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip content="Send message (Enter)" position="top">
+                        <button
+                          onClick={handleSend}
+                          disabled={!input.trim() && files.length === 0}
+                          className="flex items-center justify-center w-10 h-10 rounded-full bg-sakura-500 text-white hover:bg-sakura-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                        >
+                          <Send className="w-5 h-5" />
+                        </button>
+                      </Tooltip>
+                    )}
+                  </div>
 
-                {/* Bottom Actions - Redesigned for better UX */}
-                <div className="flex justify-between items-center mt-4">
-                  {/* Left Side - File & Content Actions */}
-                  <div className="flex items-center">
-                    {/* File Upload Group */}
-                    <div className="flex items-center bg-gray-100/50 dark:bg-gray-800/30 rounded-lg p-1 mr-3">
+                  {/* Options en dessous - Style Grok avec mini zones ovales - Centrées */}
+                  <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+                    {/* File Upload Group - Mini zone ovale */}
+                    <div className="flex items-center bg-gray-100/80 dark:bg-gray-800/80 rounded-full px-2 py-1.5 gap-1">
                       <Tooltip content="Upload images" position="top">
                         <button 
                           onClick={triggerImageUpload}
-                          className="p-1.5 rounded-md hover:bg-white dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+                          className="p-1.5 rounded-full hover:bg-white dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
                           disabled={isLoading}
                         >
                           <ImageIcon className="w-4 h-4" />
@@ -4137,7 +4156,7 @@ You can right-click on the image to save it or use it in your projects.`;
                       <Tooltip content="Upload documents & code" position="top">
                         <button
                           onClick={triggerDocumentUpload}
-                          className="p-1.5 rounded-md hover:bg-white dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+                          className="p-1.5 rounded-full hover:bg-white dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
                           disabled={isLoading}
                         >
                           <File className="w-4 h-4" />
@@ -4147,7 +4166,7 @@ You can right-click on the image to save it or use it in your projects.`;
                       <Tooltip content={imageGenEnabled ? "Generate image" : "Image generation unavailable - ComfyUI not running"} position="top">
                         <button
                           onClick={handleImageGenClick}
-                          className={`p-1.5 rounded-md transition-colors ${
+                          className={`p-1.5 rounded-full transition-colors ${
                             imageGenEnabled 
                               ? 'hover:bg-white dark:hover:bg-gray-700 text-purple-600 dark:text-purple-400' 
                               : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
@@ -4159,14 +4178,14 @@ You can right-click on the image to save it or use it in your projects.`;
                       </Tooltip>
                     </div>
 
-                    {/* Voice Input */}
+                    {/* Voice Input - Mini zone ovale */}
                     <Tooltip content="Voice input" position="top">
                       <button
                         onClick={handleVoiceModeToggle}
-                        className={`p-2 rounded-lg transition-colors mr-3 ${
+                        className={`p-2 rounded-full transition-colors ${
                           isVoiceChatEnabled 
                             ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
-                            : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'
+                            : 'bg-gray-100/80 dark:bg-gray-800/80 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
                         }`}
                         disabled={isLoading}
                       >
@@ -4174,29 +4193,15 @@ You can right-click on the image to save it or use it in your projects.`;
                       </button>
                     </Tooltip>
 
-                    {/* New Chat */}
-                    {/* <Tooltip content="New conversation" position="top">
-                      <button
-                        onClick={handleNewChat}
-                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 transition-colors"
-                        disabled={isLoading}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </Tooltip> */}
-                  </div>
-
-                  {/* Center - Mode & Model Selection */}
-                  <div className="flex items-center gap-3">
-                    {/* Mode Toggle */}
-                    <div className="flex items-center bg-gray-100/50 dark:bg-gray-800/30 rounded-lg p-1">
+                    {/* Mode Toggle - Mini zone ovale */}
+                    <div className="flex items-center bg-gray-100/80 dark:bg-gray-800/80 rounded-full px-1 py-1">
                       <Tooltip 
                         content={isStreamingMode ? "Switch to Tools Mode - Ctrl+M" : "Switch to Streaming Mode - Ctrl+M"} 
                         position="top"
                       >
                         <button
                           onClick={handleModeToggle}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                             isStreamingMode 
                               ? 'bg-blue-500 text-white shadow-sm' 
                               : 'bg-green-500 text-white shadow-sm'
@@ -4223,7 +4228,7 @@ You can right-click on the image to save it or use it in your projects.`;
                       </Tooltip>
                     </div>
 
-                    {/* Model Selection */}
+                    {/* Model Selection - Mini zone ovale */}
                     <div className="relative">
                       {currentAIConfig.features.autoModelSelection ? (
                         <Tooltip 
@@ -4236,7 +4241,7 @@ You can right-click on the image to save it or use it in your projects.`;
                           })()} 
                           position="top"
                         >
-                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-white/70 dark:bg-gray-800/70 border border-blue-200 dark:border-blue-700 min-w-[140px]">
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-white/70 dark:bg-gray-800/70 border border-blue-200 dark:border-blue-700 min-w-[140px]">
                             {(() => {
                               const autoSelected = getAutoSelectedModel();
                               const getModelIcon = () => {
@@ -4281,48 +4286,20 @@ You can right-click on the image to save it or use it in your projects.`;
                         />
                       )}
                     </div>
-                  </div>
 
-                  {/* Right Side - Settings & Send */}
-                  <div className="flex items-center gap-2">
-                    {/* Settings */}
+                    {/* Settings - Mini zone ovale */}
                     <Tooltip content="Advanced settings" position="top">
                       <button
                         onClick={() => onAdvancedOptionsToggle?.(!showAdvancedOptionsPanel)}
-                        className={`p-2 rounded-lg transition-colors ${
+                        className={`p-2 rounded-full transition-colors ${
                           showAdvancedOptionsPanel 
                             ? 'bg-sakura-100 dark:bg-sakura-900/30 text-sakura-600 dark:text-sakura-400' 
-                            : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'
+                            : 'bg-gray-100/80 dark:bg-gray-800/80 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
                         }`}
                       >
                         <Settings className="w-4 h-4" />
                       </button>
                     </Tooltip>
-
-                    {/* Send/Stop Button */}
-                    {isLoading ? (
-                      <Tooltip content="Stop generating" position="top">
-                        <button
-                          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors font-medium text-sm"
-                          onClick={onStop}
-                          disabled={!onStop}
-                        >
-                          <Square className="w-4 h-4" fill="white" />
-                          <span>Stop</span>
-                        </button>
-                      </Tooltip>
-                    ) : (
-                      <Tooltip content="Send message (Enter)" position="top">
-                        <button
-                          onClick={handleSend}
-                          disabled={!input.trim() && files.length === 0}
-                          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-sakura-500 text-white hover:bg-sakura-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm"
-                        >
-                          <Send className="w-4 h-4" />
-                          <span>Send</span>
-                        </button>
-                      </Tooltip>
-                    )}
                   </div>
                 </div>
               </div>

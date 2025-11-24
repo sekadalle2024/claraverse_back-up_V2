@@ -72,7 +72,7 @@ export class ClaraChatService {
 
     // Build conversation messages
     const messages = this.buildConversationMessages(
-      systemPrompt || 'You are Clara, a helpful AI assistant.',
+      systemPrompt || 'You are E-audit, a helpful AI assistant.',
       message,
       attachments,
       conversationHistory
@@ -417,7 +417,7 @@ export class ClaraChatService {
 
     try {
       const warmupMessages = [
-        { role: 'system' as const, content: 'You are Clara, a helpful AI assistant.' },
+        { role: 'system' as const, content: 'You are E-audit, a helpful AI assistant.' },
         { role: 'user' as const, content: 'Hi' }
       ];
 

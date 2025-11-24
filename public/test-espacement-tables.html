@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Espacement Tables - E-audit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-2xl p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">
+                🧪 Test Espacement Tables
+            </h1>
+            <p class="text-gray-600 mb-4">
+                Ce test simule l'affichage de plusieurs tables avec le script <code>modelisation.js</code> actif.
+            </p>
+            <div class="flex gap-4">
+                <button onclick="generateTables()"
+                    class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">
+                    Générer Tables
+                </button>
+                <button onclick="clearTables()" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600">
+                    Effacer
+                </button>
+            </div>
+        </div>
+
+        <!-- Conteneur de test -->
+        <div id="test-container" class="glassmorphic rounded-2xl px-5 py-4 bg-white/60 backdrop-blur-sm">
+            <div class="prose prose-base max-w-none">
+                <!-- Les tables seront insérées ici -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger le script modelisation.js -->
+    <script src="/modelisation.js"></script>
+
+    <script>    fun
+ction generateTables() {
+            const container = document.querySelector('#test-container .prose');
+
+            const tablesHTML = `
+        <div class="overflow-x-auto my-4">
+          <div class="prose prose-base max-w-none" data-container-id="container-1">
+            <table class="min-w-full border border-gray-200 rounded-lg" data-table-id="table_1">
+              <thead>
+                <tr>
+                  <th>Rubrique</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Etape</td>
+                  <td>Impôt et taxes</td>
+                </tr>
+                <tr>
+                  <td>Normes</td>
+                  <td>Normes ISA</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="overflow-x-auto my-4">
+          <div class="prose prose-base max-w-none" data-container-id="container-2">
+            <table class="min-w-full border border-gray-200 rounded-lg" data-table-id="table_2">
+              <thead>
+                <tr>
+                  <th>Objectif</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>S'assurer de la validité et l'exhaustivité</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="overflow-x-auto my-4">
+          <div class="prose prose-base max-w-none" data-container-id="container-3">
+            <table class="min-w-full border border-gray-200 rounded-lg" data-table-id="table_3">
+              <thead>
+                <tr>
+                  <th>Contrôles</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1. Obtenir les documents</td>
+                </tr>
+                <tr>
+                  <td>2. Réaliser un tableau de cadrage</td>
+                </tr>
+                <tr>
+                  <td>3. Conclure</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="overflow-x-auto my-4">
+          <div class="prose prose-base max-w-none" data-container-id="container-4">
+            <table class="min-w-full border border-gray-200 rounded-lg" data-table-id="table_4">
+              <thead>
+                <tr>
+                  <th>Résultats</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Conclusion finale du test</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="overflow-x-auto my-4">
+          <div class="prose prose-base max-w-none" data-container-id="container-5">
+            <table class="min-w-full border border-gray-200 rounded-lg" data-table-id="table_5">
+              <thead>
+                <tr>
+                  <th>Légende</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>+</td>
+                  <td>Positif</td>
+                </tr>
+                <tr>
+                  <td>-</td>
+                  <td>Négatif</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+            container.innerHTML = tablesHTML;
+            console.log('✅ Tables générées');
+
+            // Forcer la réapplication du script
+            if (window.claraverseModelisation) {
+                setTimeout(() => {
+                    window.claraverseModelisation.reapply();
+                    console.log('✅ Modelisation réappliquée');
+                }, 100);
+            }
+        }
+
+        function clearTables() {
+            const container = document.querySelector('#test-container .prose');
+            container.innerHTML = '<p class="text-gray-500 italic">Cliquez sur "Générer Tables" pour voir le test</p>';
+        }
+
+        // Générer automatiquement au chargement
+        window.addEventListener('load', () => {
+            setTimeout(generateTables, 500);
+        });
+    </script>
+</body>
+
+</html>

@@ -22,6 +22,19 @@ export default {
           800: '#9d174d',
           900: '#831843',
         },
+        // Thème gris Grok-style
+        grok: {
+          50: '#f9fafb',
+          100: '#f3f4f6',
+          200: '#e5e7eb',
+          300: '#d1d5db',
+          400: '#9ca3af',
+          500: '#6b7280',
+          600: '#4b5563',
+          700: '#374151',
+          800: '#1f2937',
+          900: '#111827',
+        },
       },
       typography: {
         DEFAULT: {
@@ -47,6 +60,14 @@ export default {
             'code::after': {
               content: '""',
             },
+            // HR sans marges pour réduire l'espace entre les tables
+            hr: {
+              marginTop: '0',
+              marginBottom: '0',
+              borderColor: 'transparent',
+              opacity: '0',
+              display: 'none',
+            },
           },
         },
       },
@@ -57,10 +78,10 @@ export default {
           '100%': { opacity: '0' }
         },
         glow: {
-          '0%, 100%': { 
+          '0%, 100%': {
             boxShadow: '0 0 10px rgba(244, 114, 182, 0.5), 0 0 20px rgba(244, 114, 182, 0.3), 0 0 30px rgba(244, 114, 182, 0.2)'
           },
-          '50%': { 
+          '50%': {
             boxShadow: '0 0 15px rgba(244, 114, 182, 0.7), 0 0 25px rgba(244, 114, 182, 0.5), 0 0 35px rgba(244, 114, 182, 0.3)'
           }
         },

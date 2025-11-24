@@ -369,7 +369,7 @@ class TokenLimitRecoveryService {
   // Reconstruct context with compressed history
   private async reconstructContext(recovery: RecoveryData): Promise<ChatMessage[]> {
     const newSystemPrompt = `
-    You are Clara, continuing an autonomous agent task after intelligent context compression.
+    You are E-audit, continuing an autonomous agent task after intelligent context compression.
     
     ORIGINAL USER REQUEST: ${recovery.originalUserQuery}
     

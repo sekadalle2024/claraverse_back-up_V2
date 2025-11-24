@@ -70,6 +70,12 @@ export class FlowiseTableBridge {
    * Requirements: 1.2, 4.1, 4.2, 4.3, 4.4
    */
   private async initializeRestoration(): Promise<void> {
+    // Vérifier le gestionnaire de verrouillage
+    if ((window as any).restoreLockManager && !(window as any).restoreLockManager.canRestore()) {
+      console.log('🔒 Bridge: Restauration bloquée par le gestionnaire de verrouillage');
+      return;
+    }
+
     // Wait for DOM to be fully ready
     if (document.readyState === 'loading') {
       await new Promise<void>(resolve => {

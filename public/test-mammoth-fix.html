@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Mammoth Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+
+        .log {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Test Mammoth.js Fix - Conflit AMD/RequireJS</h1>
+
+    <div class="test-section">
+        <h2>Étape 1: Charger Mammoth.js</h2>
+        <button onclick="testLoadMammoth()">Charger Mammoth.js</button>
+        <div id="load-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Étape 2: Convertir un fichier Word</h2>
+        <button onclick="testConvertWord()">Convertir PARTIE1.docx</button>
+        <div id="convert-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Résultat de la conversion</h2>
+        <div id="result"></div>
+    </div>
+
+    <!-- Simuler le système AMD/RequireJS pour reproduire le conflit -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+
+    <!-- Notre fix -->
+    <script src="/mammoth-loader-fix.js"></script>
+
+    <script>
+        function log(message, isError = false) {
+            console.log(message);
+            const logDiv = document.createElement('div');
+            logDiv.className = 'log' + (isError ? ' error' : '');
+            logDiv.textContent = message;
+            return logDiv;
+        }
+
+        async function testLoadMammoth() {
+            const resultDiv = document.getElementById('load-result');
+            resultDiv.innerHTML = '';
+
+            try {
+                resultDiv.appendChild(log('⏳ Chargement de Mammoth.js...'));
+
+                const mammoth = await window.loadMammothSafe();
+
+                resultDiv.appendChild(log('✅ Mammoth.js chargé avec succès!'));
+                resultDiv.appendChild(log('✅ API disponible: ' + typeof mammoth.convertToHtml));
+
+            } catch (error) {
+                resultDiv.appendChild(log('❌ Erreur: ' + error.message, true));
+            }
+        }
+
+        async function testConvertWord() {
+            const convertDiv = document.getElementById('convert-result');
+            const resultDiv = document.getElementById('result');
+            convertDiv.innerHTML = '';
+            resultDiv.innerHTML = '';
+
+            try {
+                convertDiv.appendChild(log('⏳ Conversion en cours...'));
+
+                const result = await window.convertWordToHtml('/ressource/PARTIE1.docx');
+
+                convertDiv.appendChild(log('✅ Conversion réussie!'));
+                convertDiv.appendChild(log('📄 Taille HTML: ' + result.html.length + ' caractères'));
+                convertDiv.appendChild(log('📝 Messages: ' + result.messages.length));
+
+                // Afficher le HTML converti
+                resultDiv.innerHTML = result.html;
+
+            } catch (error) {
+                convertDiv.appendChild(log('❌ Erreur: ' + error.message, true));
+                resultDiv.innerHTML = '<p class="error">Erreur de conversion</p>';
+            }
+        }
+
+        // Test automatique au chargement
+        window.addEventListener('load', () => {
+            console.log('🧪 Page de test chargée');
+            console.log('🔍 RequireJS présent:', typeof window.require !== 'undefined');
+            console.log('🔍 Define présent:', typeof window.define !== 'undefined');
+        });
+    </script>
+</body>
+
+</html>

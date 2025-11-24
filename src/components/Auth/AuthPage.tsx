@@ -117,11 +117,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSignIn, onSignUp, onAdminAccess }
       <div className="w-full max-w-md">
         {/* Logo et titre */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-pink-500 to-sakura-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <User className="w-10 h-10 text-white" />
+          <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-pink-500 to-sakura-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg p-3">
+            <img src="/logo.png" alt="E-audit Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Bienvenue sur Clara
+            Bienvenue sur E-audit
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Connectez-vous ou créez un nouveau compte
@@ -254,7 +254,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSignIn, onSignUp, onAdminAccess }
 
         {/* Footer */}
         <div className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
-          <p>Clara - Votre assistant IA personnel</p>
+          <p>E-audit - Votre assistant IA personnel</p>
           <p className="mt-1">Toutes vos données restent locales et privées</p>
         </div>
       </div>

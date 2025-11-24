@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Icônes Thèmes</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .test-section h2 {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .icon-display {
+            font-size: 3em;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            text-align: center;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+        }
+
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .success {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+
+        .error {
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 Diagnostic des Icônes de Thèmes</h1>
+
+        <div class="test-section">
+            <h2>Test 1 : Affichage Direct des Icônes</h2>
+            <div class="icon-display">
+                <div>🌸 Rose (Sakura)</div>
+            </div>
+            <div class="icon-display">
+                <div>🔘 Gris (Grok)</div>
+            </div>
+            <div class="icon-display">
+                <div>🌙 Noir (Dark)</div>
+            </div>
+            <div class="info success">
+                ✅ Si vous voyez les 3 icônes ci-dessus, le navigateur supporte les emojis
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 2 : Simulation de getThemeInfo()</h2>
+            <button onclick="testGetThemeInfo('sakura')">Tester Rose</button>
+            <button onclick="testGetThemeInfo('gray')">Tester Gris</button>
+            <button onclick="testGetThemeInfo('dark')">Tester Noir</button>
+            <div id="themeInfoResult" class="info" style="margin-top: 15px; display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 3 : Vérification du Code</h2>
+            <div class="code">
+                <pre>export const getThemeInfo = (theme: ThemeType) => {
+  switch (theme) {
+    case 'dark':
+      return { name: 'Noir', icon: '🌙', ... };
+    case 'sakura':
+      return { name: 'Rose', icon: '🌸', ... };
+    case 'gray':
+      return { name: 'Gris', icon: '🔘', ... };
+  }
+};</pre>
+            </div>
+            <div class="info">
+                ℹ️ Le code utilise un switch sans default, ce qui peut causer des problèmes
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 4 : Problème Potentiel</h2>
+            <div class="info error">
+                ⚠️ <strong>Problème identifié :</strong> La fonction getThemeInfo() n'a pas de clause
+                <code>default</code> dans le switch.
+                <br><br>
+                Si TypeScript ne reconnaît pas tous les cas, la fonction peut retourner <code>undefined</code>.
+            </div>
+            <button onclick="showSolution()">Voir la Solution</button>
+            <div id="solution" style="display: none; margin-top: 15px;">
+                <div class="info success">
+                    <strong>Solution :</strong> Ajouter un return par défaut ou s'assurer que tous les cas sont
+                    couverts.
+                    <div class="code" style="margin-top: 10px;">
+                        <pre>export const getThemeInfo = (theme: ThemeType) => {
+  switch (theme) {
+    case 'dark':
+      return { name: 'Noir', icon: '🌙', ... };
+    case 'sakura':
+      return { name: 'Rose', icon: '🌸', ... };
+    case 'gray':
+      return { name: 'Gris', icon: '🔘', ... };
+    default:
+      return { name: 'Rose', icon: '🌸', ... }; // Fallback
+  }
+};</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 5 : Vérification dans la Console</h2>
+            <button onclick="testInConsole()">Tester dans la Console</button>
+            <div class="info">
+                ℹ️ Ouvrez la console du navigateur (F12) et cliquez sur le bouton ci-dessus
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulation de getThemeInfo
+        function getThemeInfo(theme) {
+            switch (theme) {
+                case 'dark':
+                    return {
+                        name: 'Noir',
+                        description: 'Thème sombre classique',
+                        icon: '🌙',
+                        colors: { primary: '#111827', secondary: '#1f2937', accent: '#374151' }
+                    };
+                case 'sakura':
+                    return {
+                        name: 'Rose',
+                        description: 'Thème rose Sakura',
+                        icon: '🌸',
+                        colors: { primary: '#fce7f3', secondary: '#fbcfe8', accent: '#ec4899' }
+                    };
+                case 'gray':
+                    return {
+                        name: 'Gris',
+                        description: 'Thème gris uniforme (Grok-style)',
+                        icon: '🔘',
+                        colors: { primary: '#f3f4f6', secondary: '#e5e7eb', accent: '#6b7280' }
+                    };
+            }
+        }
+
+        function testGetThemeInfo(theme) {
+            const result = getThemeInfo(theme);
+            const resultDiv = document.getElementById('themeInfoResult');
+
+            if (result) {
+                resultDiv.className = 'info success';
+                resultDiv.innerHTML = `
+                    <strong>✅ Succès pour "${theme}"</strong><br>
+                    Nom: ${result.name}<br>
+                    Icône: <span style="font-size: 2em;">${result.icon}</span><br>
+                    Description: ${result.description}
+                `;
+            } else {
+                resultDiv.className = 'info error';
+                resultDiv.innerHTML = `
+                    <strong>❌ Erreur pour "${theme}"</strong><br>
+                    La fonction a retourné: ${result}
+                `;
+            }
+
+            resultDiv.style.display = 'block';
+        }
+
+        function showSolution() {
+            document.getElementById('solution').style.display = 'block';
+        }
+
+        function testInConsole() {
+            console.log('=== TEST DES ICÔNES ===');
+            console.log('Rose (sakura):', getThemeInfo('sakura'));
+            console.log('Gris (gray):', getThemeInfo('gray'));
+            console.log('Noir (dark):', getThemeInfo('dark'));
+            console.log('======================');
+            alert('Vérifiez la console (F12) pour voir les résultats');
+        }
+
+        // Test automatique au chargement
+        window.addEventListener('load', () => {
+            console.log('🔍 Diagnostic des icônes de thèmes');
+            console.log('Rose:', getThemeInfo('sakura'));
+            console.log('Gris:', getThemeInfo('gray'));
+            console.log('Noir:', getThemeInfo('dark'));
+        });
+    </script>
+</body>
+
+</html>
