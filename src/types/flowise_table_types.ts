@@ -80,6 +80,20 @@ export interface FlowiseGeneratedTableRecord {
 
   /** Whether this Trigger_Table has been processed (only applicable for tableType='trigger') */
   processed?: boolean;
+
+  /** CIA checkbox states for exam tables (optional) */
+  ciaCheckboxStates?: CIACheckboxState[];
+}
+
+/**
+ * State of a CIA checkbox in an exam table
+ */
+export interface CIACheckboxState {
+  /** Index of the checkbox in the table */
+  index: number;
+
+  /** Whether the checkbox is checked */
+  checked: boolean;
 }
 
 /**

@@ -4068,7 +4068,7 @@ You can right-click on the image to save it or use it in your projects.`;
 
                 {/* Input Field - Grok Style: Zone de saisie séparée et ovale */}
                 <div className={files.length > 0 ? 'mt-3' : ''}>
-                  {/* Zone de saisie principale - Style Grok avec forme ovale */}
+                  {/* Zone de saisie principale - Style Grok avec forme ovale et icône de fichiers */}
                   <div className={`
                     flex items-center gap-3 px-5 py-3
                     bg-white dark:bg-gray-800 
@@ -4078,6 +4078,20 @@ You can right-click on the image to save it or use it in your projects.`;
                     transition-all duration-200
                     ${input.length > 0 ? 'min-h-[56px]' : 'h-[56px]'}
                   `}>
+                    {/* Icône de sélection de fichiers à gauche - Style Grok */}
+                    <Tooltip content="Attach files" position="top">
+                      <button
+                        onClick={() => {
+                          const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+                          fileInput?.click();
+                        }}
+                        className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
+                        disabled={isLoading}
+                      >
+                        <Paperclip className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      </button>
+                    </Tooltip>
+                    
                     <textarea
                       ref={textareaRef}
                       value={input}

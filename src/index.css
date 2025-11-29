@@ -15,6 +15,9 @@
 /* ESPACEMENT FORCE - Doit être APRÈS Tailwind pour override */
 @import "./espacement-force.css";
 
+/* Style Grok - Masquer la sélection des LLM */
+@import "./styles/grok-style-overrides.css";
+
 /* Custom CSS Variables */
 :root {
   --sakura-50: #fef7f7;
@@ -1083,15 +1086,16 @@ textarea {
 /* --- Tables dans le contenu prose --- */
 .prose table.min-w-full {
   box-shadow:
-    0 10px 16px 0 rgba(0, 0, 0, 0.2),
-    0 6px 20px 0 rgba(0, 0, 0, 0.19) !important;
-  margin-left: 15px !important;
-  margin-right: 15px !important;
+    0 12px 24px 0 rgba(0, 0, 0, 0.25),      /* Ombre bas principale - plus prononcée */
+    0 8px 16px 0 rgba(0, 0, 0, 0.2),        /* Ombre bas secondaire */
+    0 4px 8px 0 rgba(0, 0, 0, 0.15) !important; /* Ombre bas douce */
+  margin-left: 0px !important;
+  margin-right: 0px !important;
   margin-top: 0px !important;
   margin-bottom: 0px !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
-  width: 100% !important;
+  width: calc(100% - 40px) !important; /* Réduit pour laisser place aux ombres */
   table-layout: auto !important;
 }
 
@@ -1106,7 +1110,11 @@ textarea {
   color: white !important;
   font-weight: 600 !important;
   border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
-  white-space: nowrap !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.5 !important;
+  vertical-align: top !important;
 }
 
 /* Dernier th sans bordure droite */
@@ -1133,12 +1141,15 @@ textarea {
 .prose > div:has(> table.min-w-full),
 .prose div:has(> table.min-w-full) {
   max-width: 100% !important;
+  width: 100% !important;
   overflow-x: auto !important;
   overflow-y: visible !important;
   margin-top: 0px !important;
   margin-bottom: 0px !important;
   padding-top: 0px !important;
-  padding-bottom: 5px !important;
+  padding-bottom: 15px !important; /* Augmenté pour l'ombre bas */
+  padding-right: 20px !important; /* Espace pour l'ombre droite */
+  padding-left: 20px !important; /* Espace pour l'ombre gauche */
   position: relative !important;
   -webkit-overflow-scrolling: touch !important;
 }
@@ -1213,9 +1224,14 @@ textarea {
 
 /* --- Cellules de données (td) --- */
 .prose table.min-w-full td {
-  padding: 10px 16px !important;
+  padding: 12px 16px !important;
   border-right: 1px solid rgba(209, 213, 219, 0.3) !important;
-  white-space: nowrap !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.6 !important;
+  vertical-align: top !important;
+  max-width: 400px !important;
 }
 
 .prose table.min-w-full td:last-child {

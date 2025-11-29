@@ -1,6 +1,12 @@
 /**
- * Claraverse Table Consolidation Script - Version React Compatible
+ * Claraverse Table Consolidation Script - Version 5.0 (V5)
  * Script optimisé pour fonctionner avec React et les tables dynamiques
+ * 
+ * 🆕 V5 - Améliorations pour les tables CIA (Examen):
+ * - Masquage des colonnes Reponse_cia et Remarques (conservées dans le DOM)
+ * - Fusion automatique des cellules Question et Ref_question
+ * - Amélioration de la persistance des checkboxes CIA
+ * - Sauvegarde des états de visibilité et fusion des colonnes
  */
 
 (function () {
@@ -106,6 +112,12 @@
 
         if (hasReact || hasTables) {
           debug.log("React détecté, démarrage du traitement");
+
+          // 🗑️ Supprimer toutes les tables de consolidation existantes au démarrage
+          setTimeout(() => {
+            this.removeAllConsoTables();
+          }, 100);
+
           setTimeout(callback, 500); // Petit délai pour s'assurer que tout est prêt
         } else {
           debug.log("En attente de React...");
@@ -231,18 +243,30 @@
           debug.log("✓ ID assigné à la table:", table.dataset.tableId);
         }
 
+        // Vérifier si c'est une table CIA (avec colonne Reponse_user)
+        const isCIATable = headers.some((header) =>
+          this.matchesColumn(header.text, "reponse_user"),
+        );
+
         if (this.isModelizedTable(headers)) {
           debug.log(
             "Table modelisée détectée - Configuration des interactions",
           );
           this.setupTableInteractions(table, headers);
-          this.createConsolidationTable(table);
+          // ❌ SUPPRIMÉ: this.createConsolidationTable(table);
+          this.processedTables.add(table);
+        } else if (isCIATable) {
+          debug.log("Table CIA détectée - Configuration des checkboxes");
+          this.setupTableInteractions(table, headers);
           this.processedTables.add(table);
         } else {
           debug.log("Table standard détectée - Sauvegarde uniquement");
           // Les tables non-modelisées seront quand même sauvegardées
           this.processedTables.add(table);
         }
+
+        // 🗑️ Supprimer les tables de consolidation existantes
+        this.removeExistingConsoTables(table);
 
         // Installer un MutationObserver sur TOUTES les tables pour détecter les changements
         this.setupTableChangeDetection(table);
@@ -274,7 +298,7 @@
     }
 
     isModelizedTable(headers) {
-      const requiredColumns = ["conclusion", "assertion"];
+      const requiredColumns = ["conclusion", "assertion", "reponse_user"];
       return requiredColumns.some((col) =>
         headers.some((header) => this.matchesColumn(header.text, col)),
       );
@@ -288,6 +312,12 @@
         ecart: /ecart|montant/i,
         compte: /compte/i,
         resultat: /r[eé]sultat/i,
+        reponse_user: /reponse[_\s]?user/i,
+        reponse_cia: /reponse[_\s]?cia/i,
+        remarques: /remarques?/i,
+        question: /question/i,
+        ref_question: /ref[_\s]?question/i,
+        option: /option/i,
       };
 
       return patterns[columnType] && patterns[columnType].test(headerText);
@@ -296,6 +326,13 @@
     setupTableInteractions(table, headers) {
       const tbody = table.querySelector("tbody") || table;
       const rows = tbody.querySelectorAll("tr");
+
+      // 🆕 V5: Masquer les colonnes Reponse_cia et Remarques
+      this.hideColumns(table, headers, ["reponse_cia", "remarques"]);
+
+      // 🆕 V5: Fusionner les cellules Question et Ref_question
+      this.mergeCellsForColumn(table, headers, "question");
+      this.mergeCellsForColumn(table, headers, "ref_question");
 
       rows.forEach((row, rowIndex) => {
         if (rowIndex === 0 && row.querySelector("th")) return; // Skip header row
@@ -316,9 +353,158 @@
             this.setupConclusionCell(newCell, table);
           } else if (this.matchesColumn(header.text, "ctr")) {
             this.setupCtrCell(newCell);
+          } else if (this.matchesColumn(header.text, "reponse_user")) {
+            this.setupReponseUserCell(newCell, row, table);
           }
         });
       });
+    }
+
+    /**
+     * 🆕 V5: Masquer des colonnes tout en les conservant dans le DOM
+     */
+    hideColumns(table, headers, columnTypes) {
+      debug.log("🔒 Masquage des colonnes:", columnTypes);
+
+      columnTypes.forEach((columnType) => {
+        const columnIndex = headers.findIndex((h) =>
+          this.matchesColumn(h.text, columnType),
+        );
+
+        if (columnIndex === -1) {
+          debug.log(`⏭️ Colonne ${columnType} non trouvée, ignorée`);
+          return;
+        }
+
+        debug.log(`🔒 Masquage de la colonne ${columnType} (index ${columnIndex})`);
+
+        // Masquer l'en-tête
+        const headerCell = headers[columnIndex].element;
+        if (headerCell) {
+          headerCell.style.display = "none";
+          headerCell.setAttribute("data-hidden", "true");
+        }
+
+        // Masquer toutes les cellules de cette colonne
+        const tbody = table.querySelector("tbody") || table;
+        const rows = tbody.querySelectorAll("tr");
+
+        rows.forEach((row) => {
+          const cells = row.querySelectorAll("td");
+          const cell = cells[columnIndex];
+          if (cell) {
+            cell.style.display = "none";
+            cell.setAttribute("data-hidden", "true");
+          }
+        });
+
+        debug.log(`✅ Colonne ${columnType} masquée`);
+      });
+    }
+
+    /**
+     * 🆕 V5: Fusionner les cellules d'une colonne (pour Question et Ref_question)
+     */
+    mergeCellsForColumn(table, headers, columnType) {
+      const columnIndex = headers.findIndex((h) =>
+        this.matchesColumn(h.text, columnType),
+      );
+
+      if (columnIndex === -1) {
+        debug.log(`⏭️ Colonne ${columnType} non trouvée pour fusion`);
+        return;
+      }
+
+      debug.log(`🔗 Fusion des cellules pour ${columnType} (index ${columnIndex})`);
+
+      const tbody = table.querySelector("tbody") || table;
+      const rows = tbody.querySelectorAll("tr");
+
+      if (rows.length === 0) {
+        debug.log("⚠️ Aucune ligne trouvée pour fusion");
+        return;
+      }
+
+      // Collecter toutes les valeurs de la colonne (normaliser pour comparaison)
+      const values = [];
+      const originalValues = [];
+      rows.forEach((row, rowIndex) => {
+        if (rowIndex === 0 && row.querySelector("th")) return;
+        const cells = row.querySelectorAll("td");
+        const cell = cells[columnIndex];
+        if (cell) {
+          const originalText = cell.textContent.trim();
+          // Normaliser: supprimer espaces multiples, ponctuation finale, etc.
+          const normalizedText = originalText
+            .replace(/\s+/g, " ")
+            .replace(/[?.!]+$/, "")
+            .trim()
+            .toLowerCase();
+
+          values.push(normalizedText);
+          originalValues.push(originalText);
+        }
+      });
+
+      if (values.length === 0) {
+        debug.log("⚠️ Aucune valeur trouvée dans la colonne");
+        return;
+      }
+
+      // Vérifier si toutes les valeurs normalisées sont identiques
+      const uniqueValues = [...new Set(values)];
+
+      if (uniqueValues.length !== 1) {
+        debug.log(`⏭️ Valeurs multiples détectées pour ${columnType}:`);
+        debug.log(`  - ${uniqueValues.length} valeurs uniques trouvées`);
+        uniqueValues.forEach((val, i) => {
+          debug.log(`  ${i + 1}. "${val.substring(0, 50)}${val.length > 50 ? '...' : ''}"`);
+        });
+        return;
+      }
+
+      // Utiliser la première valeur originale (non normalisée) pour l'affichage
+      const commonValue = originalValues[0];
+      debug.log(`🔗 Valeur commune trouvée: "${commonValue.substring(0, 50)}${commonValue.length > 50 ? '...' : ''}"`);
+
+      // Fusionner les cellules
+      let firstCell = null;
+      let cellsToHide = [];
+      let cellCount = 0;
+
+      rows.forEach((row, rowIndex) => {
+        if (rowIndex === 0 && row.querySelector("th")) return;
+        const cells = row.querySelectorAll("td");
+        const cell = cells[columnIndex];
+
+        if (cell) {
+          cellCount++;
+          if (!firstCell) {
+            // Première cellule: définir rowspan avec centrage complet
+            firstCell = cell;
+            firstCell.setAttribute("rowspan", values.length);
+            firstCell.style.cssText = `
+              vertical-align: middle !important;
+              text-align: center !important;
+              font-weight: 500;
+              padding: 12px;
+              display: table-cell;
+            `;
+            firstCell.textContent = commonValue;
+          } else {
+            // Autres cellules: masquer
+            cellsToHide.push(cell);
+          }
+        }
+      });
+
+      // Masquer les cellules fusionnées
+      cellsToHide.forEach((cell) => {
+        cell.style.display = "none";
+        cell.setAttribute("data-merged", "true");
+      });
+
+      debug.log(`✅ ${cellCount} cellules fusionnées pour ${columnType} (1 visible + ${cellsToHide.length} masquées)`);
     }
 
     setupAssertionCell(cell) {
@@ -370,7 +556,7 @@
             if (value === "Non-Satisfaisant" || value === "Limitation") {
               cell.style.backgroundColor = "#fee";
               debug.log(`Conclusion défavorable sélectionnée: ${value}`);
-              this.scheduleConsolidation(table);
+              // ❌ SUPPRIMÉ: this.scheduleConsolidation(table);
             } else {
               cell.style.backgroundColor = "#efe";
             }
@@ -402,6 +588,114 @@
             debug.warn("⚠️ Table parente non trouvée pour sauvegarde");
           }
         });
+      });
+    }
+
+    setupReponseUserCell(cell, row, table) {
+      cell.style.cursor = "pointer";
+      cell.style.backgroundColor = cell.style.backgroundColor || "#f8f9fa";
+      cell.style.textAlign = "center";
+      cell.title = "Cliquez pour sélectionner votre réponse";
+
+      // Créer ou restaurer la checkbox
+      if (!cell.querySelector("input[type='checkbox']")) {
+        // Vérifier si la cellule a une valeur sauvegardée dans localStorage
+        let isChecked = cell.textContent.trim() === "✓" || cell.dataset.checked === "true";
+
+        // Vérifier aussi dans localStorage
+        const tableId = table.dataset.tableId;
+        if (tableId) {
+          const allData = this.loadAllData();
+          const tableData = allData[tableId];
+          if (tableData && tableData.cells) {
+            // Trouver l'index de la ligne et de la colonne
+            const tbody = table.querySelector("tbody") || table;
+            const rows = tbody.querySelectorAll("tr");
+            const rowIndex = Array.from(rows).indexOf(row);
+            const cells = row.querySelectorAll("td");
+            const colIndex = Array.from(cells).indexOf(cell);
+
+            // Chercher la cellule correspondante dans les données sauvegardées
+            const savedCell = tableData.cells.find(c => c.row === rowIndex && c.col === colIndex);
+            if (savedCell && savedCell.isCheckboxCell) {
+              isChecked = savedCell.isChecked || false;
+              debug.log(`🔄 Restauration checkbox: ligne ${rowIndex}, col ${colIndex}, checked=${isChecked}`);
+            }
+          }
+        }
+
+        cell.innerHTML = "";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = isChecked;
+        checkbox.style.cssText = `
+          width: 20px;
+          height: 20px;
+          cursor: pointer;
+          accent-color: #007bff;
+        `;
+        cell.appendChild(checkbox);
+
+        // Marquer la cellule si elle est cochée
+        if (isChecked) {
+          cell.dataset.checked = "true";
+          cell.style.backgroundColor = "#e8f5e8";
+        }
+      }
+
+      const checkbox = cell.querySelector("input[type='checkbox']");
+
+      // Gérer le clic sur la cellule ou la checkbox
+      const handleCheckboxChange = (e) => {
+        e.stopPropagation();
+
+        const isNowChecked = checkbox.checked;
+
+        if (isNowChecked) {
+          // Décocher toutes les autres checkboxes de la même table
+          const tbody = table.querySelector("tbody") || table;
+          const allRows = tbody.querySelectorAll("tr");
+
+          allRows.forEach((otherRow) => {
+            if (otherRow !== row) {
+              const cells = otherRow.querySelectorAll("td");
+              cells.forEach((otherCell) => {
+                const otherCheckbox = otherCell.querySelector("input[type='checkbox']");
+                if (otherCheckbox) {
+                  otherCheckbox.checked = false;
+                  otherCell.dataset.checked = "false";
+                  otherCell.style.backgroundColor = "#f8f9fa";
+                }
+              });
+            }
+          });
+
+          // Marquer cette cellule comme cochée
+          cell.dataset.checked = "true";
+          cell.style.backgroundColor = "#e8f5e8";
+          debug.log("✓ Réponse sélectionnée dans l'examen CIA");
+        } else {
+          // Décocher cette cellule
+          cell.dataset.checked = "false";
+          cell.style.backgroundColor = "#f8f9fa";
+          debug.log("✗ Réponse désélectionnée dans l'examen CIA");
+        }
+
+        // Sauvegarder après modification
+        debug.log("💾 Déclenchement sauvegarde depuis Reponse_user");
+        this.saveTableData(table);
+      };
+
+      // Écouter les changements sur la checkbox
+      checkbox.addEventListener("change", handleCheckboxChange);
+
+      // Écouter aussi les clics sur la cellule
+      cell.addEventListener("click", (e) => {
+        if (e.target !== checkbox) {
+          e.stopPropagation();
+          checkbox.checked = !checkbox.checked;
+          handleCheckboxChange(e);
+        }
       });
     }
 
@@ -532,49 +826,18 @@
       this.dropdownVisible = false;
     }
 
+    // ❌ FONCTION DÉSACTIVÉE - Ne crée plus de tables de consolidation
     createConsolidationTable(table) {
-      const existingConso = this.findExistingConsoTable(table);
-      if (existingConso) {
-        debug.log("Table de consolidation existante trouvée");
-        return;
-      }
+      debug.log("⚠️ createConsolidationTable désactivée - Pas de table de consolidation créée");
+      return; // Fonction désactivée
 
-      const consoTable = document.createElement("table");
-      consoTable.className = "claraverse-conso-table";
-      consoTable.style.cssText = `
-          width: 100%;
-          margin-bottom: 20px;
-          border-collapse: collapse;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-          border: 2px solid #007bff;
-          border-radius: 8px;
-          overflow: hidden;
-        `;
-
-      const tableId = this.generateTableId(table);
-      consoTable.innerHTML = `
-          <thead>
-            <tr>
-              <th style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 15px; text-align: left; font-weight: bold;">
-                📊 Table de Consolidation
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td id="conso-content-${tableId}" style="padding: 15px; background: #f8f9fa; min-height: 50px;">
-                ⏳ En attente de consolidation...
-              </td>
-            </tr>
-          </tbody>
-        `;
-
-      // Insérer la table de consolidation
-      this.insertConsoTable(table, consoTable);
-      debug.log(`Table de consolidation créée avec ID: ${tableId}`);
-
-      // Notifier dev.js de la création de la nouvelle table
-      this.notifyTableCreated(consoTable);
+      // Code original commenté pour référence future
+      // const existingConso = this.findExistingConsoTable(table);
+      // if (existingConso) {
+      //   debug.log("Table de consolidation existante trouvée");
+      //   return;
+      // }
+      // ... (code de création de table)
     }
 
     findExistingConsoTable(table) {
@@ -582,6 +845,56 @@
       if (!parent) return null;
 
       return parent.querySelector(".claraverse-conso-table");
+    }
+
+    /**
+     * 🗑️ Supprime toutes les tables de consolidation existantes
+     * Cette fonction recherche et supprime les tables de consolidation
+     * qui ont été générées précédemment
+     */
+    removeExistingConsoTables(table) {
+      try {
+        const parent = table.parentElement;
+        if (!parent) return;
+
+        // Rechercher toutes les tables de consolidation dans le parent
+        const consoTables = parent.querySelectorAll(".claraverse-conso-table");
+
+        if (consoTables.length > 0) {
+          debug.log(`🗑️ Suppression de ${consoTables.length} table(s) de consolidation`);
+
+          consoTables.forEach((consoTable) => {
+            consoTable.remove();
+            debug.log("✅ Table de consolidation supprimée");
+          });
+        }
+      } catch (error) {
+        debug.error("❌ Erreur lors de la suppression des tables de consolidation:", error);
+      }
+    }
+
+    /**
+     * 🗑️ Supprime TOUTES les tables de consolidation dans le document
+     * Fonction globale pour nettoyer toutes les tables de consolidation
+     */
+    removeAllConsoTables() {
+      try {
+        const allConsoTables = document.querySelectorAll(".claraverse-conso-table");
+
+        if (allConsoTables.length > 0) {
+          debug.log(`🗑️ Suppression globale de ${allConsoTables.length} table(s) de consolidation`);
+
+          allConsoTables.forEach((consoTable) => {
+            consoTable.remove();
+          });
+
+          debug.log("✅ Toutes les tables de consolidation ont été supprimées");
+        } else {
+          debug.log("ℹ️ Aucune table de consolidation à supprimer");
+        }
+      } catch (error) {
+        debug.error("❌ Erreur lors de la suppression globale des tables de consolidation:", error);
+      }
     }
 
     insertConsoTable(table, consoTable) {
@@ -600,69 +913,33 @@
       );
     }
 
+    // ❌ FONCTION DÉSACTIVÉE - Ne génère plus de tables de consolidation
     scheduleConsolidation(table) {
-      // Éviter les consolidations multiples rapides
-      if (this.consolidationTimeout) {
-        clearTimeout(this.consolidationTimeout);
-      }
+      debug.log("⚠️ scheduleConsolidation désactivée - Pas de consolidation générée");
+      return; // Fonction désactivée
 
-      this.consolidationTimeout = setTimeout(() => {
-        this.performConsolidation(table);
-      }, 300);
+      // Code original commenté:
+      // if (this.consolidationTimeout) {
+      //   clearTimeout(this.consolidationTimeout);
+      // }
+      // this.consolidationTimeout = setTimeout(() => {
+      //   this.performConsolidation(table);
+      // }, 300);
     }
 
+    // ❌ FONCTION DÉSACTIVÉE - Ne génère plus de tables de consolidation
     performConsolidation(table) {
-      try {
-        debug.log("Début de la consolidation");
+      debug.log("⚠️ performConsolidation désactivée - Pas de consolidation générée");
+      return; // Fonction désactivée
 
-        const headers = this.getTableHeaders(table);
-        const hasCompte = headers.some((h) =>
-          this.matchesColumn(h.text, "compte"),
-        );
-        const hasEcart = headers.some((h) =>
-          this.matchesColumn(h.text, "ecart"),
-        );
-
-        let result = "";
-        let consolidationData = {};
-
-        if (hasCompte && hasEcart) {
-          consolidationData = this.extractConsolidationData(
-            table,
-            headers,
-            "withAccount",
-          );
-          result = this.consolidateWithAccount(table, headers);
-        } else if (hasEcart) {
-          consolidationData = this.extractConsolidationData(
-            table,
-            headers,
-            "withoutAccount",
-          );
-          result = this.consolidateWithoutAccount(table, headers);
-        } else {
-          result = "⚠️ Table incomplète : colonnes ecart ou montant manquantes";
-        }
-
-        // 🚨 ALERTE DE DEBUG - Afficher le contenu de consolidation
-        const alertMessage = this.generateAlertMessage(
-          consolidationData,
-          result,
-        );
-        alert(`📊 RÉSULTAT DE CONSOLIDATION\n\n${alertMessage}`);
-
-        this.updateConsolidationDisplay(table, result);
-        debug.log("Consolidation terminée");
-      } catch (error) {
-        debug.error("Erreur pendant la consolidation:", error);
-        alert(
-          `❌ ERREUR DE CONSOLIDATION\n\n${error.message}\n\nVoir la console pour plus de détails.`,
-        );
-        this.updateConsolidationDisplay(
-          table,
-          "❌ Erreur pendant la consolidation",
-        );
-      }
+      // Code original commenté pour référence future
+      // try {
+      //   debug.log("Début de la consolidation");
+      //   const headers = this.getTableHeaders(table);
+      //   ... (code de consolidation)
+      // } catch (error) {
+      //   debug.error("Erreur pendant la consolidation:", error);
+      // }
     }
 
     extractConsolidationData(table, headers, type) {
@@ -961,64 +1238,18 @@
       );
     }
 
+    // ❌ FONCTION DÉSACTIVÉE - Ne met plus à jour les tables de consolidation
     updateConsolidationDisplay(table, content) {
-      try {
-        debug.log("🔍 Début de updateConsolidationDisplay");
-        debug.log("Contenu complet à afficher:", content.substring(0, 100));
+      debug.log("⚠️ updateConsolidationDisplay désactivée - Pas de mise à jour de consolidation");
+      return; // Fonction désactivée
 
-        // Générer la version simplifiée pour la table conso
-        const simpleContent = this.generateSimpleConsoContent(content);
-        debug.log(
-          "Contenu simplifié pour conso:",
-          simpleContent.substring(0, 100),
-        );
-
-        // 1. Mise à jour de la table RÉSULTAT (version complète) - EN PREMIER
-        const resultatUpdated = this.updateResultatTable(table, content);
-
-        // 2. Mise à jour de la table CONSO (version simplifiée) - EN SECOND
-        const consoUpdated = this.updateConsoTable(table, simpleContent);
-
-        // 3. Sauvegarder les données après consolidation
-        this.saveConsolidationData(table, content, simpleContent);
-
-        // 4. Notifier dev.js des modifications pour synchronisation
-        this.notifyDevJsSync(table, { resultatUpdated, consoUpdated });
-
-        // 5. Confirmation
-        if (consoUpdated || resultatUpdated) {
-          debug.log("✅ Mise à jour réussie");
-          debug.log(`- Table Conso: ${consoUpdated ? "✓" : "✗"}`);
-          debug.log(`- Table Résultat: ${resultatUpdated ? "✓" : "✗"}`);
-
-          // Alerte de confirmation
-          setTimeout(() => {
-            const cleanContent = content.replace(/<[^>]*>/g, "").trim();
-            alert(
-              `✅ MISE À JOUR CONFIRMÉE\n\n` +
-              `Table Conso: ${consoUpdated ? "Mise à jour" : "Non trouvée"}\n` +
-              `Table Résultat: ${resultatUpdated ? "Mise à jour" : "Non trouvée"}\n\n` +
-              `Contenu Table Résultat:\n${cleanContent.substring(0, 200)}${cleanContent.length > 200 ? "..." : ""}\n\n` +
-              `Contenu Table Conso:\n${simpleContent.replace(/<[^>]*>/g, "").substring(0, 150)}`,
-            );
-          }, 500);
-        } else {
-          debug.warn("⚠️ Aucune table n'a été mise à jour");
-
-          // Essayer de créer la table conso si elle n'existe pas
-          this.createConsolidationTable(table);
-
-          // Réessayer après un délai
-          setTimeout(() => {
-            this.updateConsolidationDisplay(table, content);
-          }, 1000);
-        }
-      } catch (error) {
-        debug.error("❌ Erreur dans updateConsolidationDisplay:", error);
-        alert(
-          `❌ ERREUR DE MISE À JOUR\n\n${error.message}\n\nVoir la console pour plus de détails.`,
-        );
-      }
+      // Code original commenté pour référence future
+      // try {
+      //   debug.log("🔍 Début de updateConsolidationDisplay");
+      //   ... (code de mise à jour)
+      // } catch (error) {
+      //   debug.error("❌ Erreur dans updateConsolidationDisplay:", error);
+      // }
     }
 
     generateSimpleConsoContent(fullContent) {
@@ -1374,6 +1605,21 @@
           this.hideDropdown();
         }
       });
+
+      // Écouter l'événement de restauration lors du changement de chat
+      document.addEventListener("flowise:table:restore:request", (e) => {
+        debug.log("🔄 Événement de restauration reçu pour les tables CIA");
+        const sessionId = e.detail?.sessionId;
+        debug.log(`📍 Session demandée: ${sessionId || "current"}`);
+
+        // Restaurer les tables CIA après un délai plus long pour laisser le DOM se stabiliser
+        setTimeout(() => {
+          debug.log("🔄 Restauration des tables CIA...");
+          this.restoreAllTablesData();
+        }, 2000); // Augmenté de 1000ms à 2000ms
+      });
+
+      debug.log("✅ Event listeners configurés (incluant restauration chat)");
     }
 
     destroy() {
@@ -1423,40 +1669,51 @@
      * Générer un ID unique pour une table basé sur son contenu
      */
     generateUniqueTableId(table) {
-      // Essayer d'utiliser l'ID existant du dataset
+      // 1. Vérifier l'attribut data-stable-table-id (priorité absolue)
+      const stableId = table.getAttribute("data-stable-table-id");
+      if (stableId) {
+        table.dataset.tableId = stableId;
+        table.setAttribute("data-table-id", stableId);
+        debug.log(`♻️ Réutilisation ID stable: ${stableId}`);
+        return stableId;
+      }
+
+      // 2. Essayer d'utiliser l'ID existant du dataset
       if (table.dataset.tableId) {
+        // Sauvegarder comme ID stable pour la prochaine fois
+        table.setAttribute("data-stable-table-id", table.dataset.tableId);
         debug.log(`♻️ Réutilisation ID existant: ${table.dataset.tableId}`);
         return table.dataset.tableId;
       }
 
-      // Essayer d'utiliser l'attribut data-table-id existant
+      // 3. Essayer d'utiliser l'attribut data-table-id existant
       const existingId = table.getAttribute("data-table-id");
       if (existingId) {
         table.dataset.tableId = existingId;
+        table.setAttribute("data-stable-table-id", existingId);
         debug.log(`♻️ Récupération ID HTML existant: ${existingId}`);
         return existingId;
       }
 
-      // Sinon, créer un ID basé sur les en-têtes (stable entre rechargements)
+      // 4. Créer un ID basé sur les en-têtes ET la position (stable entre rechargements)
       const headers = this.getTableHeaders(table);
       // Normaliser les en-têtes pour avoir un hash stable
       const headerText = headers
         .map((h) => h.text.trim().toLowerCase().replace(/\s+/g, "_"))
         .join("__");
-      const hash = this.hashCode(headerText);
 
-      // Compter les tables avec ce hash pour différencier les tables similaires
-      const existingTables = document.querySelectorAll(
-        `[data-table-id^="table_${hash}"]`,
-      );
-      const suffix =
-        existingTables.length > 0 ? `_${existingTables.length}` : "";
+      // Ajouter la position de la table dans le document pour plus de stabilité
+      const allTables = Array.from(document.querySelectorAll('table'));
+      const position = allTables.indexOf(table);
 
-      // ID stable basé sur les en-têtes normalisés
-      const uniqueId = `table_${hash}${suffix}`;
+      const hash = this.hashCode(headerText + "_pos_" + position);
+
+      // ID stable basé sur les en-têtes normalisés ET la position
+      const uniqueId = `table_${hash}`;
 
       table.dataset.tableId = uniqueId;
       table.setAttribute("data-table-id", uniqueId);
+      table.setAttribute("data-stable-table-id", uniqueId); // Sauvegarder comme ID stable
       debug.log(`🆔 ID généré et assigné: ${uniqueId}`);
       return uniqueId;
     }
@@ -1570,6 +1827,19 @@
       const tableId = this.generateUniqueTableId(table);
       debug.log("🆔 ID de table pour sauvegarde:", tableId);
 
+      // Vérifier si c'est une table CIA avant de sauvegarder
+      const headers = this.getTableHeaders(table);
+      const isCIATable = headers.some((header) =>
+        this.matchesColumn(header.text, "reponse_user"),
+      );
+
+      if (!isCIATable) {
+        debug.log(
+          `⏭️ Table ${tableId} ignorée (pas une table CIA avec Reponse_user)`,
+        );
+        return;
+      }
+
       const allData = this.loadAllData();
       debug.log(
         "📂 Données existantes chargées, nombre de tables:",
@@ -1582,11 +1852,14 @@
         cells: [],
         headers: [],
         isModelized: false,
+        isCIATable: true,
       };
 
-      // Sauvegarder les en-têtes
-      const headers = this.getTableHeaders(table);
-      tableData.headers = headers.map((h) => h.text);
+      // Sauvegarder les en-têtes avec informations de visibilité
+      tableData.headers = headers.map((h) => ({
+        text: h.text,
+        hidden: h.element.getAttribute("data-hidden") === "true",
+      }));
       tableData.isModelized = this.isModelizedTable(headers);
 
       // Sauvegarder les cellules - gérer tables avec ou sans tbody
@@ -1615,6 +1888,16 @@
           const bgColor = cell.style.backgroundColor;
           const innerHTML = cell.innerHTML;
 
+          // Vérifier si c'est une cellule avec checkbox
+          const checkbox = cell.querySelector("input[type='checkbox']");
+          const isCheckboxCell = checkbox !== null;
+          const isChecked = checkbox ? checkbox.checked : false;
+
+          // 🆕 V5: Sauvegarder les attributs de visibilité et fusion
+          const isHidden = cell.getAttribute("data-hidden") === "true";
+          const isMerged = cell.getAttribute("data-merged") === "true";
+          const rowspan = cell.getAttribute("rowspan");
+
           // Sauvegarder même les cellules vides pour préserver la structure
           tableData.cells.push({
             row: rowIndex,
@@ -1623,6 +1906,13 @@
             bgColor: bgColor,
             // Sauvegarder aussi le HTML pour les cellules avec contenu riche
             html: innerHTML !== value ? innerHTML : undefined,
+            // Sauvegarder l'état de la checkbox si présente
+            isCheckboxCell: isCheckboxCell,
+            isChecked: isChecked,
+            // 🆕 V5: Sauvegarder les états de visibilité et fusion
+            isHidden: isHidden,
+            isMerged: isMerged,
+            rowspan: rowspan ? parseInt(rowspan) : undefined,
           });
         });
       });
@@ -1728,18 +2018,83 @@
         const cell = cells[cellData.col];
 
         if (cell) {
-          // Restaurer le HTML si disponible, sinon le texte
-          if (cellData.html) {
-            cell.innerHTML = cellData.html;
-          } else {
-            cell.textContent = cellData.value;
+          // 🆕 V5: Restaurer les attributs de visibilité et fusion
+          if (cellData.isHidden) {
+            cell.style.display = "none";
+            cell.setAttribute("data-hidden", "true");
           }
 
-          if (cellData.bgColor) {
-            cell.style.backgroundColor = cellData.bgColor;
+          if (cellData.isMerged) {
+            cell.style.display = "none";
+            cell.setAttribute("data-merged", "true");
+          }
+
+          if (cellData.rowspan) {
+            cell.setAttribute("rowspan", cellData.rowspan);
+            cell.style.cssText = `
+              vertical-align: middle !important;
+              text-align: center !important;
+              font-weight: 500;
+              padding: 12px;
+              display: table-cell;
+            `;
+          }
+
+          // Restaurer les cellules avec checkbox
+          if (cellData.isCheckboxCell) {
+            // Créer la checkbox si elle n'existe pas
+            let checkbox = cell.querySelector("input[type='checkbox']");
+            if (!checkbox) {
+              cell.innerHTML = "";
+              checkbox = document.createElement("input");
+              checkbox.type = "checkbox";
+              checkbox.style.cssText = `
+                width: 20px;
+                height: 20px;
+                cursor: pointer;
+                accent-color: #007bff;
+              `;
+              cell.appendChild(checkbox);
+            }
+
+            // Restaurer l'état de la checkbox
+            checkbox.checked = cellData.isChecked || false;
+            cell.dataset.checked = cellData.isChecked ? "true" : "false";
+
+            // Restaurer le style
+            if (cellData.isChecked) {
+              cell.style.backgroundColor = "#e8f5e8";
+            } else if (cellData.bgColor) {
+              cell.style.backgroundColor = cellData.bgColor;
+            }
+          } else {
+            // Restaurer le HTML si disponible, sinon le texte
+            if (cellData.html) {
+              cell.innerHTML = cellData.html;
+            } else {
+              cell.textContent = cellData.value;
+            }
+
+            if (cellData.bgColor) {
+              cell.style.backgroundColor = cellData.bgColor;
+            }
           }
         }
       });
+
+      // 🆕 V5: Restaurer les en-têtes masqués
+      if (tableData.headers && Array.isArray(tableData.headers)) {
+        const currentHeaders = this.getTableHeaders(table);
+        tableData.headers.forEach((headerData, index) => {
+          if (typeof headerData === "object" && headerData.hidden) {
+            const headerCell = currentHeaders[index]?.element;
+            if (headerCell) {
+              headerCell.style.display = "none";
+              headerCell.setAttribute("data-hidden", "true");
+            }
+          }
+        });
+      }
 
       // Restaurer la consolidation si elle existe (uniquement pour tables modelisées)
       if (tableData.consolidation && tableData.isModelized) {
@@ -1845,23 +2200,34 @@
     autoSaveAllTables() {
       const allTables = this.findAllTables();
       let savedCount = 0;
+      let skippedCount = 0;
 
       allTables.forEach((table) => {
-        // Sauvegarder TOUTES les tables (modelisées ou non)
-        const tbody = table.querySelector("tbody");
-        const hasCells = tbody && tbody.querySelectorAll("td").length > 0;
+        // Vérifier si c'est une table CIA (avec colonne Reponse_user)
+        const headers = this.getTableHeaders(table);
+        const isCIATable = headers.some((header) =>
+          this.matchesColumn(header.text, "reponse_user"),
+        );
 
-        // Vérifier aussi les tables sans tbody (certaines tables ont les données directement)
-        const hasData = hasCells || table.querySelectorAll("td").length > 0;
+        // Ne sauvegarder QUE les tables CIA pour éviter le quota localStorage
+        if (isCIATable) {
+          const tbody = table.querySelector("tbody");
+          const hasCells = tbody && tbody.querySelectorAll("td").length > 0;
+          const hasData = hasCells || table.querySelectorAll("td").length > 0;
 
-        if (hasData) {
-          this.saveTableDataNow(table);
-          savedCount++;
+          if (hasData) {
+            this.saveTableDataNow(table);
+            savedCount++;
+          }
+        } else {
+          skippedCount++;
         }
       });
 
       if (savedCount > 0) {
-        debug.log(`💾 Auto-sauvegarde: ${savedCount} table(s) sauvegardée(s)`);
+        debug.log(
+          `💾 Auto-sauvegarde: ${savedCount} table(s) CIA sauvegardée(s), ${skippedCount} table(s) ignorée(s)`,
+        );
       }
     }
 

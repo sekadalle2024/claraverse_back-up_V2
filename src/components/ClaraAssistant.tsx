@@ -1089,19 +1089,12 @@ const ClaraAssistant: React.FC<ClaraAssistantProps> = ({ onPageChange }) => {
   }, []);
 
   // Monitor models availability to show/hide no models modal
+  // DISABLED: Modal verification disabled - users can configure providers in Settings
   useEffect(() => {
-    if (!isLoadingProviders) {
-      // Check if there are any models available across all providers
-      const hasModels = models.length > 0;
-      setShowNoModelsModal(!hasModels);
-      
-      if (!hasModels) {
-        console.log('No models available - showing no models modal');
-      } else {
-        console.log(`Found ${models.length} models - hiding no models modal`);
-      }
-    }
-  }, [models, isLoadingProviders]);
+    // Always hide the modal - let users configure providers freely
+    setShowNoModelsModal(false);
+    console.log('No models modal disabled - users can configure providers in Settings');
+  }, []);
 
   // Initialize TTS service
   useEffect(() => {
@@ -3960,14 +3953,17 @@ ${data.timezone ? `• **Timezone:** ${data.timezone}` : ''}`;
 
             {/* Title */}
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-4">
-              No AI Models Available
+              No AI Provider Configured
             </h2>
 
             {/* Message */}
             <p className="text-gray-600 dark:text-gray-300 text-center mb-6 leading-relaxed">
-              You don't seem to have any AI models downloaded yet. To start chatting with Clara, 
-              you'll need to download at least one model from the Model Manager.
+              To start chatting, you need either:
             </p>
+            <ul className="text-gray-600 dark:text-gray-300 text-left mb-6 space-y-2 list-disc list-inside">
+              <li>An external AI provider (OpenRouter, OpenAI, etc.) configured in Settings → AI Services</li>
+              <li>Or local AI models downloaded from the Model Manager</li>
+            </ul>
 
             {/* Action Buttons */}
             <div className="flex flex-col space-y-3">
@@ -3976,13 +3972,14 @@ ${data.timezone ? `• **Timezone:** ${data.timezone}` : ''}`;
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span>Go to Model Manager</span>
+                <span>Go to Settings</span>
               </button>
               
               <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                This dialog will disappear once you have downloaded a model
+                This dialog will disappear once you have configured an AI provider
               </p>
             </div>
           </div>

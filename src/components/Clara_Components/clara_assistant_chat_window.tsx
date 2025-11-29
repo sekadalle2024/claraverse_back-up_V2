@@ -497,112 +497,30 @@ class SmoothAutoScroller {
 
 /**
  * Welcome screen component displayed when there are no messages
+ * Style Grok: Logo et zone de saisie centrés, design épuré
  */
 const WelcomeScreen: React.FC<{
   userName?: string;
   onStartChat?: () => void;
 }> = ({ userName, onStartChat }) => {
-  const suggestions = [
-    {
-      icon: FileText,
-      title: "Analyze Documents",
-      description: "Upload PDFs, docs, or text files for analysis",
-      action: "Upload a document and ask me about it"
-    },
-    {
-      icon: ImageIcon,
-      title: "Image Understanding",
-      description: "Upload images for description and analysis",
-      action: "Share an image and I'll describe what I see"
-    },
-    {
-      icon: Code,
-      title: "Code Assistance",
-      description: "Get help with programming and debugging",
-      action: "Show me some code you'd like help with"
-    },
-    {
-      icon: Search,
-      title: "Research & Analysis",
-      description: "Ask complex questions and get detailed answers",
-      action: "Ask me anything you'd like to research"
-    }
-  ];
-
   return (
-    <div className="flex items-center justify-center h-full p-8">
-      <div className="max-w-2xl text-center">
-        {/* Hero Section */}
-        <div className="mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-500 via-pink-500 to-sakura-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg p-3">
+    <div className="flex flex-col items-center justify-center h-full p-8">
+      <div className="max-w-2xl w-full text-center flex flex-col items-center">
+        {/* Logo centré - Style Grok */}
+        <div className="mb-6">
+          <div className="w-24 h-24 bg-gradient-to-br from-purple-500 via-pink-500 to-sakura-500 rounded-full flex items-center justify-center mx-auto shadow-lg p-4">
             {/* Logo de l'application */}
             <img src="/logo.png" alt="E-audit Logo" className="w-full h-full object-contain" />
           </div>
-          
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
-            Welcome{userName ? ` back, ${userName}` : ''} to E-audit! 
-            <Sparkles className="inline-block w-6 h-6 ml-2 text-sakura-500" />
-          </h1>
-          
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
-            Your intelligent assistant for documents, images, code, and more.
-            Just upload files and start asking questions!
-          </p>
-
-          {/* Feature highlights */}
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
-            <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
-              Multi-modal AI
-            </span>
-            <span className="px-3 py-1 bg-sakura-100 dark:bg-sakura-900/30 text-sakura-700 dark:text-sakura-300 rounded-full text-sm font-medium">
-              Document Analysis
-            </span>
-            <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
-              Image Understanding
-            </span>
-            <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm font-medium">
-              Code Assistant
-            </span>
-          </div>
         </div>
-
-        {/* Suggestions Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          {suggestions.map((suggestion, index) => (
-            <button
-              key={index}
-              onClick={() => onStartChat?.()}
-              className="p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-white/70 dark:hover:bg-gray-800/70 transition-all hover:shadow-md group text-left"
-            >
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg group-hover:scale-110 transition-transform">
-                  <suggestion.icon className="w-5 h-5 dark:text-white text-gray-500" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
-                    {suggestion.title}
-                  </h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                    {suggestion.description}
-                  </p>
-                  <p className="text-xs text-sakura-600 dark:text-sakura-400 font-medium">
-                    "{suggestion.action}"
-                  </p>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Quick start tips */}
-        <div className="text-sm text-gray-500 dark:text-gray-400">
-          <p className="mb-2">
-            💡 <strong>Pro tip:</strong> You can drag and drop files directly into the chat!
-          </p>
-          <p>
-            🔄 E-audit automatically detects file types and uses the best AI models for each task.
-          </p>
-        </div>
+        
+        {/* Légende sous le logo */}
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-12">
+          E-audit
+        </h1>
+        
+        {/* Note: La zone de saisie sera affichée en bas par le composant parent ClaraAssistantInput */}
+        {/* Elle sera toujours visible et centrée, même sur la page d'accueil */}
       </div>
     </div>
   );

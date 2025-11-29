@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Conso.js V5 - Tables CIA</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            background: #fff;
+            padding: 10px;
+            border-left: 4px solid #28a745;
+        }
+
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+            font-weight: 600;
+        }
+
+        .controls {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button.success {
+            background: #28a745;
+        }
+
+        button.success:hover {
+            background: #218838;
+        }
+
+        button.danger {
+            background: #dc3545;
+        }
+
+        button.danger:hover {
+            background: #c82333;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .code {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+
+        .legend {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .legend h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+
+        .legend ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .legend li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Test Conso.js V5 - Tables CIA (Examen)</h1>
+
+    <div class="info-box">
+        <strong>📋 Objectif du Test:</strong> Valider les nouvelles fonctionnalités V5 pour les tables CIA
+        <ul>
+            <li>✅ Masquage des colonnes Reponse_cia et Remarques</li>
+            <li>✅ Fusion automatique des cellules Question et Ref_question</li>
+            <li>✅ Persistance améliorée des checkboxes</li>
+        </ul>
+    </div>
+
+    <div class="controls">
+        <h3>🎮 Contrôles de Test</h3>
+        <button onclick="testPersistence()">🧪 Test Persistance</button>
+        <button onclick="saveNow()" class="success">💾 Sauvegarder</button>
+        <button onclick="restoreAll()" class="success">🔄 Restaurer</button>
+        <button onclick="getInfo()">📊 Info Stockage</button>
+        <button onclick="clearAll()" class="danger">🗑️ Effacer Tout</button>
+        <button onclick="location.reload()">🔃 Recharger Page</button>
+    </div>
+
+    <div class="legend">
+        <h3>📖 Légende</h3>
+        <ul>
+            <li><strong>Colonnes Masquées:</strong> Reponse_cia et Remarques (présentes dans le DOM mais invisibles)
+            </li>
+            <li><strong>Colonnes Fusionnées:</strong> Ref_question et Question (cellules fusionnées verticalement)</li>
+            <li><strong>Checkbox Interactive:</strong> Une seule réponse possible par question</li>
+            <li><strong>Persistance:</strong> Les données sont sauvegardées automatiquement dans localStorage</li>
+        </ul>
+    </div>
+
+    <!-- Test 1: Table CIA Complète -->
+    <div class="test-section">
+        <h2>📝 Test 1: Table CIA Complète (Partie 1 - Contrôle Interne)</h2>
+
+        <table class="min-w-full border border-gray-200 rounded-lg">
+            <thead>
+                <tr>
+                    <th>Ref_question</th>
+                    <th>Question</th>
+                    <th>Option</th>
+                    <th>Reponse_user</th>
+                    <th>Reponse_cia</th>
+                    <th>Remarques</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Q1-CIA-P1</td>
+                    <td>Quel est le principal objectif du contrôle interne selon le COSO?</td>
+                    <td>A. Garantir la rentabilité de l'entreprise</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>Incorrect - Le contrôle interne ne garantit pas la rentabilité</td>
+                </tr>
+                <tr>
+                    <td>Q1-CIA-P1</td>
+                    <td>Quel est le principal objectif du contrôle interne selon le COSO?</td>
+                    <td>B. Assurer la conformité aux lois et règlements</td>
+                    <td></td>
+                    <td>Oui</td>
+                    <td>Correct - C'est l'un des objectifs principaux du COSO</td>
+                </tr>
+                <tr>
+                    <td>Q1-CIA-P1</td>
+                    <td>Quel est le principal objectif du contrôle interne selon le COSO?</td>
+                    <td>C. Éliminer tous les risques</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>Incorrect - Le contrôle interne gère les risques, ne les élimine pas</td>
+                </tr>
+                <tr>
+                    <td>Q1-CIA-P1</td>
+                    <td>Quel est le principal objectif du contrôle interne selon le COSO?</td>
+                    <td>D. Augmenter le chiffre d'affaires</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>Incorrect - Ce n'est pas l'objectif du contrôle interne</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="success-box">
+            <strong>✅ Résultat Attendu:</strong>
+            <ul>
+                <li>Colonnes "Reponse_cia" et "Remarques" masquées</li>
+                <li>Colonnes "Ref_question" et "Question" fusionnées (4 lignes → 1 cellule)</li>
+                <li>Checkboxes interactives dans "Reponse_user"</li>
+                <li>Une seule checkbox peut être cochée à la fois</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Test 2: Table CIA Partie 2 -->
+    <div class="test-section">
+        <h2>📝 Test 2: Table CIA (Partie 2 - Audit Interne)</h2>
+
+        <table class="min-w-full border border-gray-200 rounded-lg">
+            <thead>
+                <tr>
+                    <th>REF QUESTION</th>
+                    <th>QUESTION</th>
+                    <th>Option</th>
+                    <th>Reponse user</th>
+                    <th>REPONSE CIA</th>
+                    <th>Remarques</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Q2-CIA-P2</td>
+                    <td>Quelle est la principale différence entre audit interne et audit externe?</td>
+                    <td>A. L'audit interne est indépendant de l'organisation</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>Faux - L'audit interne fait partie de l'organisation</td>
+                </tr>
+                <tr>
+                    <td>Q2-CIA-P2</td>
+                    <td>Quelle est la principale différence entre audit interne et audit externe?</td>
+                    <td>B. L'audit externe est réalisé par des employés de l'entreprise</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>Faux - L'audit externe est réalisé par des tiers</td>
+                </tr>
+                <tr>
+                    <td>Q2-CIA-P2</td>
+                    <td>Quelle est la principale différence entre audit interne et audit externe?</td>
+                    <td>C. L'audit interne rapporte à la direction, l'externe aux parties prenantes</td>
+                    <td></td>
+                    <td>Oui</td>
+                    <td>Correct - C'est la principale différence</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="success-box">
+            <strong>✅ Test des Variations:</strong> Cette table utilise des variations de noms de colonnes (majuscules,
+            espaces) pour tester la robustesse du système.
+        </div>
+    </div>
+
+    <!-- Test 3: Table CIA Partie 3 -->
+    <div class="test-section">
+        <h2>📝 Test 3: Table CIA (Partie 3 - Gestion des Risques)</h2>
+
+        <table class="min-w-full border border-gray-200 rounded-lg">
+            <thead>
+                <tr>
+                    <th>ref_question</th>
+                    <th>question</th>
+                    <th>option</th>
+                    <th>reponse_user</th>
+                    <th>reponse_cia</th>
+                    <th>remarque</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Q3-CIA-P3</td>
+                    <td>Qu'est-ce qu'un risque inhérent?</td>
+                    <td>A. Le risque après mise en place des contrôles</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>C'est le risque résiduel</td>
+                </tr>
+                <tr>
+                    <td>Q3-CIA-P3</td>
+                    <td>Qu'est-ce qu'un risque inhérent?</td>
+                    <td>B. Le risque avant tout contrôle</td>
+                    <td></td>
+                    <td>Oui</td>
+                    <td>Correct - Risque brut avant contrôles</td>
+                </tr>
+                <tr>
+                    <td>Q3-CIA-P3</td>
+                    <td>Qu'est-ce qu'un risque inhérent?</td>
+                    <td>C. Le risque lié aux fraudes</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>Trop spécifique</td>
+                </tr>
+                <tr>
+                    <td>Q3-CIA-P3</td>
+                    <td>Qu'est-ce qu'un risque inhérent?</td>
+                    <td>D. Le risque de non-conformité</td>
+                    <td></td>
+                    <td>Non</td>
+                    <td>Trop spécifique</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="success-box">
+            <strong>✅ Test Minuscules:</strong> Cette table utilise des noms de colonnes en minuscules pour tester la
+            détection insensible à la casse.
+        </div>
+    </div>
+
+    <!-- Instructions de Test -->
+    <div class="test-section">
+        <h2>🧪 Instructions de Test</h2>
+
+        <h3>1️⃣ Test Visuel</h3>
+        <ol>
+            <li>Vérifier que les colonnes "Reponse_cia" et "Remarques" sont <strong>invisibles</strong></li>
+            <li>Vérifier que les colonnes "Ref_question" et "Question" sont <strong>fusionnées</strong></li>
+            <li>Vérifier que les checkboxes apparaissent dans "Reponse_user"</li>
+        </ol>
+
+        <h3>2️⃣ Test Interactivité</h3>
+        <ol>
+            <li>Cliquer sur une checkbox dans une table</li>
+            <li>Vérifier qu'elle se coche et que les autres se décochent</li>
+            <li>Vérifier que la cellule cochée devient verte (#e8f5e8)</li>
+        </ol>
+
+        <h3>3️⃣ Test Persistance</h3>
+        <ol>
+            <li>Cocher plusieurs réponses dans différentes tables</li>
+            <li>Cliquer sur "💾 Sauvegarder"</li>
+            <li>Cliquer sur "🔃 Recharger Page"</li>
+            <li>Vérifier que les réponses cochées sont restaurées</li>
+            <li>Vérifier que les colonnes masquées restent masquées</li>
+            <li>Vérifier que les cellules fusionnées restent fusionnées</li>
+        </ol>
+
+        <h3>4️⃣ Test Console</h3>
+        <div class="code">
+            // Ouvrir la console (F12) et taper:
+
+            // Test complet de persistance
+            claraverseCommands.testPersistence();
+
+            // Voir les infos de stockage
+            claraverseCommands.getStorageInfo();
+
+            // Vérifier les colonnes masquées
+            document.querySelectorAll('th[data-hidden="true"]').forEach(h => {
+            console.log('Colonne masquée:', h.textContent);
+            });
+
+            // Vérifier les cellules fusionnées
+            document.querySelectorAll('td[rowspan]').forEach(cell => {
+            console.log('Cellule fusionnée:', cell.textContent, 'rowspan:', cell.getAttribute('rowspan'));
+            });
+
+            // Activer les logs détaillés
+            claraverseCommands.debug.enableVerbose();
+        </div>
+    </div>
+
+    <!-- Résultats Attendus -->
+    <div class="test-section">
+        <h2>✅ Résultats Attendus</h2>
+
+        <h3>Colonnes Masquées</h3>
+        <ul>
+            <li>✅ "Reponse_cia" invisible mais présente dans le DOM</li>
+            <li>✅ "Remarques" invisible mais présente dans le DOM</li>
+            <li>✅ Attribut <code>data-hidden="true"</code> sur les cellules</li>
+            <li>✅ Style <code>display: none</code> appliqué</li>
+        </ul>
+
+        <h3>Cellules Fusionnées</h3>
+        <ul>
+            <li>✅ "Ref_question" fusionnée verticalement</li>
+            <li>✅ "Question" fusionnée verticalement</li>
+            <li>✅ Attribut <code>rowspan</code> sur la première cellule</li>
+            <li>✅ Attribut <code>data-merged="true"</code> sur les autres cellules</li>
+            <li>✅ Texte centré verticalement et horizontalement</li>
+        </ul>
+
+        <h3>Checkboxes</h3>
+        <ul>
+            <li>✅ Checkboxes créées automatiquement dans "Reponse_user"</li>
+            <li>✅ Une seule checkbox cochée par table</li>
+            <li>✅ Cellule cochée en vert (#e8f5e8)</li>
+            <li>✅ État sauvegardé dans localStorage</li>
+        </ul>
+
+        <h3>Persistance</h3>
+        <ul>
+            <li>✅ Données sauvegardées automatiquement après 500ms</li>
+            <li>✅ Restauration complète après rechargement</li>
+            <li>✅ Colonnes masquées restaurées</li>
+            <li>✅ Cellules fusionnées restaurées</li>
+            <li>✅ Checkboxes restaurées avec leur état</li>
+        </ul>
+    </div>
+
+    <!-- Script de Test -->
+    <script src="conso.js"></script>
+    <script>
+        function testPersistence() {
+            if (window.claraverseCommands) {
+                claraverseCommands.testPersistence();
+            } else {
+                alert('❌ Conso.js non chargé');
+            }
+        }
+
+        function saveNow() {
+            if (window.claraverseCommands) {
+                claraverseCommands.saveAllNow();
+                alert('✅ Sauvegarde effectuée');
+            } else {
+                alert('❌ Conso.js non chargé');
+            }
+        }
+
+        function restoreAll() {
+            if (window.claraverseCommands) {
+                claraverseCommands.restoreAll();
+                alert('✅ Restauration effectuée');
+            } else {
+                alert('❌ Conso.js non chargé');
+            }
+        }
+
+        function getInfo() {
+            if (window.claraverseCommands) {
+                const info = claraverseCommands.getStorageInfo();
+                console.log('📊 Informations de stockage:', info);
+                alert(`📊 Stockage:\n${info.tableCount} table(s)\n${info.dataSizeKB} KB`);
+            } else {
+                alert('❌ Conso.js non chargé');
+            }
+        }
+
+        function clearAll() {
+            if (confirm('⚠️ Effacer toutes les données sauvegardées?')) {
+                if (window.claraverseCommands) {
+                    claraverseCommands.clearAllData();
+                } else {
+                    alert('❌ Conso.js non chargé');
+                }
+            }
+        }
+
+        // Afficher un message de bienvenue
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('🎉 Test Conso.js V5 chargé');
+                console.log('💡 Commandes disponibles: claraverseCommands.help()');
+                console.log('🧪 Test de persistance: claraverseCommands.testPersistence()');
+            }, 2000);
+        });
+    </script>
+</body>
+
+</html>

@@ -110,7 +110,7 @@ const ClaraSidebar: React.FC<ClaraSidebarProps> = ({
             <div className="flex items-center gap-3">
               <img src="/logo.png" alt="E-audit Logo" className="w-8 h-8 flex-shrink-0" />
               <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap">
-                Chat History
+                Dossier
               </h1>
             </div>
             <button

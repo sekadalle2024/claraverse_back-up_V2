@@ -1402,10 +1402,32 @@ export class LocalStorageDB {
       // Get fresh providers list after cleanup
       const updatedProviders = await this.getAllProviders();
       
+      // Check if OpenRouter exists - this should be the primary provider
+      const openRouterExists = updatedProviders.some(p => p.type === 'openrouter');
+      
+      // Create OpenRouter as primary provider if it doesn't exist
+      if (!openRouterExists) {
+        console.log('No OpenRouter found, creating one as primary provider...');
+        await this.addProvider({
+          name: "OpenRouter",
+          type: 'openrouter',
+          baseUrl: 'https://openrouter.ai/api/v1',
+          apiKey: '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',
+          isEnabled: true,
+          isPrimary: true,
+          config: {
+            description: 'OpenRouter - Access to multiple AI models'
+          }
+        });
+        console.log('OpenRouter created successfully as primary provider');
+      } else {
+        console.log('OpenRouter already exists, skipping creation');
+      }
+      
       // Check if Clara's Core exists
       const clarasCoreExists = updatedProviders.some(p => p.type === 'claras-pocket');
       
-      // Create Clara's Core if it doesn't exist - this should be the primary provider
+      // Create Clara's Core if it doesn't exist - as secondary provider
       if (!clarasCoreExists) {
         console.log('No Clara\'s Core found, creating one...');
         await this.addProvider({
@@ -1413,7 +1435,7 @@ export class LocalStorageDB {
           type: 'claras-pocket',
           baseUrl: 'http://localhost:8091/v1',
           isEnabled: true,
-          isPrimary: true,
+          isPrimary: false,
           config: {
             description: 'Local LLM service powered by llama.cpp'
           }
@@ -1458,20 +1480,20 @@ export class LocalStorageDB {
         console.log('Ollama provider already exists, skipping creation');
       }
       
-      // Ensure at least one provider is primary (should be Clara's Core)
+      // Ensure at least one provider is primary (should be OpenRouter)
       const finalProviders = await this.getAllProviders();
       const primaryProvider = finalProviders.find(p => p.isPrimary);
       if (!primaryProvider) {
-        console.log('No primary provider found, setting Clara\'s Core as primary...');
-        const clarasCoreProvider = finalProviders.find(p => p.type === 'claras-pocket');
-        if (clarasCoreProvider) {
-          await this.setPrimaryProvider(clarasCoreProvider.id);
-          console.log('Clara\'s Core set as primary provider');
+        console.log('No primary provider found, setting OpenRouter as primary...');
+        const openRouterProvider = finalProviders.find(p => p.type === 'openrouter');
+        if (openRouterProvider) {
+          await this.setPrimaryProvider(openRouterProvider.id);
+          console.log('OpenRouter set as primary provider');
         } else {
           // Fallback: set first enabled provider as primary
           const enabledProvider = finalProviders.find(p => p.isEnabled);
           if (enabledProvider) {
-            console.log('No Clara\'s Core found, setting first enabled provider as primary...');
+            console.log('No OpenRouter found, setting first enabled provider as primary...');
             await this.setPrimaryProvider(enabledProvider.id);
           }
         }

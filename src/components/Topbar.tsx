@@ -110,18 +110,13 @@ const Topbar = ({ userName, onPageChange, projectTitle, showProjectTitle = false
   return (
     <div className="topbar-grok h-16 px-6 flex items-center justify-between relative z-[10000]">
       <div className="flex-1" />
-      {/* Center section - Project Title and Clock */}
-      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center min-w-[120px]">
+      {/* Center section - Project Title only (Clock removed) */}
+      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
         {showProjectTitle && projectTitle && (
-          <h1 className="text-lg font-semibold text-gray-800 dark:text-white mb-0.5">
+          <h1 className="text-lg font-semibold text-gray-800 dark:text-white">
             {projectTitle}
           </h1>
         )}
-        <div className="text-xs font-mono text-gray-700 dark:text-gray-200 flex flex-row items-center gap-2 min-w-[90px]">
-          <Clock className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 mr-1" />
-          <span className="font-semibold tracking-widest text-xs text-gray-700 dark:text-gray-200" style={{letterSpacing: '0.08em'}}>{timeString}</span>
-          <span className="text-[10px] text-gray-500 dark:text-gray-400 font-normal">· {dateString} · {dayString}</span>
-        </div>
       </div>
       <div className="flex items-center gap-6">
         {/* Sélecteur de thème avec icônes */}

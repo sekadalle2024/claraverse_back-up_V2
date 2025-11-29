@@ -272,15 +272,15 @@ const Sidebar = ({
   };
 
   const mainMenuItems: MenuItem[] = [
-    { icon: Home, label: "Dashboard", id: "dashboard" },
+    { icon: Home, label: "Dashboard", id: "dashboard", disabled: true },
     // { icon: Bot, label: 'Chat', id: 'assistant' },
-    { icon: Bot, label: "Chat", id: "clara" },
-    { icon: BrainCircuit, label: "Agents", id: "agents" },
-    { icon: BookOpen, label: "Notebooks", id: "notebooks" },
+    { icon: Bot, label: "Chat", id: "clara", disabled: false },
+    { icon: BrainCircuit, label: "Agents", id: "agents", disabled: true },
+    { icon: BookOpen, label: "Notebooks", id: "notebooks", disabled: true },
     ...(alphaFeaturesEnabled
-      ? [{ icon: Zap, label: "Lumaui (Alpha)", id: "lumaui" }]
+      ? [{ icon: Zap, label: "Lumaui (Alpha)", id: "lumaui", disabled: true }]
       : []),
-    { icon: Code2, label: "LumaUI (Beta)", id: "lumaui-lite" },
+    { icon: Code2, label: "LumaUI (Beta)", id: "lumaui-lite", disabled: true },
     // Only show Image Gen if ComfyUI feature is enabled
     ...(featureConfig.comfyUI
       ? [
@@ -288,6 +288,7 @@ const Sidebar = ({
             icon: ImageIcon,
             label: "Image Gen",
             id: "image-gen",
+            disabled: true,
             status:
               enhancedServiceStatus.comfyui?.state === "running"
                 ? ("ready" as const)
@@ -297,7 +298,7 @@ const Sidebar = ({
       : []),
     // Only show n8n if feature is enabled AND service is running
     ...(featureConfig.n8n && enhancedServiceStatus.n8n?.state === "running"
-      ? [{ icon: Network, label: "Workflows", id: "n8n" }]
+      ? [{ icon: Network, label: "Workflows", id: "n8n", disabled: true }]
       : []),
   ];
 
@@ -311,8 +312,8 @@ const Sidebar = ({
   // });
 
   const bottomMenuItems: MenuItem[] = [
-    { icon: Settings, label: "Settings", id: "settings" },
-    { icon: HelpCircle, label: "Help", id: "help" },
+    { icon: Settings, label: "Settings", id: "settings", disabled: true },
+    { icon: HelpCircle, label: "Help", id: "help", disabled: true },
   ];
 
   return (
@@ -354,14 +355,17 @@ const Sidebar = ({
           {mainMenuItems.map((item) => (
             <li key={item.id}>
               <button
-                onClick={() => onPageChange(item.id)}
+                onClick={() => !item.disabled && onPageChange(item.id)}
                 data-page={item.id}
+                disabled={item.disabled}
                 className={`w-full flex items-center rounded-lg transition-colors h-10 relative ${
                   isExpanded
                     ? "px-4 justify-start gap-3"
                     : "justify-center px-0"
                 } ${
-                  activePage === item.id
+                  item.disabled
+                    ? "cursor-not-allowed text-gray-700 dark:text-gray-300"
+                    : activePage === item.id
                     ? "bg-sakura-100 text-sakura-500 dark:bg-sakura-100/10"
                     : "text-gray-700 dark:text-gray-300 hover:bg-sakura-50 hover:text-sakura-500 dark:hover:bg-sakura-100/10"
                 }`}
@@ -478,14 +482,17 @@ const Sidebar = ({
             {bottomMenuItems.map((item) => (
               <li key={item.id}>
                 <button
-                  onClick={() => onPageChange(item.id)}
+                  onClick={() => !item.disabled && onPageChange(item.id)}
                   data-page={item.id}
+                  disabled={item.disabled}
                   className={`w-full flex items-center rounded-lg transition-colors h-10 ${
                     isExpanded
                       ? "px-4 justify-start gap-3"
                       : "justify-center px-0"
                   } ${
-                    activePage === item.id
+                    item.disabled
+                      ? "cursor-not-allowed text-gray-700 dark:text-gray-300"
+                      : activePage === item.id
                       ? "bg-sakura-100 text-sakura-500 dark:bg-sakura-100/10"
                       : "text-gray-700 dark:text-gray-300 hover:bg-sakura-50 hover:text-sakura-500 dark:hover:bg-sakura-100/10"
                   }`}
